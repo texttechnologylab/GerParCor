@@ -1,2 +1,2 @@
 # GerParCor
-German Parliamentary Corpus (GerParCor
+German Parliamentary Corpus (GerParCor)
