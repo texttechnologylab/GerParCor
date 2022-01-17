@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.texttechnologylab</groupId>
+    <artifactId>parliament</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <ttlab.textimager.version>a1a0b0e94fdb448eb23327c760cb06f80f75c436</ttlab.textimager.version>
+        <ttlab.typesystem.version>1d23e466bcae2cf36fb06aa41ae85b319a7f2fe2</ttlab.typesystem.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+            </plugin>
+
+
+        </plugins>
+    </build>
+
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Maven Plugin Repository</name>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+            <id>ukp-oss-model-releases</id>
+            <url>http://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-model-releases-local</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <dependencies>
+    <dependency>
+        <groupId>com.github.texttechnologylab</groupId>
+        <artifactId>Utilities</artifactId>
+        <version>27866a7214</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.github.texttechnologylab</groupId>
+        <artifactId>UIMATypeSystem</artifactId>
+        <version>1d23e466bc</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.github.texttechnologylab.textimager-uima</groupId>
+        <artifactId>textimager-uima-types</artifactId>
+        <version>0.3.0.2</version>
+        <exclusions>
+            <exclusion>
+                <groupId>com.github.texttechnologylab</groupId>
+                <artifactId>UIMATypeSystem</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+
+        <dependency>
+            <groupId>com.github.texttechnologylab</groupId>
+            <artifactId>textimager-client</artifactId>
+            <version>dirty-tei-dcd9b4979e-1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.texttechnologylab.textimager-uima</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.texttechnologylab.textimager-uima</groupId>
+            <artifactId>textimager-uima-spacy</artifactId>
+            <version>${ttlab.textimager.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.texttechnologylab</groupId>
+                    <artifactId>UIMATypeSystem</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.12.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <version>2.0.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client</artifactId>
+            <version>1.30.9</version>
+        </dependency>
+
+    </dependencies>
+
+</project>
