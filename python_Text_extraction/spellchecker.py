@@ -11,14 +11,20 @@ from functools import partial
 set_files = set()
 
 
-def spellchecker(input_xmi_dir: str, speller: SymSpell, spell_object_name: str):
+def spellchecker(input_txt_dir: str, speller: SymSpell, spell_object_name: str):
+    """
+    :param input_txt_dir: Path of the txt-file
+    :param speller: SymSpell for checking the spelling mistakes
+    :param spell_object_name: Modifier for the output name
+    :return: Dictionary of the qualities
+    """
     right = 0
     wrong = 0
     unknown = 0
     number_of_words = 0
     quality_good, quality_good_unknown = 0.0, 0.0
     try:
-        with open(input_xmi_dir, "r", encoding="UTF-8") as text_file:
+        with open(input_txt_dir, "r", encoding="UTF-8") as text_file:
             text = text_file.read()
             text = text.replace("\n", " ")
         for word in text.split():
@@ -40,7 +46,7 @@ def spellchecker(input_xmi_dir: str, speller: SymSpell, spell_object_name: str):
             quality_good, quality_good_unknown = 1.0, 1.0
         elif right:
             quality_good, quality_good_unknown = 0.0, 0.0
-        file_base_name = str(os.path.basename(input_xmi_dir))
+        file_base_name = str(os.path.basename(input_txt_dir))
         name_data = f"{spell_object_name}_{file_base_name}"
         dict_spellcheck_text = {"name": name_data,
                                 "right_number": right,
@@ -51,10 +57,17 @@ def spellchecker(input_xmi_dir: str, speller: SymSpell, spell_object_name: str):
                                 "quality_good_unknown": quality_good_unknown}
         return dict_spellcheck_text
     except Exception as ex:
-        print(f"{input_xmi_dir}, Error: {ex}")
+        print(f"{input_txt_dir}, Error: {ex}")
 
 
-def multiprocessing_spellchecker(in_xmi_dir: str, in_dir_speller: str, spell_object_name: str, out_dir: str):
+def multiprocessing_spellchecker(in_txt_dir: str, in_dir_speller: str, spell_object_name: str, out_dir: str):
+    """
+    :param in_txt_dir: Directory of all txt-files
+    :param in_dir_speller: Name of the SymSpell word lexicon
+    :param spell_object_name: Modifier for the output name
+    :param out_dir: Location for the output
+    :return:
+    """
     # in_dir_speller = f"de-100k.txt"
     try:
         sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
@@ -67,12 +80,12 @@ def multiprocessing_spellchecker(in_xmi_dir: str, in_dir_speller: str, spell_obj
         exit()
     global set_files
     set_files = set()
-    get_all_path_files(in_xmi_dir, ".txt")
+    get_all_path_files(in_txt_dir, ".txt")
     files = list(set_files)
     part_func = partial(spellchecker, speller=sym_spell, spell_object_name=spell_object_name)
     pool = Pool(multiprocessing.cpu_count() - 1)
     result = list(tqdm(pool.imap_unordered(part_func, files),
-                       desc=f"Spellchecking {spell_object_name}: {in_xmi_dir.split('/')[-1]}", total=len(files)))
+                       desc=f"Spellchecking {spell_object_name}: {in_txt_dir.split('/')[-1]}", total=len(files)))
     pool.close()
     pool.join()
     os.makedirs(out_dir, exist_ok=True)
@@ -93,6 +106,11 @@ def multiprocessing_spellchecker(in_xmi_dir: str, in_dir_speller: str, spell_obj
 
 
 def get_all_path_files(path_dir: str, end_file: str):
+    """
+    :param path_dir: directory path for searching file paths
+    :param end_file: which files should be search (txt-data => .txt)
+    :return:
+    """
     global set_files
     for file in os.scandir(path_dir):
         if file.is_dir():
@@ -103,9 +121,9 @@ def get_all_path_files(path_dir: str, end_file: str):
 
 def summary_result_spellcheck(input_dir_results: str, end_with: str, spell_object_name: str = "SpellChecking"):
     """
-    :param input_dir_results:
-    :param end_with:
-    :param spell_object_name:
+    :param input_dir_results: Directory of the spellchecking result
+    :param end_with: Data format of the results normally .txt
+    :param spell_object_name: Modifier for the output name
     :return:
     """
     global set_files
@@ -130,16 +148,11 @@ def summary_result_spellcheck(input_dir_results: str, end_with: str, spell_objec
 
 
 if __name__ == "__main__":
-    federal_state = "Thueringen"
-    base_dir = f"/mnt/corpora2/xmi/ParliamentOut/{federal_state}/txt_sentence/01"
-    output_dir = f"/mnt/corpora2/xmi/ParliamentOut/{federal_state}/spellcheck2"
-    # de-100k.txt
-    # frequency_dictionary_en_82_765.txt
     parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--path_directory", help="path to the directory with the .txt files")
-    parser.add_argument("-s", "--sym_speller", default="de-100k.txt", help="name of the word lexicon for SymSpellpy")
-    parser.add_argument("-o", "--out", default="symspell_spellcheck", help="directory path for the outputs of the spell checking")
+    parser.add_argument("-p", "--path_directory", help="Path to the directory with the .txt files")
+    parser.add_argument("-s", "--sym_speller", default="de-100k.txt", help="Name of the word lexicon for SymSpellpy")
+    parser.add_argument("-o", "--out", default="symspell_spellcheck", help="Directory path for the outputs of the spell checking")
     parser.add_argument("-m", "--name_modifier", default="Symspell", help="Modify the output name")
     args = parser.parse_args()
-    multiprocessing_spellchecker(in_xmi_dir=args.path_directory, in_dir_speller=args.sym_speller, out_dir=args.out, spell_object_name=args.name_modifier)
+    multiprocessing_spellchecker(in_txt_dir=args.path_directory, in_dir_speller=args.sym_speller, spell_object_name=args.name_modifier, out_dir=args.out)
 
