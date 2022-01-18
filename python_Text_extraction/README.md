@@ -11,6 +11,23 @@ Needed packages:
     pip3 install Pillow
     pip3 install pytesseract
     pip3 install pdf2image
+    
+    
+    
+    bs4
+    requests
+    urllib3
+    selenium
+    tqdm
+    textract
+    xmi-reader
+    dkpro-cassis
+
+    certifi==2021.10.8
+    pdf2image==1.16.0
+    Pillow==8.4.0
+    pytesseract==0.3.8
+   
 
 Scanned PDF documents to text with Tesseract OCR extraction:
 
@@ -27,3 +44,22 @@ Spellchecker:
         2.1. Put the downloaded word lexicon into your python-environment in the folder envs/python-environment_name/lib/python(Version_umber)/site-packages/symspellpy
         2.2 Example with miniconda3, environment=symspeller and python version3.8 ~/miniconda3/envs/symspeller/lib/python3.8/site-packages/symspellpy
     3. start Programm with python spellchecker.py -p path_to_txt_files_directory -s Symspeller_word_lexicon_name -o output_path_to_directory -m Output_name_modifier
+    
+    
+Convert_and_Clean:
+
+- Package parses and cleans raw crawled text data from all different parliamentary-corpora 
+- After the cleanup process every text document gets saved as the uima-format and some additional meta-information is annotated (title, date, session-id, etc.)
+
+Crawling_Services:
+
+- This package contains some crawlers that were used to extract desired texts from specific websites from different german parliaments
+
+pdf_to_text:
+
+- This Package offers some conversion-utility for pdfs etc. 
+
+Utility:
+
+- A Collection of different utility scripts for the whole process 
+(including testing of functions, cleaning, converting and uima support)
