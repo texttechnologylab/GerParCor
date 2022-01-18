@@ -29,4 +29,4 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 | 21 | Thüringen | 761 | 10/25/1990 | 11/19/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Thueringen.tar) |
 | 22 | Liechtenstein | 504 | 03/13/1997 | 11/06/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Liechtenstein.tar) |
 | 23 | Nationalrat (AT) | 4267 | 10/21/1918 | 05/17/2021 | new Data is processing... |
-| 24 | Nationlarat (CH) | 368 | 12/06/1999 | 12/09/2021 | new Data is processing... |
+| 24 | Nationlarat (CH) | 368 | 12/06/1999 | 12/09/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Schweiz.tar) |
