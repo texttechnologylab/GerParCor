@@ -22,7 +22,7 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 | 14 | Mecklenburg-Vorpommern | 659 | 10/26/1990 | 06/11/2021 | [Download](http://gerparcor.texttechnologylab.org/data/MeckPom.tar) |
 | 15 | Niedersachsen | 1109 | 06/22/1982 | 09/15/2021 | new Data is processing... |
 | 16 | Nordrhein-Westfalen | 2041 | 05/21/1947 | 10/08/2021 | new Data is processing... |
-| 17 | Rheinland-Pfalz | 1562 | 07/24/1947 | 09/22.2021 | new Data is processing... |
+| 17 | Rheinland-Pfalz | 1562 | 07/24/1947 | 09/22.2021 | [Download](http://gerparcor.texttechnologylab.org/data/RLP.tar) |
 | 18 | Saarland | 876 | 07/23/1959 | 09/15/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Saarland.tar) |
 | 19 | Sachsen | 690 | 10/27/1990 | 11/18/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Sachsen.tar) |
 | 20 | Sachsen-Anhalt | 607 | 10/28/1990 | 09/17/2021 | new Data is processing... |
