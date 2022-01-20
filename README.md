@@ -16,15 +16,15 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 | 8 | Bayern | 2221 | 12/16/1946 | 10/14/2021 | new Data is processing... |
 | 9 | Berlin | 582 | 04/02/1989 | 09/16/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Berlin.tar) |
 | 10 | Brandenburg | 442 | 10/26/1990 | 08/27/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Brandenburg.tar) |
-| 11 | Bremen | 1102 | 07/04/1995 | 09/16/2021 | new Data is processing... |
+| 11 | Bremen | 1102 | 07/04/1995 | 09/16/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Bremen.tar) |
 | 12 | Hamburg | 225 | 10/08/1997 | 10/11/2017 | new Data is processing... |
 | 13 | Hessen | 1297 | 02/04/1947 | 09/29/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Hessen.tar) |
-| 14 | Mecklenburg-Vorpommern | 659 | 10/26/1990 | 06/11/2021 | new Data is processing... |
+| 14 | Mecklenburg-Vorpommern | 659 | 10/26/1990 | 06/11/2021 | [Download](http://gerparcor.texttechnologylab.org/data/MeckPom.tar) |
 | 15 | Niedersachsen | 1109 | 06/22/1982 | 09/15/2021 | new Data is processing... |
 | 16 | Nordrhein-Westfalen | 2041 | 05/21/1947 | 10/08/2021 | new Data is processing... |
 | 17 | Rheinland-Pfalz | 1562 | 07/24/1947 | 09/22.2021 | new Data is processing... |
 | 18 | Saarland | 876 | 07/23/1959 | 09/15/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Saarland.tar) |
-| 19 | Sachsen | 690 | 10/27/1990 | 11/18/2021 | new Data is processing... |
+| 19 | Sachsen | 690 | 10/27/1990 | 11/18/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Sachsen.tar) |
 | 20 | Sachsen-Anhalt | 607 | 10/28/1990 | 09/17/2021 | new Data is processing... |
 | 21 | Schleswig-Holstein | 1776 | 02/26/1946 | 02/11/2021 | new Data is processing... |
 | 22 | Thüringen | 761 | 10/25/1990 | 11/19/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Thueringen.tar) |
