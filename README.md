@@ -26,7 +26,7 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 | 18 | Saarland | 876 | 07/23/1959 | 09/15/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Saarland.tar) |
 | 19 | Sachsen | 690 | 10/27/1990 | 11/18/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Sachsen.tar) |
 | 20 | Sachsen-Anhalt | 607 | 10/28/1990 | 09/17/2021 | [Download](http://gerparcor.texttechnologylab.org/data/SachsenAnhalt.tar) |
-| 21 | Schleswig-Holstein | 1776 | 02/26/1946 | 02/11/2021 [Download](http://gerparcor.texttechnologylab.org/data/SchleswigHolstein.tar) |
+| 21 | Schleswig-Holstein | 1776 | 02/26/1946 | 02/11/2021 | [Download](http://gerparcor.texttechnologylab.org/data/SchleswigHolstein.tar) |
 | 22 | Thüringen | 761 | 10/25/1990 | 11/19/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Thueringen.tar) |
 | 23 | Liechtenstein | 504 | 03/13/1997 | 11/06/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Liechtenstein.tar) |
 | 24 | Nationalrat (AT) | 4267 | 10/21/1918 | 05/17/2021 | new Data is processing... |
