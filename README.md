@@ -6,10 +6,10 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
  
 | # | Parliament | Sessions | From | Until | Status / Download |
 --- | --- | --- | --- | --- | --- |
-| 1 | Reichstag (NG + Zoll) | 1990 | 02/25/1867 | 05/24/1895 | new Data is processing... |
-| 2 | Reichstag (Empire) | 2183 | 12/03/1895 | 10/26/1918 | new Data is processing... |
-| 3 | Weimar Republic | 1328 | 02/06/1919 | 12/09/1932 | new Data is processing... |
-| 4 | ThirdReich | 20 | 03/21/1933 | 04/24/1942 | new Data is processing... |
+| 1 | Reichstag (NG + Zoll) | 1990 | 02/25/1867 | 05/24/1895 | [Download](http://gerparcor.texttechnologylab.org/data/Reichstag_NG_Zoll.tar) |
+| 2 | Reichstag (Empire) | 2183 | 12/03/1895 | 10/26/1918 | [Download](http://gerparcor.texttechnologylab.org/data/Reichstag_Empire.tar) |
+| 3 | Weimar Republic | 1328 | 02/06/1919 | 12/09/1932 | [Download](http://gerparcor.texttechnologylab.org/data/Weimar_Republic.tar) |
+| 4 | ThirdReich | 20 | 03/21/1933 | 04/24/1942 | [Download](http://gerparcor.texttechnologylab.org/data/ThirdReich.tar) |
 | 5 | Bundesrat | 1008 | 09/07/1949 | 10/08/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Bundesrat.tar) |
 | 6 | Bundestag | 4158 | 09/07/1949 | 09/07/2021 | new Data is processing... |
 | 7 | Baden-Würtemberg | 412 | 06/05/1984 | 09/29/2021 | [Download](http://gerparcor.texttechnologylab.org/data/BadenWuertemberg.tar) |
