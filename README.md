@@ -17,7 +17,7 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 | 9 | Berlin | 582 | 04/02/1989 | 09/16/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Berlin.tar) |
 | 10 | Brandenburg | 442 | 10/26/1990 | 08/27/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Brandenburg.tar) |
 | 11 | Bremen | 1102 | 07/04/1995 | 09/16/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Bremen.tar) |
-| 12 | Hamburg | 225 | 10/08/1997 | 11/03/2021 |  [Download](http://gerparcor.texttechnologylab.org/data/Hamburg.tar) |
+| 12 | Hamburg | 586 | 10/08/1997 | 11/03/2021 |  [Download](http://gerparcor.texttechnologylab.org/data/Hamburg.tar) |
 | 13 | Hessen | 1297 | 02/04/1947 | 09/29/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Hessen.tar) |
 | 14 | Mecklenburg-Vorpommern | 659 | 10/26/1990 | 06/11/2021 | [Download](http://gerparcor.texttechnologylab.org/data/MeckPom.tar) |
 | 15 | Niedersachsen | 1109 | 06/22/1982 | 09/15/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Niedersachsen.tar) |
