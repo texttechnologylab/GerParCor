@@ -11,7 +11,7 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 | 3 | Weimar Republic | 1328 | 02/06/1919 | 12/09/1932 | [Download](http://gerparcor.texttechnologylab.org/data/Weimar_Republic.tar) |
 | 4 | ThirdReich | 20 | 03/21/1933 | 04/24/1942 | [Download](http://gerparcor.texttechnologylab.org/data/ThirdReich.tar) |
 | 5 | Bundesrat | 1008 | 09/07/1949 | 10/08/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Bundesrat.tar) |
-| 6 | Bundestag | 4158 | 09/07/1949 | 09/07/2021 | new Data is processing... |
+| 6 | Bundestag | 4158 | 09/07/1949 | 09/07/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Bundestag.tar) new Data is processing... |
 | 7 | Baden-Würtemberg | 412 | 06/05/1984 | 09/29/2021 | [Download](http://gerparcor.texttechnologylab.org/data/BadenWuertemberg.tar) |
 | 8 | Bayern | 2221 | 12/16/1946 | 10/14/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Bayern.tar) |
 | 9 | Berlin | 582 | 04/02/1989 | 09/16/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Berlin.tar) |
@@ -29,5 +29,5 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 | 21 | Schleswig-Holstein | 1776 | 02/26/1946 | 02/11/2021 | [Download](http://gerparcor.texttechnologylab.org/data/SchleswigHolstein.tar) |
 | 22 | Thüringen | 761 | 10/25/1990 | 11/19/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Thueringen.tar) |
 | 23 | Liechtenstein | 504 | 03/13/1997 | 11/06/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Liechtenstein.tar) |
-| 24 | Nationalrat (AT) | 4267 | 10/21/1918 | 05/17/2021 | new Data is processing... |
+| 24 | Nationalrat (AT) | 4267 | 10/21/1918 | 05/17/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Nationalrat.tar) new Data is processing... |
 | 25 | Nationlarat (CH) | 368 | 12/06/1999 | 12/09/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Schweiz.tar) |
