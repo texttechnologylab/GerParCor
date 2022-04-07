@@ -31,3 +31,24 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 | 23 | Liechtenstein | 504 | 03/13/1997 | 11/06/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Liechtenstein.tar) |
 | 24 | Nationalrat (AT) | 4267 | 10/21/1918 | 05/17/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Nationalrat.tar)  |
 | 25 | Nationlarat (CH) | 368 | 12/06/1999 | 12/09/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Schweiz.tar) |
+
+# Cite
+If you want to use the Project, please quote this as follows:
+
+G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, "German Parliamentary Corpus (GerParCor)," in Proceedings of the Thirteenth International Conference on Language Resources and Evaluation (LREC 2022), 2022. (accepted)
+
+
+
+# BibTeX
+```
+@InProceedings{Abrami:Bagci:Hammerla:Mehler:2022,
+  Author         = {Abrami, Giuseppe and Bagci, Mevl\"{u}t and Hammerla, Leon and Mehler, Alexander},
+  Title          = {German Parliamentary Corpus ({GerParCor})},
+  BookTitle      = {Proceedings of the Thirteenth International Conference on Language Resources and Evaluation (LREC 2022)},
+  Series         = {LREC 2022},
+  location       = {Marseille, France},
+  year           = {2022},
+  note     = {accepted}
+}
+
+```
