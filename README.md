@@ -2,6 +2,9 @@
 # GerParCor
 German Parliamentary Corpus (GerParCor)
 
+# Abstract
+Parliamentary debates represent a large and partly unexploited treasure trove of publicly accessible texts. In the German-speaking area, there is a certain deficit of uniformly accessible and annotated corpora covering all German-speaking parliaments at the national and federal level. To address this gap, we introduce the German Parliament Corpus (GerParCor). GerParCor is a genre-specific corpus of (predominantly historical) German-language parliamentary protocols from three centuries and four countries, including state and federal level data. In addition, GerParCor contains conversions of scanned protocols and, in particular, of protocols in Fraktur converted via an OCR process based on Tesseract. All protocols were preprocessed by means of the NLP pipeline of spaCy3 and automatically annotated with metadata regarding their session date. GerParCor is made available in the XMI format of the UIMA project. In this way, GerParCor can be used as a large corpus of historical texts in the field of political communication for various tasks in NLP.
+
 GerParCor is available via http://gerparcor.texttechnologylab.org
  
 | # | Parliament | Sessions | From | Until | Status / Download |
@@ -33,7 +36,7 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 | 25 | Nationlarat (CH) | 368 | 12/06/1999 | 12/09/2021 | [Download](http://gerparcor.texttechnologylab.org/data/Schweiz.tar) |
 
 # Cite
-If you want to use the Project, please quote this as follows:
+If you want to use the project or the corpus, please quote this as follows:
 
 G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, "German Parliamentary Corpus (GerParCor)," in Proceedings of the Thirteenth International Conference on Language Resources and Evaluation (LREC 2022), 2022. (accepted)
 
@@ -48,7 +51,7 @@ G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, "German Parliamentary Corpus (G
   Series         = {LREC 2022},
   location       = {Marseille, France},
   year           = {2022},
-  note     = {accepted}
+  note           = {accepted}
 }
 
 ```
