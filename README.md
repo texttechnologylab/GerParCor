@@ -2,6 +2,10 @@
 # GerParCor
 German Parliamentary Corpus (GerParCor)
 
+[![Paper](http://img.shields.io/badge/paper-ACL--anthology-B31B1B.svg)](http://www.lrec-conf.org/proceedings/lrec2022/pdf/2022.lrec-1.202.pdf)
+[![Conference](http://img.shields.io/badge/conference-LREC--2022-4b44ce.svg)](https://lrec2022.lrec-conf.org/)
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+
 # Abstract
 Parliamentary debates represent a large and partly unexploited treasure trove of publicly accessible texts. In the German-speaking area, there is a certain deficit of uniformly accessible and annotated corpora covering all German-speaking parliaments at the national and federal level. To address this gap, we introduce the German Parliament Corpus (GerParCor). GerParCor is a genre-specific corpus of (predominantly historical) German-language parliamentary protocols from three centuries and four countries, including state and federal level data. In addition, GerParCor contains conversions of scanned protocols and, in particular, of protocols in Fraktur converted via an OCR process based on Tesseract. All protocols were preprocessed by means of the NLP pipeline of spaCy3 and automatically annotated with metadata regarding their session date. GerParCor is made available in the XMI format of the UIMA project. In this way, GerParCor can be used as a large corpus of historical texts in the field of political communication for various tasks in NLP.
 
@@ -38,20 +42,20 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 # Cite
 If you want to use the project or the corpus, please quote this as follows:
 
-G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, "German Parliamentary Corpus (GerParCor)," in Proceedings of the Thirteenth International Conference on Language Resources and Evaluation (LREC 2022), 2022. (accepted)
-
-
+G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, “German Parliamentary Corpus (GerParCor),” in Proceedings of the Language Resources and Evaluation Conference, Marseille, France, 2022, pp. 1900-1906. 
 
 # BibTeX
 ```
 @InProceedings{Abrami:Bagci:Hammerla:Mehler:2022,
-  Author         = {Abrami, Giuseppe and Bagci, Mevl\"{u}t and Hammerla, Leon and Mehler, Alexander},
-  Title          = {German Parliamentary Corpus ({GerParCor})},
-  BookTitle      = {Proceedings of the Thirteenth International Conference on Language Resources and Evaluation (LREC 2022)},
-  Series         = {LREC 2022},
-  location       = {Marseille, France},
+  author         = {Abrami, Giuseppe and Bagci, Mevl\"{u}t and Hammerla, Leon and Mehler, Alexander},
+  title          = {German Parliamentary Corpus (GerParCor)},
+  booktitle      = {Proceedings of the Language Resources and Evaluation Conference},
+  month          = {June},
   year           = {2022},
-  note           = {accepted}
+  address        = {Marseille, France},
+  publisher      = {European Language Resources Association},
+  pages          = {1900--1906},
+  url            = {https://aclanthology.org/2022.lrec-1.202}
 }
 
 ```
