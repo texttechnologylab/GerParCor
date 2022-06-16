@@ -2,9 +2,8 @@
 # GerParCor
 German Parliamentary Corpus (GerParCor)
 
-[![Paper](http://img.shields.io/badge/paper-ACL--anthology-B31B1B.svg)](http://www.lrec-conf.org/proceedings/lrec2022/pdf/2022.lrec-1.202.pdf)
+[![Paper](http://img.shields.io/badge/paper-ACL--anthology-B31B1B.svg)](https://aclanthology.org/2022.lrec-1.202)
 [![Conference](http://img.shields.io/badge/conference-LREC--2022-4b44ce.svg)](https://lrec2022.lrec-conf.org/)
-[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 # Abstract
 Parliamentary debates represent a large and partly unexploited treasure trove of publicly accessible texts. In the German-speaking area, there is a certain deficit of uniformly accessible and annotated corpora covering all German-speaking parliaments at the national and federal level. To address this gap, we introduce the German Parliament Corpus (GerParCor). GerParCor is a genre-specific corpus of (predominantly historical) German-language parliamentary protocols from three centuries and four countries, including state and federal level data. In addition, GerParCor contains conversions of scanned protocols and, in particular, of protocols in Fraktur converted via an OCR process based on Tesseract. All protocols were preprocessed by means of the NLP pipeline of spaCy3 and automatically annotated with metadata regarding their session date. GerParCor is made available in the XMI format of the UIMA project. In this way, GerParCor can be used as a large corpus of historical texts in the field of political communication for various tasks in NLP.
