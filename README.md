@@ -2,7 +2,7 @@
 # GerParCor
 German Parliamentary Corpus (GerParCor)
 
-[![Paper](http://img.shields.io/badge/paper-ACL--anthology-B31B1B.svg)](https://aclanthology.org/2022.lrec-1.202)
+[![Paper](http://img.shields.io/badge/paper-ACL--anthology-B31B1B.svg)](http://www.lrec-conf.org/proceedings/lrec2022/pdf/2022.lrec-1.202.pdf)
 [![Conference](http://img.shields.io/badge/conference-LREC--2022-4b44ce.svg)](https://lrec2022.lrec-conf.org/)
 
 # Abstract
