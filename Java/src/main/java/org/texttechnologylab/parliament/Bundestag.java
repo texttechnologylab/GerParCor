@@ -12,12 +12,15 @@ import org.texttechnologylab.annotation.DocumentModification;
 import org.texttechnologylab.parliament.helper.TextImagerProcessing;
 import org.texttechnologylab.utilities.helper.FileUtils;
 import org.w3c.dom.Document;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -44,20 +47,48 @@ public class Bundestag {
 
         try {
 
-            String sOutputPath = "/opt/mypath/";
+            String sOutputPath = "/tmp/bundestag/19/xmi/";
             TextImagerProcessing tiProcessing = new TextImagerProcessing(sOutputPath);
-
+//            System.setProperty("accessExternalDTD", "true");
             // optional, but recommended
             // process XML securely, avoid attacks like XML External Entities (XXE)
             dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            dbf.setValidating(false);
+            dbf.setNamespaceAware(true);
+//            dbf.setFeature("http://xml.org/sax/features/namespaces", false);
+//            dbf.setFeature("http://xml.org/sax/features/validation", false);
+//            dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", true);
+//            dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", true);
 
             // parse XML file
             DocumentBuilder db = dbf.newDocumentBuilder();
 
+//            db.setEntityResolver(new EntityResolver()
+//            {
+//                @Override
+//                public InputSource resolveEntity(String publicId, String systemId)
+//                        throws SAXException, IOException
+//                {
+////                    System.out.println(systemId);
+//                    return new InputSource(new FileInputStream(new File("/tmp/bundestag/19/xml/dbtplenarprotokoll.dtd")));
+////                    if (systemId.equals("urn:x-com.kdgregory.example.xml.parsing"))
+////                    {
+////                        // normally you open the DTD file/resource here
+////                        return new InputSource(dtd);
+////                    }
+////                    else
+////                    {
+////                        throw new SAXException("unable to resolve entity; "
+////                                + "public = \"" + publicId + "\", "
+////                                + "system = \"" + systemId + "\"");
+////                    }
+//                }
+//            });
+
             SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
 
             // processing
-            String sPath = "/tmp/mypath";
+            String sPath = "/tmp/bundestag/19/xml";
             Set<File> fileSet = FileUtils.getFiles(sPath, ".xml");
 
             fileSet.stream().forEach(f->{
@@ -68,7 +99,8 @@ public class Bundestag {
 
                 // optional, but recommended
                 // http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
-                doc.getDocumentElement().normalize();
+                    doc.getDocumentElement().normalize();
+//                    doc.normalizeDocument();
 
                     String sPeriode = doc.getElementsByTagName("WAHLPERIODE").item(0).getTextContent();
                     String sType = doc.getElementsByTagName("DOKUMENTART").item(0).getTextContent();
@@ -185,5 +217,6 @@ public class Bundestag {
 
 
     }
+
 
 }

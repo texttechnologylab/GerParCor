@@ -75,10 +75,17 @@
     </repositories>
 
     <dependencies>
+
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.2</version>
+        </dependency>
+
     <dependency>
         <groupId>com.github.texttechnologylab</groupId>
         <artifactId>Utilities</artifactId>
-        <version>27866a7214</version>
+        <version>d4bbe7ba52</version>
     </dependency>
 
     <dependency>
@@ -87,7 +94,7 @@
         <version>1d23e466bc</version>
     </dependency>
 
-    <dependency>
+        <dependency>
         <groupId>com.github.texttechnologylab.textimager-uima</groupId>
         <artifactId>textimager-uima-types</artifactId>
         <version>0.3.0.2</version>
