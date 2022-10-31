@@ -82,7 +82,8 @@
             <version>2.12.2</version>
         </dependency>
 
-    <dependency>
+
+        <dependency>
         <groupId>com.github.texttechnologylab</groupId>
         <artifactId>Utilities</artifactId>
         <version>d4bbe7ba52</version>
@@ -147,6 +148,16 @@
             <artifactId>google-api-client</artifactId>
             <version>1.30.9</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-io-conll-asl -->
+        <dependency>
+            <groupId>org.dkpro.core</groupId>
+            <artifactId>dkpro-core-io-conll-asl</artifactId>
+            <version>1.12.0</version>
+        </dependency>
+
+
+
 
     </dependencies>
 
