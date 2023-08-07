@@ -22,10 +22,10 @@ public class Liechtenstein {
         String sDownload = "https://lp.rechtportal.li/PDF/Landtagsprotokoll_YEAR_MONTH_DAY.pdf";
 
         String sOut = args[0];
-
+        new File(sOut).mkdir();
         String ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.742.122 Safari/534.30";
 
-        for(int a=1997; a<=2021; a++){
+        for(int a=2021; a<=2023; a++){
 
             new File(sOut+a).mkdir();
 

@@ -27,7 +27,6 @@ public class TextImagerProcessing {
         // add different Engines to the Pipeline
         try {
             pipeline.add(createEngineDescription(SpaCyMultiTagger3.class,
-//                    SpaCyMultiTagger3.PARAM_REST_ENDPOINT, "http://warogoast.hucompute.org:8000"
                     SpaCyMultiTagger3.PARAM_REST_ENDPOINT, "http://huaxal.hucompute.org:8103"
             ));
             pipeline.add(createEngineDescription(XmiWriter.class,
