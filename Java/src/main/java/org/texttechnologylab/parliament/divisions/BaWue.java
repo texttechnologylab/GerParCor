@@ -90,7 +90,7 @@ public class BaWue {
         System.getProperties().put("http.proxyHost", "203.243.63.16");
         System.getProperties().put("http.proxyPort", "80"); //port is
 
-        String sPath = "/tmp/bawueAlt/";
+        String sPath = "/tmp/gerparcor/bawueAlt/";
         new File(sPath).mkdir();
 
         String sBaseRequest = "https://www.landtag-bw.de/home/dokumente/dokumente-1952-1996/contentBoxes/drucksachen-plenarprotokolle-195.ltbw_drucksachen.oldDocumentSearchAction.do";
@@ -102,7 +102,7 @@ public class BaWue {
 
         String sBaseLink = "https://www.landtag-bw.de/files/live";
 
-        for (int wp = 2; wp < 10; wp++) {
+        for (int wp = 1; wp < 10; wp++) {
 
             new File(sPath+""+wp).mkdir();
 
