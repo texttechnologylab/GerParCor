@@ -75,7 +75,7 @@ public class Thueringen {
 
         String sSession = "z3wneg1twsedxlcmqojm2x2s";
 
-        for(int iPeriode=6; iPeriode<=7; iPeriode++){
+        for(int iPeriode=7; iPeriode<=7; iPeriode++){
             int a = 1;
             AtomicBoolean isRunning = new AtomicBoolean(true);
             while (isRunning.get()) {
@@ -98,6 +98,9 @@ public class Thueringen {
                     Document pElement = Jsoup.connect("https://parldok.thueringer-landtag.de/ParlDok/dokumentennummer?LegislaturPeriodenNummer=" + iPeriode + "&DokumentenArtId=3&PDFSelect=1&DokumentenNummer=" + a).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").cookies(cookies).followRedirects(true).post();
 
                     int finalA = a;
+                    if(pElement.select("div.col-12 a").size()==0){
+                        isRunning.set(false);
+                    }
                     pElement.select("div.col-12 a").forEach(el -> {
 
                         String sURL = el.attr("href");
