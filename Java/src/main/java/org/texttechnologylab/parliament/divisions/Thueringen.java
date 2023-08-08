@@ -21,12 +21,12 @@ public class Thueringen {
     public static void main(String[] arga) {
 
         // set output path
-        String sOut = "/opt/Thueringen";
+        String sOut = "/tmp/gerparcor/Thueringen/";
         new File(sOut).mkdir();
 
         String sURL = "https://www.landtag.nrw.de/portal/WWW/dokumentenarchiv/Dokument/RRP{PERIODE}-{NR}.pdf";
 
-        for (int c = 4; c <= 20; c++) {
+        for (int c = 20; c <= 21; c++) {
 
             String sPeriode = "";
 

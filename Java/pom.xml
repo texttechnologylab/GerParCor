@@ -77,13 +77,53 @@
     <dependencies>
 
         <dependency>
+            <groupId>com.github.texttechnologylab.textimager-uima</groupId>
+            <artifactId>textimager-uima-io</artifactId>
+            <version>b10db8275163d19d63b9512cc20ca5872e52499b</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.texttechnologylab</groupId>
+                    <artifactId>UIMATypeSystem</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.9.8</version>
+        </dependency>
+
+        <dependency>
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
             <version>2.12.2</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.6</version>
+        </dependency>
 
         <dependency>
+            <groupId>org.apache.uima</groupId>
+            <artifactId>uimaj-core</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.uima</groupId>
+            <artifactId>uimafit-core</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+    <dependency>
         <groupId>com.github.texttechnologylab</groupId>
         <artifactId>Utilities</artifactId>
         <version>d4bbe7ba52</version>
@@ -148,14 +188,6 @@
             <artifactId>google-api-client</artifactId>
             <version>1.30.9</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-io-conll-asl -->
-        <dependency>
-            <groupId>org.dkpro.core</groupId>
-            <artifactId>dkpro-core-io-conll-asl</artifactId>
-            <version>1.12.0</version>
-        </dependency>
-
 
 
 

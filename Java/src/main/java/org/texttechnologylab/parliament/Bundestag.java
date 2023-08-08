@@ -176,6 +176,45 @@ public class Bundestag {
 
     }
 
+    public static void downloadWahlperiode(String sessionID, int iWahlperiode) throws IOException {
+
+        int offset = 0;
+
+        while(true) {
+
+            org.jsoup.nodes.Document nDocument = Jsoup.connect("https://www.bundestag.de/ajax/filterlist/de/services/opendata/"+sessionID+"?limit=10&noFilterSet=true&offset="+offset).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").get();
+
+            Elements el = nDocument.select("div.bt-documents-description");
+
+
+            el.forEach(e -> {
+
+                String sName = e.select("strong").text();
+                String sURI = e.select("a").attr("href");
+
+                String sID = sName.substring(0, sName.indexOf(".")).substring(sName.substring(0, sName.indexOf(".")).lastIndexOf(" ") + 1);
+                System.out.println(sName);
+                System.out.println(sURI);
+
+                try {
+                    FileUtils.downloadFile(new File("/tmp/bundestagNeu/"+iWahlperiode+"/" + sID + ".xml"), "https://bundestag.de"+sURI);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+
+            });
+            offset+=10;
+        }
+
+
+    }
+
+    @Test
+    public void wahlperioden() throws IOException {
+//        downloadWahlperiode("543410-543410", 19);
+        downloadWahlperiode("866354-866354", 20);
+    }
 
     @Test
     public void Periode19() throws IOException {
@@ -204,11 +243,56 @@ public class Bundestag {
                 System.out.println(sURI);
 
                 try {
-                    FileUtils.downloadFile(new File("/tmp/bundestag/19/" + sID + ".xml"), "https://bundestag.de"+sURI);
+                    FileUtils.downloadFile(new File("/tmp/bundestagNeu/19/" + sID + ".xml"), "https://bundestag.de"+sURI);
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
 
+
+            });
+            offset+=10;
+        }
+
+
+
+    }
+
+    @Test
+    public void Drucksachen() throws IOException {
+
+        //Elements el = pDocument.select("table.bt-table-data tbody tr td.title a");
+
+        int offset = 0;
+
+        while(true) {
+
+            org.jsoup.nodes.Document nDocument = Jsoup.connect("https://www.bundestag.de/ajax/filterlist/de/services/opendata/854776-854776?limit=10&noFilterSet=true&offset="+offset).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").get();
+
+            Elements el = nDocument.select("div.bt-documents-description li a");
+
+
+            el.forEach(e -> {
+
+                if(e.attr("title").equalsIgnoreCase("xml")){
+                    String sLink = e.attr("href");
+                    String sName = sLink.substring(sLink.lastIndexOf("/")+1);
+                    sName = sName.substring(0, sName.indexOf("?"));
+                    try {
+                        FileUtils.downloadFile(new File("/tmp/Drucksachen/"+sName+".xml"), sLink);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                if(e.attr("title").equalsIgnoreCase("JSON")){
+                    String sLink = e.attr("href");
+                    String sName = sLink.substring(sLink.lastIndexOf("/")+1);
+                    sName = sName.substring(0, sName.indexOf("?"));
+                    try {
+                        FileUtils.downloadFile(new File("/tmp/Drucksachen/"+sName+".json"), sLink);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
 
             });
             offset+=10;

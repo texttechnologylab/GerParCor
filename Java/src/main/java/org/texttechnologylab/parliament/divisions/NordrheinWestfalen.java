@@ -17,14 +17,14 @@ public class NordrheinWestfalen {
 
     public static void main(String[] args){
 
-        String sURL = "https://www.landtag.nrw.de/portal/WWW/dokumentenarchiv/Dokument?pl=MM&pnr=WP/NR&part=P&quelle=parla&ref=dok_verw";
-
+//        String sURL = "https://www.landtag.nrw.de/portal/WWW/dokumentenarchiv/Dokument?pl=MM&pnr=WP/NR&part=P&quelle=parla&ref=dok_verw";
+        String sURL = "https://www.landtag.nrw.de/portal/WWW/dokumentenarchiv/Dokument/MMP{WP}-{NR}.pdf";
         String sOut = args[0];
         new File(sOut).mkdir();
 
         boolean isRunning = true;
 
-        for(int a=1; a<=18; a++){
+        for(int a=17; a<=18; a++){
             isRunning = true;
             new File(sOut+a).mkdir();
 
@@ -37,7 +37,7 @@ public class NordrheinWestfalen {
 
                 if(!dFile.exists()){
                     try {
-                        FileUtils.downloadFile(dFile, sURL.replace("WP", ""+a).replace("NR", ""+b));
+                        FileUtils.downloadFile(dFile, sURL.replace("{WP}", ""+a).replace("{NR}", ""+b));
                         try {
                             Thread.sleep(1500l);
                         } catch (InterruptedException e) {

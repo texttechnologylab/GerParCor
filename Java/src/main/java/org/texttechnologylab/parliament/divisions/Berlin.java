@@ -14,7 +14,7 @@ public class Berlin {
 
     public static void main(String[] args){
 
-        String sWP = "11,12,13,14,15,16,17,18";
+        String sWP = "18,19";
         String sOut = args[0];
 
         String sURL = "https://pardok.parlament-berlin.de/starweb/adis/citat/VT/{WP}/PlenarPr/p{WP}-{ID}-wp.pdf";

@@ -20,7 +20,7 @@ public class Niedersachsen {
 
         boolean isRunning = true;
 
-        for(int a=18; a<19; a++){
+        for(int a=18; a<20; a++){
             isRunning = true;
             new File(sOut+a).mkdir();
 

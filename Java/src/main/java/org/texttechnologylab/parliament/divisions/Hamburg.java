@@ -21,7 +21,7 @@ public class Hamburg {
 
         Map<String, Object> params = new HashMap<>();
         params.put("DokumentenArtId", 2);
-        params.put("LegislaturPeriodenNummer", 16);
+        params.put("LegislaturPeriodenNummer", 22);
         params.put("DokumentenNummer", 1);
         params.put("AFHTOKE", "U6MYsEkYJV8IyJK3TMX2RqOi3gftZMoS+stlI+qmo7MNH4ZXl2NB0cTN+y0C2AtVMqsA5wD+t8YMzBe71nztIxoiArAzjpeesY25PNFiCtRXXiVIFeOscA9Oycv50ipMlnrBEFJfCP2RWXXrU/Szg5Zw9iZNuLaFjc3+xjtEQaNRaPqnLuorewwZNG3Hv9x9rm2Bk/Gcb4tsSQ48DCw27Jgb75PeW/FXCKSfyBGYhY2YV6+v7F/pPcjJumhEgVo/z4PILgvEqcoJI6l4WqEeVHQpbP6fYcOIaGn0mb6ycGJuYhVU7UQzAK7/3GiTEloiT6SmTNxdG4W4Q7Y35zc+0WYr2Ds2tFV/");
 

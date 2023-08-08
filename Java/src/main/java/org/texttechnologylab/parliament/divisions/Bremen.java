@@ -22,7 +22,7 @@ public class Bremen {
 
         String sOut = args[0];
 
-        String sWP = "14,15,16,17,18,19,20";
+        String sWP = "20";
 
         for (String s : sWP.split(",")) {
 

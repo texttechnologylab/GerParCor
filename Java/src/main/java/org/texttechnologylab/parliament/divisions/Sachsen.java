@@ -26,7 +26,7 @@ public class Sachsen {
 
         boolean isRunning = true;
 
-        for(int a=4; a<8; a++){
+        for(int a=7; a<8; a++){
             isRunning = true;
             new File(sOut+a).mkdir();
 

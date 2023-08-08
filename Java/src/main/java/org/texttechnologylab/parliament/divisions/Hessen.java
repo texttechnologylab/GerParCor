@@ -16,12 +16,12 @@ public class Hessen {
 
         String sOutPath = args[0];
 
-        String sURL = "http://starweb.hessen.de/cache/PLPR/{WP}/{NR}/{NRLONG}.pdf";
+        String sURL = "https://starweb.hessen.de/cache/PLPR/{WP}/{NR}/{NRLONG}.pdf";
 
         new File(sOutPath).mkdir();
 
 
-            for (int a = 1; a <= 20; a++) {
+            for (int a = 16; a <= 20; a++) {
 
                 boolean isRunning = true;
 
@@ -47,7 +47,7 @@ public class Hessen {
                         sNumber="00"+b;
                     }
 
-                    String sDetailNumber = sNumber.substring(4);
+                    String sDetailNumber = sNumber.substring(sNumber.length()-1);
 
                     try {
                         Thread.sleep(1000l);

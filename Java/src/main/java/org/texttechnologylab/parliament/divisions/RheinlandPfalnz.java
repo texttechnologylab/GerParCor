@@ -78,10 +78,10 @@ public class RheinlandPfalnz {
 
         String sURL = "https://dokumente.landtag.rlp.de/landtag/plenarprotokolle/NR-P-WP.pdf";
 
-        String sOut = "//tmp/mypath";
+        String sOut = "/tmp/gerparcor/rlp/";
         boolean isRunning = true;
 
-        for(int a=17; a<=18; a++) {
+        for(int a=18; a<=18; a++) {
             isRunning = true;
             new File(sOut + a).mkdir();
 

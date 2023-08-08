@@ -23,7 +23,7 @@ public class Schleswig_Holstein {
 
         String sURL = "http://lissh.lvn.parlanet.de/shlt/lissh-dok/infothek/wahl{PERIODE}/plenum/plenprot/XQQP{SID}-{TID}.pdf";
 
-        for(int c=1; c<=20; c++) {
+        for(int c=19; c<=22; c++) {
 
             String sPeriode = "";
 

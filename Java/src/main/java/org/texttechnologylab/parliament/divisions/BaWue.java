@@ -32,7 +32,7 @@ public class BaWue {
 
         String sRequest = "{\"action\":\"SearchAndDisplay\",\"sources\":[\"Star\"],\"report\":{\"rhl\":\"main\",\"rhlmode\":\"add\",\"format\":\"suchergebnis-dokumentnummer\",\"mime\":\"html\",\"sort\":\"SORT03 SORT02\"},\"search\":{\"lines\":{\"l1\":\"P\",\"l2\":\"ID/NR\"},\"serverrecordname\":\"dokument\"}}";
 
-        String sLP = "9,10,11,12,13,14,15,16,17";
+        String sLP = "17";
 
         for (String s : sLP.split(",")) {
 
