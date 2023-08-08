@@ -18,10 +18,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Thueringen {
 
-    public static void main(String[] arga) {
+    public static void main(String[] args) {
 
         // set output path
-        String sOut = "/tmp/gerparcor/Thueringen/";
+        String sOut = args[0];
         new File(sOut).mkdir();
 
         String sURL = "https://www.landtag.nrw.de/portal/WWW/dokumentenarchiv/Dokument/RRP{PERIODE}-{NR}.pdf";
@@ -70,61 +70,65 @@ public class Thueringen {
     @Test
     public void from5Th(){
 
-        String sOut = "/opt/Thueringen";;
+        String sOut = "/storage/projects/abrami/GerParCor/pdf/Thueringen/";
         new File(sOut).mkdir();
 
-        String sSession = "gieguoox4rmynp4afsutbkwg";
+        String sSession = "z3wneg1twsedxlcmqojm2x2s";
 
-        int iPeriode = 7;
-        int a = 1;
-        AtomicBoolean isRunning = new AtomicBoolean(true);
-        while (isRunning.get()) {
+        for(int iPeriode=6; iPeriode<=7; iPeriode++){
+            int a = 1;
+            AtomicBoolean isRunning = new AtomicBoolean(true);
+            while (isRunning.get()) {
 
-            String sOutPath = sOut+iPeriode+"/";
-            new File(sOutPath).mkdir();
+                String sOutPath = sOut + iPeriode + "/";
+                new File(sOutPath).mkdir();
 
-            Map<String, String> cookies = new HashMap<>();
-            cookies.put("acceptgrt", "1");
+                Map<String, String> cookies = new HashMap<>();
+                cookies.put("acceptgrt", "1");
 
-            cookies.put("ASP.NET_SessionId", sSession);
-            try {
-
+                cookies.put("ASP.NET_SessionId", sSession);
                 try {
-                    Thread.sleep(1000l);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                Document pElement = Jsoup.connect("https://parldok.thueringer-landtag.de/ParlDok/dokumentennummer?LegislaturPeriodenNummer="+iPeriode+"&DokumentenArtId=3&PDFSelect=1&DokumentenNummer="+a).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").cookies(cookies).followRedirects(true).post();
-
-                int finalA = a;
-                pElement.select("div.col-12 a").forEach(el -> {
-
-                    String sURL = el.attr("href");
 
                     try {
-
-                        if(!el.text().contains("Vorgang")) {
-                            FileUtils.downloadFile(new File(sOutPath + finalA + ".pdf"), "https://parldok.thueringer-landtag.de" + sURL);
-                        }
-                    } catch (IOException e) {
+                        Thread.sleep(1000l);
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
-                        isRunning.set(false);
                     }
 
-                });
+                    Document pElement = Jsoup.connect("https://parldok.thueringer-landtag.de/ParlDok/dokumentennummer?LegislaturPeriodenNummer=" + iPeriode + "&DokumentenArtId=3&PDFSelect=1&DokumentenNummer=" + a).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").cookies(cookies).followRedirects(true).post();
+
+                    int finalA = a;
+                    pElement.select("div.col-12 a").forEach(el -> {
+
+                        String sURL = el.attr("href");
+
+                        try {
+
+                            if (!el.text().contains("Vorgang")) {
+                                File dFile = new File(sOutPath + finalA+"_"+pElement.select(".row .resultinfo .row").get(0).text().replace("Dokumentdatum: ", "") + ".pdf");
+                                if(!dFile.exists()) {
+                                    FileUtils.downloadFile(dFile, "https://parldok.thueringer-landtag.de" + sURL);
+                                }
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            isRunning.set(false);
+                        }
+
+                    });
 
 
-            } catch (IOException e) {
-                e.printStackTrace();
-                try {
-                    Thread.sleep(10000l);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    try {
+                        Thread.sleep(10000l);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
                 }
-            }
 
-            a++;
+                a++;
+            }
         }
 
 

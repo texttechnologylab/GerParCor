@@ -30,7 +30,7 @@ public class MeckPom {
 
         new File(sOutPath).mkdir();
 
-        int iPeriode = 7;
+        int iPeriode = 8;
         int a = 0;
         AtomicBoolean isRunning = new AtomicBoolean(true);
         while (isRunning.get()) {
@@ -53,13 +53,11 @@ public class MeckPom {
 
                 String sURL = download.select("a").get(0).attr("href");
 
-                File pDownload = new File(sOutPath + ""+ iPeriode + metaInfos_content.get(0).text().replace("/", "_")+"_"+metaInfos_content.get(2).text()+"_".replace("/", "_") + ".pdf");
+                File pDownload = new File(sOutPath + ""+ iPeriode +"/" + metaInfos_content.get(0).text().replace("/", "_")+"_"+metaInfos_content.get(2).text()+"_".replace("/", "_") + ".pdf");
 
-                if(!pDownload.exists()) {
-                    FileUtils.downloadFile(pDownload, "https://www.dokumentation.landtag-mv.de/" + sURL);
-                }
-
-
+                    if(!pDownload.exists()) {
+                        FileUtils.downloadFile(pDownload, "https://www.dokumentation.landtag-mv.de/" + sURL);
+                    }
 
                 }
 
