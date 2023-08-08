@@ -87,11 +87,11 @@ public class BaWue {
     @Test
     public void getOld() {
 
-        System.getProperties().put("http.proxySet", "true");
-        System.getProperties().put("http.proxyHost", "203.243.63.16");
-        System.getProperties().put("http.proxyPort", "80"); //port is
+//        System.getProperties().put("http.proxySet", "true");
+//        System.getProperties().put("http.proxyHost", "203.243.63.16");
+//        System.getProperties().put("http.proxyPort", "80"); //port is
 
-        String sPath = "/tmp/gerparcor/bawueAlt/";
+        String sPath = "/home/gabrami/Downloads/bawueAlt/";
         new File(sPath).mkdir();
 
         String sBaseRequest = "https://www.landtag-bw.de/home/dokumente/dokumente-1952-1996/contentBoxes/drucksachen-plenarprotokolle-195.ltbw_drucksachen.oldDocumentSearchAction.do";
@@ -142,16 +142,19 @@ public class BaWue {
                         int finalA = a;
                         tObject.keySet().forEach(k->{
                             String sLink = tObject.getString(k);
-                            if (finalA % 3 == 0) {
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
+
                             try {
                                 File pFile = new File(sPath+""+ finalWp +"/"+sLink.substring(sLink.lastIndexOf("/")+1));
                                 if(!pFile.exists()) {
+
+                                    if (finalA % 3 == 0) {
+                                        try {
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+
                                     FileUtils.downloadFile(pFile, sBaseLink + sLink);
                                     System.out.println("Downloaded: "+pFile.getName());
 
