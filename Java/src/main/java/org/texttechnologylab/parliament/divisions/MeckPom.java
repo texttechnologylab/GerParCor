@@ -2,6 +2,8 @@ package org.texttechnologylab.parliament.divisions;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.Test;
 import org.texttechnologylab.utilities.helper.FileUtils;
 
@@ -24,34 +26,56 @@ public class MeckPom {
 
         // https://www.dokumentation.landtag-mv.de/parldok/neuedokumente/1
 
-        String sOutPath = "/tmp/mypath";
+        String sOutPath = "/storage/projects/abrami/GerParCor/pdf/MeckPom/";
 
         new File(sOutPath).mkdir();
 
         int iPeriode = 7;
-        int a = 27;
+        int a = 0;
         AtomicBoolean isRunning = new AtomicBoolean(true);
         while (isRunning.get()) {
-
+            new File(sOutPath+""+iPeriode).mkdir();
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("ASP.NET_SessionId", "avzlw4x0u02pp2uh4vx2nq4e");
+            cookies.put("ASP.NET_SessionId", "bvudp5snyi50asidthnspck3");
             try {
 
-                Document pElement = Jsoup.connect("https://www.dokumentation.landtag-mv.de/parldok/dokumentennummer?LegislaturPeriodenNummer="+iPeriode+"&DokumentenArtId=2&PDFSelect=1&DokumentenNummer="+a).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").cookies(cookies).followRedirects(true).post();
+                Document pElement = Jsoup.connect("https://www.dokumentation.landtag-mv.de/parldok/dokumentennummer?LegislaturPeriodenNummer="+iPeriode+"&DokumentenArtId=2&PDFSelect=0&DokumentenNummer="+a).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").cookies(cookies).followRedirects(true).post();
 
-                pElement.select("td.title a").forEach(el -> {
+                Elements pElements = pElement.select("table#parldokresult tr");
 
-                    String sURL = el.attr("href");
+                if(pElements.size()>0){
 
-                    try {
 
-                        FileUtils.downloadFile(new File(sOutPath + el.text().replaceAll(" ", "_").replaceAll("/", "_") + ".pdf"), "https://www.dokumentation.landtag-mv.de/" + sURL);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        isRunning.set(false);
-                    }
+                Element download = pElements.get(5);
+                Element metaInfos = pElements.get(7);
 
-                });
+                Elements metaInfos_content = metaInfos.getElementsByTag("td");
+
+                String sURL = download.select("a").get(0).attr("href");
+
+                File pDownload = new File(sOutPath + ""+ iPeriode + metaInfos_content.get(0).text().replace("/", "_")+"_"+metaInfos_content.get(2).text()+"_".replace("/", "_") + ".pdf");
+
+                if(!pDownload.exists()) {
+                    FileUtils.downloadFile(pDownload, "https://www.dokumentation.landtag-mv.de/" + sURL);
+                }
+
+
+
+                }
+
+//                pElement.select("td.title a").forEach(el -> {
+//
+//                    String sURL = el.attr("href");
+//
+//                    try {
+//
+//                        FileUtils.downloadFile(new File(sOutPath + el.text().replaceAll(" ", "_").replaceAll("/", "_") + ".pdf"), "https://www.dokumentation.landtag-mv.de/" + sURL);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                        isRunning.set(false);
+//                    }
+//
+//                });
 
 
             } catch (IOException e) {
@@ -63,7 +87,7 @@ public class MeckPom {
                 }
             }
 
-            a--;
+            a++;
         }
 
     }

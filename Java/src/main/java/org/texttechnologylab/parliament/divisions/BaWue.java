@@ -7,6 +7,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.jupiter.api.Test;
 import org.texttechnologylab.utilities.helper.FileUtils;
 
@@ -216,6 +217,82 @@ public class BaWue {
                 }
             }
 
+        });
+
+
+    }
+
+    @Test
+    public void veryOldStructure() throws IOException {
+
+        String sPath = "/storage/projects/abrami/GerParCor/pdf/BadenWuertemmberg/oldNew/";
+        File nFile = new File(sPath);
+        nFile.mkdir();
+
+        String sBasePath = "https://www.wlb-stuttgart.de/";
+
+        String sFile = "https://www.wlb-stuttgart.de/literatursuche/digitale-bibliothek/digitale-sammlungen/landtagsprotokolle/digitale-praesentation/formal-institutionelle-gliederung/";
+
+        Document pPage = Jsoup.connect(sFile).get();
+        AtomicBoolean doRun = new AtomicBoolean(false);
+        pPage.select("#c15364 li a").forEach(e->{
+
+                System.out.println(e.text());
+                new File(sPath+""+e.text()).mkdir();
+
+                try {
+                    Document internalPage = Jsoup.connect(sBasePath+e.attr("href")).get();
+
+                    AtomicBoolean foundProtocol = new AtomicBoolean(false);
+
+                    internalPage.select(".twocolcenter div.frame table tr").forEach(topic-> {
+
+                        Elements pTD = topic.getElementsByTag("td");
+//                        System.out.println(pTD);
+
+                        if(!foundProtocol.get()){
+                            if(pTD.get(0).text().equalsIgnoreCase("Protokolle")){
+                                foundProtocol.set(true);
+                            }
+                        }
+                        if(pTD.size()==1){
+                            foundProtocol.set(false);
+                        }
+
+                        if(foundProtocol.get()){
+
+
+                            // download
+                            try {
+
+                                System.out.println(pTD.get(1).getElementsByTag("a").text());
+                                Document downloadPage = Jsoup.connect(pTD.get(1).getElementsByTag("a").get(0).attr("href")).get();
+
+                                downloadPage.select(".tx-dlf-tools-pdf-work a").forEach(el -> {
+                                    System.out.println(el.attr("href"));
+
+                                    try {
+                                        File dFile = new File(sPath+""+e.text()+"/"+ pTD.get(1).text() + ".pdf");
+                                        if(!dFile.exists()) {
+                                            FileUtils.downloadFile(new File(sPath + "" + e.text() + "/" + pTD.get(1).text() + ".pdf"), el.attr("href"));
+                                        }
+                                    } catch (IOException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+
+                                });
+
+                            } catch (IOException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+
+
+                    });
+
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
         });
 
 

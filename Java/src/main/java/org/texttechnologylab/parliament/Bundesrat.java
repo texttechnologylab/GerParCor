@@ -31,14 +31,17 @@ public class Bundesrat {
 
                 String sLegislatur = element.text();
 
-                new File(sOut+sLegislatur).mkdir();
+                if(sLegislatur.equalsIgnoreCase("2021-2025")) {
 
-                String sLink = element.getElementsByTag("a").get(0).attr("href");
+                    new File(sOut + sLegislatur).mkdir();
 
-                try {
-                    parse(sBase+sLink, sOut+sLegislatur+"/");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    String sLink = element.getElementsByTag("a").get(0).attr("href");
+
+                    try {
+                        parse(sBase + sLink, sOut + sLegislatur + "/");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
             }
