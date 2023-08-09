@@ -77,6 +77,12 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.12.11</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.texttechnologylab.textimager-uima</groupId>
             <artifactId>textimager-uima-io</artifactId>
             <version>b10db8275163d19d63b9512cc20ca5872e52499b</version>
@@ -86,6 +92,12 @@
                     <artifactId>UIMATypeSystem</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.texttechnologylab</groupId>
+            <artifactId>UIMADatabaseInterface</artifactId>
+            <version>3634ac3be3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
