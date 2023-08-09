@@ -21,7 +21,9 @@ public class Schleswig_Holstein {
         String sOut = args[0];
         new File(sOut).mkdir();
 
-        String sURL = "http://lissh.lvn.parlanet.de/shlt/lissh-dok/infothek/wahl{PERIODE}/plenum/plenprot/XQQP{SID}-{TID}.pdf";
+//        String sURL = "http://lissh.lvn.parlanet.de/shlt/lissh-dok/infothek/wahl{PERIODE}/plenum/plenprot/XQQP{SID}-{TID}.pdf";
+
+        String sURL = "http://www.landtag.ltsh.de/export/sites/ltsh/infothek/wahl19/plenum/plenprot/2017/19-001_06-17.pdf";
 
         for(int c=19; c<=22; c++) {
 
