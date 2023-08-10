@@ -1,30 +1,130 @@
-package org.texttechnologylab.parliament.crawler.divisions;
+package org.texttechnologylab.parliament.crawler.divisions.germany;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.Test;
 import org.texttechnologylab.utilities.helper.FileUtils;
+import org.texttechnologylab.utilities.helper.RESTUtils;
 
 import java.io.File;
 import java.io.IOException;
 
 /**
- * Class for Parsing Minutes of NordrheinWestfalen
+ * Class for Parsing Minutes of RheinlandPfalz
  * @author Giuseppe Abrami
  * @date 2021-12-01
  */
-public class NordrheinWestfalen {
+public class RheinlandPfalnz {
+
+    @Test
+    public void from15th(){
+
+        RESTUtils.enableSSLTrustCertificates();
+
+        String sURL = "https://dokumente.landtag.rlp.de/landtag/plenarprotokolle/PLPR-Sitzung-WP-NR.pdf";
+
+        String sOut = "/tmp/mypath";
+        boolean isRunning = true;
+
+        for(int a=15; a<=18; a++) {
+            isRunning = true;
+            new File(sOut + a).mkdir();
+
+            int b = 1;
+
+            while (isRunning) {
+
+                String sID = "";
+                if(b<10){
+                    sID = "00"+b;
+                }
+                else if(b<100){
+                    sID = "0"+b;
+                }
+                else{
+                    sID = ""+b;
+                }
+
+                String sDownload = sURL.replace("WP", ""+a);
+                sDownload = sDownload.replace("NR", sID);
+
+                File dFile = new File(sOut+a+"/"+b+".pdf");
+
+                if(!dFile.exists()){
+                    try {
+                        FileUtils.downloadFile(dFile, sDownload);
+                        try {
+                            Thread.sleep(1000l);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        isRunning=false;
+                    }
+                }
+
+                b++;
+
+            }
+        }
+
+    }
+
+    @Test
+    public void from17th(){
+
+        RESTUtils.enableSSLTrustCertificates();
+
+        String sURL = "https://dokumente.landtag.rlp.de/landtag/plenarprotokolle/NR-P-WP.pdf";
+
+        String sOut = "/tmp/gerparcor/rlp/";
+        boolean isRunning = true;
+
+        for(int a=18; a<=18; a++) {
+            isRunning = true;
+            new File(sOut + a).mkdir();
+
+            int b = 1;
+
+            while (isRunning) {
+
+                String sDownload = sURL.replace("WP", ""+a);
+                sDownload = sDownload.replace("NR", ""+b);
+
+                File dFile = new File(sOut+a+"/"+b+".pdf");
+
+                if(!dFile.exists()){
+                    try {
+                        FileUtils.downloadFile(dFile, sDownload);
+                        try {
+                            Thread.sleep(1000l);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        isRunning=false;
+                    }
+                }
+
+                b++;
+
+            }
+        }
+
+    }
 
     public static void main(String[] args){
 
-//        String sURL = "https://www.landtag.nrw.de/portal/WWW/dokumentenarchiv/Dokument?pl=MM&pnr=WP/NR&part=P&quelle=parla&ref=dok_verw";
-        String sURL = "https://www.landtag.nrw.de/portal/WWW/dokumentenarchiv/Dokument/MMP{WP}-{NR}.pdf";
+        String sURL = "https://www.landtag.nrw.de/portal/WWW/dokumentenarchiv/Dokument?pl=RPF&pnr=WP/NR&part=P&quelle=parla&ref=dok_verw";
+
         String sOut = args[0];
         new File(sOut).mkdir();
 
         boolean isRunning = true;
 
-        for(int a=17; a<=18; a++){
+        for(int a=15; a<=18; a++){
             isRunning = true;
             new File(sOut+a).mkdir();
 
@@ -37,9 +137,9 @@ public class NordrheinWestfalen {
 
                 if(!dFile.exists()){
                     try {
-                        FileUtils.downloadFile(dFile, sURL.replace("{WP}", ""+a).replace("{NR}", ""+b));
+                        FileUtils.downloadFile(dFile, sURL.replace("WP", ""+a).replace("NR", ""+b));
                         try {
-                            Thread.sleep(1500l);
+                            Thread.sleep(1000l);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -103,8 +203,6 @@ public class NordrheinWestfalen {
 
 
                         });
-
-                        System.out.println(doc);
 
                         try {
                             Thread.sleep(25000l);

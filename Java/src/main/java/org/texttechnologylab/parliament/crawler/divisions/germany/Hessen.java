@@ -1,4 +1,4 @@
-package org.texttechnologylab.parliament.crawler.divisions;
+package org.texttechnologylab.parliament.crawler.divisions.germany;
 
 import org.texttechnologylab.utilities.helper.FileUtils;
 
