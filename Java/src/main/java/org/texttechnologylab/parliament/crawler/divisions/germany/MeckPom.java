@@ -23,22 +23,22 @@ public class MeckPom {
 
     @Test
     public void current2() throws MalformedURLException {
-        System.getProperties().put("http.proxySet", "true");
-        System.getProperties().put("http.proxyHost", "203.243.63.16");
-        System.getProperties().put("http.proxyPort", "80"); //port is
+//        System.getProperties().put("http.proxySet", "true");
+//        System.getProperties().put("http.proxyHost", "203.243.63.16");
+//        System.getProperties().put("http.proxyPort", "80"); //port is
         // https://www.dokumentation.landtag-mv.de/parldok/neuedokumente/1
 
-        String sOutPath = "/storage/projects/abrami/GerParCor/pdf/MeckPom/";
+        String sOutPath = "/tmp/MeckPom/";
 
         new File(sOutPath).mkdir();
 
         int iPeriode = 8;
-        int a = 0;
+        int a = 14;
         AtomicBoolean isRunning = new AtomicBoolean(true);
         while (isRunning.get()) {
             new File(sOutPath+""+iPeriode).mkdir();
             Map<String, String> cookies = new HashMap<>();
-            cookies.put("ASP.NET_SessionId", "bvudp5snyi50asidthnspck3");
+            cookies.put("ASP.NET_SessionId", "ok5fjgr1pyx3bwhe5kwh5av0");
             try {
 
                 Document pElement = Jsoup.connect("https://www.dokumentation.landtag-mv.de/parldok/dokumentennummer?LegislaturPeriodenNummer="+iPeriode+"&DokumentenArtId=2&PDFSelect=0&DokumentenNummer="+a).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").cookies(cookies).followRedirects(true).post();

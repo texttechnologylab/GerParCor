@@ -1,6 +1,7 @@
 package org.texttechnologylab.parliament.crawler.divisions.austria;
 
 import it.unimi.dsi.fastutil.Hash;
+import org.geotools.filter.temporal.TContainsImpl;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -25,38 +26,33 @@ public class Vorarlberg {
         String sDownladBasePath = "https://suche.vorarlberg.at/";
 
         int iCount = 5;
-        String searchURL = "https://suche.vorarlberg.at/VLR/vlr_gov.nsf/alldocs?SearchView&SearchMax=0&Count="+iCount+"&Start=1&SearchWV=FALSE&SearchFuzzy=FALSE&SearchOrder=1&Query=FIELD%20%20fd_TypeOfDocumentTX%20Contains%20%22Protokoll%22%20AND";
-        Document pDocument = Jsoup.connect(searchURL).sslSocketFactory(socketFactory()).get();
+        Document pDocument = Jsoup.parse(new File("/home/gabrami/file.html"), "UTF-8");
 
-        pDocument.select("table#tab tr").forEach(el1->{
+        pDocument.select("table.rfont tr").forEach(el1->{
             Elements tdElements = el1.select("td");
             if(tdElements.size()>0){
-                String sYear = tdElements.get(5).text();
-                new File(sOutpath+""+sYear+"/").mkdir();
-
+                String sYear = tdElements.get(0).text();
                 try {
-                    Map<String, String> cookies = new HashMap<>();
-                    cookies.put("lbpersistence", "!zTewQ61NB2TIpAtuTYmKCJtHdcwozNhtM6IpqvOdULAGENGGs36XZuaOjQeQs9/7cLzlPRS7MRDCONZrjbDniI4XkEAM+ELoBXU40Vzr");
-                    cookies.put("rowNavigate", "-1");
-                    cookies.put("rowStart", "1");
-                    cookies.put("searchMode", "yes");
-                    cookies.put("searchURL", searchURL);
-                    cookies.put("vlrgov", "L1=0##L2=0##L3=0##L5=0##L6=8##L8=0##L9=0##L10=0##L7=##");
-                    Document subDocument = Jsoup.connect(sDownladBasePath+tdElements.get(2).select("a").get(0).attr("href")).cookies(cookies).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").followRedirects(true).get();
+                    int iYear = Integer.valueOf(sYear);
 
-                    subDocument.select("body a").stream().forEach(el2->{
-                        System.out.println(el2.text());
-                        if(el2.text().contains("PDF Voll")){
-                            String sLink = el2.attr("href");
-                            sLink = sLink.substring(sLink.indexOf("http"), sLink.lastIndexOf(".pdf"));
-                            System.out.println(sLink);
-                        }
-                    });
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    new File(sOutpath + "" + sYear + "/").mkdir();
+
+                        Document subDocument = Jsoup.connect(sDownladBasePath + tdElements.get(1).select("a").get(0).attr("href")).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").followRedirects(true).get();
+
+                        subDocument.select("body a").stream().forEach(el2 -> {
+                            System.out.println(el2.text());
+                            if (el2.text().contains("PDF Voll")) {
+                                String sLink = el2.attr("href");
+                                sLink = sLink.substring(sLink.indexOf("http"), sLink.lastIndexOf(".pdf"));
+                                System.out.println(sLink);
+                            }
+                        });
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (Exception e) {
+
+                    }
                 }
-            }
-
         });
 
 //        pDocument.select("#c_listContent_j_id_4g_menu select option").forEach(option->{

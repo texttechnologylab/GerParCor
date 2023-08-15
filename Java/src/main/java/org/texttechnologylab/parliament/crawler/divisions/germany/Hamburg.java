@@ -35,18 +35,24 @@ public class Hamburg {
             params.put("DokumentenArtId", "2");
             params.put("LegislaturPeriodenNummer", ""+iPeriode);
             params.put("DokumentenNummer", ""+a);
-            params.put("AFHTOKE", "BNLIzgFs/M+5BUjbESyxaflUlbyqPBUoV27NxMgTou3XFOrW6b9aV94ZoptRN5FJ/j961Y7p1zDsMN134hGaqiF8iIY9JMVSLIBiONex9JxORFmS41YEfDMAzQCvF5Dz4TsBCqbK7e8+ppCZ0TWLgf4BbTnmAetKuvIxmiKWI8XpjqslRR2fZQ0GP9ERsVYOKYLwPNsAS/itfJM4MGJwyJlvDrh0NSBMNz+2ToykT0DT4CljL+goyk+fcIRT3dQPCHxMKYvVBqI4/3hTIyuL2uhkqGNmKJrwa25uUkn2bSpSo4dMEofEdg==");
+            params.put("AFHTOKE", "W2fLQQ4EhRSHTX4Ioe+zAH2V28HvsSrNOXRrKpZUSk/K7ozL19h/0z95qmklTMSqr30Yr74sGBfrNDjHxK0aD89y6jz46jSWjtOAw4Up09iUS3rO25DIcBLbBgyIv9t8oGO1cM6233OLBIQ7Twg1R0+wm/X2Vwp41ETg7Vc8tK9XUwex1iu3j5V77PKd/L8VcUtaMFu7xGPyGb376HftthcD2nJY6hQubvTbIdmC5j2ebE8cQ35PQe9XkAPYvT0vaeaN38gBBdMeFI980NGbtb1twrWEORaomOzI+zHEQMJMwqiVgz7b/j5UxGsZVDiTApD1nk9k1To=");
 
             Map<String, String> cookies = new HashMap<>(0);
-            cookies.put("ASP.NET_SessionId", "p4egvdbmgwbppy3cabw1ylzk");
+            cookies.put("ASP.NET_SessionId", "0u05ocgjqa4h2kt1drpzlanl");
             cookies.put("cookieokay", "true");
-            cookies.put("HASH_ASP.NET_SessionId", "DCB1B59FFDDEB108D515BF6FE02C17A2A1CBB5AA");
+            cookies.put("HASH_ASP.NET_SessionId", "6B54B4C4762559FB936CC1645AAE92CBEB63812E");
 
             try {
                 Document pDocument = Jsoup.connect("https://www.buergerschaft-hh.de/parldok/dokumentennummer").followRedirects(true).cookies(cookies).data(params).post();
 
                 Document dataDocument = Jsoup.connect("https://www.buergerschaft-hh.de/parldok/dokumentennummer/1").cookies(cookies).data(params).followRedirects(true).get();
 
+                try {
+                    Thread.sleep(1000l);
+                }
+                catch (Exception e){
+                    System.out.println(e.getMessage());
+                }
 
                 AtomicReference<String> sURI = new AtomicReference<>("");
                 AtomicReference<String> sName = new AtomicReference<>("");
