@@ -8,6 +8,9 @@ import org.texttechnologylab.utilities.helper.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Class for Parsing Minutes of Schleswig-Holstein
@@ -16,18 +19,19 @@ import java.io.IOException;
  */
 public class Schleswig_Holstein {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         String sOut = args[0];
         new File(sOut).mkdir();
 
 //        String sURL = "http://lissh.lvn.parlanet.de/shlt/lissh-dok/infothek/wahl{PERIODE}/plenum/plenprot/XQQP{SID}-{TID}.pdf";
 
-        String sURL = "http://www.landtag.ltsh.de/export/sites/ltsh/infothek/wahl19/plenum/plenprot/2017/19-001_06-17.pdf";
+        String sURL= "http://lissh.lvn.ltsh.de/cgi-bin/starfinder/0?path=lisshdokfl.txt&id=fastlinkdok&pass=&format=WEBKURZFL3&OK=Suche&search=P&search={P}&search={NR}";
 
-        for(int c=19; c<=22; c++) {
+        for(int c=19; c<=20; c++) {
 
             String sPeriode = "";
+
 
             if(c<10){
                 sPeriode = "0"+c;
@@ -40,25 +44,24 @@ public class Schleswig_Holstein {
 
 
                 for (int a = 1; a < 200; a++) {
-                    String sID = "" + a;
+                    String sNewURL = sURL.replaceAll("\\{P\\}", c+"").replaceAll("\\{NR\\}", a+"");
+                    Document pDocument = Jsoup.connect(sNewURL).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").followRedirects(true).post();
+                    System.out.println(pDocument);
 
-                    String sDownload = sURL.replace("{PERIODE}", sPeriode);
-                    sDownload = sDownload.replace("{SID}", "" + sPeriode);
-                    sDownload = sDownload.replace("{TID}", "" + sID);
 
-                    File dFile = new File(sOut + sPeriode + "/" + sPeriode + "_" + sID + ".pdf");
-                    if (!dFile.exists()) {
-                        try {
-                            FileUtils.downloadFile(dFile, sDownload);
-                        } catch (IOException e) {
-                            System.out.println(e.getMessage());
-                            try {
-                                Thread.sleep(1000l);
-                            } catch (InterruptedException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    }
+//                    File dFile = new File(sOut + sPeriode + "/" + sPeriode + "_" + sID + ".pdf");
+//                    if (!dFile.exists()) {
+//                        try {
+//                            FileUtils.downloadFile(dFile, sDownload);
+//                        } catch (IOException e) {
+//                            System.out.println(e.getMessage());
+//                            try {
+//                                Thread.sleep(1000l);
+//                            } catch (InterruptedException ex) {
+//                                ex.printStackTrace();
+//                            }
+//                        }
+//                    }
 
                 }
 
