@@ -15,22 +15,22 @@ import java.util.Map;
  * @author Giuseppe Abrami
  * @date 2021-12-01
  */
-public class Sachsen {
+public class SachsenAnhalt {
 
     public static void main(String[] args){
 
-        String sURL = "https://edas.landtag.sachsen.de/viewer/viewer_navigation.aspx?dok_nr={NR}&dok_art=PlPr&leg_per={PER}";
+        String sURL = "https://padoka.landtag.sachsen-anhalt.de/files/plenum/wp{WP}/{NR}stzg.pdf";
 
         String sOut = args[0];
         new File(sOut).mkdir();
 
         boolean isRunning = true;
 
-        for(int a=7; a<8; a++){
+        for(int a=7; a<=8; a++){
             isRunning = true;
             new File(sOut+a).mkdir();
 
-            int b=64;
+            int b=1;
 
             while(isRunning){
 
@@ -39,21 +39,23 @@ public class Sachsen {
 
                 if(!dFile.exists()){
                     try {
-                        Document jDocument = Jsoup.connect(sURL.replace("{PER}", ""+a).replace("{NR}", ""+b)).followRedirects(true).get();
-//                        System.out.println(jDocument);
-                        String bodyText = jDocument.select("body").attr("onload");
-                        try {
-                            String sLink = bodyText.substring(bodyText.indexOf("https://ws.landtag.sachsen.de/images/"), bodyText.indexOf(".pdf") + 4);
-//                        System.out.println(sLink);
-                            FileUtils.downloadFile(dFile, sLink);
+                            String sNR = "00";
+                            if(b<10){
+                                sNR = sNR+b;
+                            }
+                            else if(b<100){
+                                sNR = "0"+b;
+                            }
+                            else{
+                                sNR = b+"";
+                            }
+                            FileUtils.downloadFile(dFile, sURL.replaceAll("\\{WP\\}", ""+a).replaceAll("\\{NR\\}", sNR));
                         }
                         catch (Exception ex){
                             System.out.println(ex.getMessage());
+                            isRunning=false;
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        isRunning=false;
-                    }
+
                 }
 
                 b++;

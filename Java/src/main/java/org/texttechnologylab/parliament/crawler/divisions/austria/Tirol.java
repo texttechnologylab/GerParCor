@@ -1,5 +1,6 @@
 package org.texttechnologylab.parliament.crawler.divisions.austria;
 
+import it.unimi.dsi.fastutil.Hash;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -11,6 +12,8 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Tirol {
 
@@ -26,6 +29,21 @@ public class Tirol {
 
         pDocument.select("#c_listContent_j_id_4g_menu select option").forEach(option->{
             if(option.text().length()>6){
+                int iValue = Integer.parseInt(option.attr("value"));
+
+                try {
+                    Map<String, String> params = new HashMap<>();
+                    params.put("listContent:j_id_4i:menu_input", String.valueOf(iValue));
+                    params.put("token", "5207143693");
+                    params.put("javax.faces.ViewState", "YKHq9R89bXr4ca41WyCT/tI1blTijpoR70Mmuiz6VwLLyCLeawSy05pGhU9zXSk3J4AiOA==");
+                    Document subDocument = Jsoup.connect("https://portal.tirol.gv.at/LteWeb/public/sitzung/sitzungsbericht/sitzungsberichtList.xhtml?cid=2").sslSocketFactory(socketFactory()).data(params).post();
+
+                    System.out.println(subDocument);
+
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
                 System.out.println(option.text());
             }
 

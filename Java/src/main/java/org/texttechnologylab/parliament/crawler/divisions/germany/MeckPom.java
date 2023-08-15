@@ -23,7 +23,9 @@ public class MeckPom {
 
     @Test
     public void current2() throws MalformedURLException {
-
+        System.getProperties().put("http.proxySet", "true");
+        System.getProperties().put("http.proxyHost", "203.243.63.16");
+        System.getProperties().put("http.proxyPort", "80"); //port is
         // https://www.dokumentation.landtag-mv.de/parldok/neuedokumente/1
 
         String sOutPath = "/storage/projects/abrami/GerParCor/pdf/MeckPom/";
@@ -40,6 +42,12 @@ public class MeckPom {
             try {
 
                 Document pElement = Jsoup.connect("https://www.dokumentation.landtag-mv.de/parldok/dokumentennummer?LegislaturPeriodenNummer="+iPeriode+"&DokumentenArtId=2&PDFSelect=0&DokumentenNummer="+a).userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6").cookies(cookies).followRedirects(true).post();
+
+                try {
+                    Thread.sleep(1000l);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 Elements pElements = pElement.select("table#parldokresult tr");
 
