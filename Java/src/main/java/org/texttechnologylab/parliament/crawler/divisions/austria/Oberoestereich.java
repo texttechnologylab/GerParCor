@@ -1,5 +1,7 @@
 package org.texttechnologylab.parliament.crawler.divisions.austria;
 
+import com.google.common.html.HtmlEscapers;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -36,37 +38,61 @@ public class Oberoestereich {
             new File(sOutpath+sTitle).mkdir();
 
             try {
-                System.out.println(el1.attr("href"));
-                Document subPage = Jsoup.connect(
-                        el1.attr("href").startsWith(sDownladBasePath) ? el1.attr("href") : sDownladBasePath+el1.attr("href")).sslSocketFactory(socketFactory()).ignoreContentType(true).get();
+                if (!el1.attr("href").contains("alex.onb.")) {
+                    Document subPage = Jsoup.connect(
+                            el1.attr("href").startsWith("https://") ? el1.attr("href") : sDownladBasePath + el1.attr("href")).sslSocketFactory(socketFactory()).ignoreContentType(true).get();
 
-                Elements pSubElements = subPage.select("li.link-extern");
-                if(pSubElements.size()==0){
-                    pSubElements = subPage.select("ul.liste-extra li");
+                    Elements pSubElements = subPage.select("li.link-extern");
+                    if (pSubElements.size() == 0) {
+                        pSubElements = subPage.select("ul.liste-extra li");
+                    }
+
+                    String finalSTitle = sTitle;
+                    pSubElements.stream().forEach(el2 -> {
+                        System.out.println(el2.select("a").get(0).text());
+
+                        File dFile = new File(sOutpath + finalSTitle + "/" + el2.select("a").get(0).text() + ".pdf");
+
+                        if(dFile.length()<70000){
+                            dFile.delete();
+                        }
+
+                        if(el2.select("a").attr("href").endsWith(".pdf")) {
+
+
+
+                            if (!dFile.exists() || dFile.length() < 70000) {
+                                try {
+                                    String sDownload = el2.select("a").get(0).attr("href");
+
+                                    FileUtils.downloadFile(dFile, sDownload.startsWith("https://") ? sDownload : sDownladBasePath + sDownload);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+                        else{
+
+                            try {
+
+                                Document intDocument = Jsoup.connect(el2.select("a").attr("href")).get();
+                                String sDownloadLink = "https://www2.land-oberoesterreich.gv.at/internetltgbeilagen/"+intDocument.select("div.beilagenElement li a").get(0).attr("href");
+                                System.out.println(StringEscapeUtils.escapeHtml(sDownloadLink));
+
+                                FileUtils.downloadFile(dFile, "https://www2.land-oberoesterreich.gv.at/internetltgbeilagen/"+intDocument.select("div.beilagenElement li a").get(0).attr("href"));
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+
+                        }
+                    });
+
                 }
 
-                String finalSTitle = sTitle;
-                pSubElements.stream().forEach(el2->{
-                    System.out.println(el2.select("a").get(0).text());
+                } catch(IOException e){
+                    throw new RuntimeException(e);
+                }
 
-                    File dFile = new File(sOutpath+ finalSTitle +"/"+el2.select("a").get(0).text()+".pdf");
-
-                    if(!dFile.exists()) {
-                        try {
-                            String sDownload = el2.select("a").get(0).attr("href");
-
-                            FileUtils.downloadFile(dFile, sDownload.startsWith(sDownladBasePath) ? sDownload : sDownladBasePath+sDownload);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
-
-
-
-                } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
 
 
 

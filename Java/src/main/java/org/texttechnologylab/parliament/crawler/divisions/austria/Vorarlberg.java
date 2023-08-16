@@ -1,7 +1,5 @@
 package org.texttechnologylab.parliament.crawler.divisions.austria;
 
-import it.unimi.dsi.fastutil.Hash;
-import org.geotools.filter.temporal.TContainsImpl;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -12,8 +10,6 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Vorarlberg {
 
