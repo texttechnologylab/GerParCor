@@ -817,7 +817,7 @@ def bayern_crawler(make_directories:bool = True,
 
 
 def sachsen_anhalt_crawler(make_directories:bool = True,
-                   save_path: str = "/vol/s5935481/parlamentary/sachsen_anhalt",
+                   save_path: str = "/tmp/sachsen_anhalt",
                    chrome_driver: str = "/home/stud_homes/s5935481/work4/parliament_crawler/src/crawling_services/chromedriver",
                    load_checkpoint : bool = True) -> None:
 
@@ -955,6 +955,7 @@ if __name__ == "__main__":
     """
     path = "/vol/team/hammerla/parlamentary/hamburg"
     path2= "/media/leon/GameSSD/parlamentary/hamburg"
-    drver_path = "/usr/local/bin/chromedriver"
+    drver_path = "/usr/bin/chromedriver"
+    sachsen_anhalt_crawler(save_path="/tmp/sachsenanhalt", chrome_driver=drver_path)
     #sachsen_anhalt_crawler(save_path="/media/leon/GameSSD/parlamentary/sachsen_anhalt", chrome_driver=drver_path)
     #sachsen_anhalt_crawler()
