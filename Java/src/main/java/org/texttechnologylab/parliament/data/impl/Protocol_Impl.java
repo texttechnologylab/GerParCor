@@ -1,9 +1,11 @@
 package org.texttechnologylab.parliament.data.impl;
 
+import org.apache.uima.jcas.JCas;
 import org.bson.Document;
 import org.texttechnologylab.parliament.data.ParliamentFactory;
 import org.texttechnologylab.parliament.data.Protocol;
 
+import java.io.File;
 import java.sql.Date;
 
 public class Protocol_Impl implements Protocol {
@@ -22,12 +24,32 @@ public class Protocol_Impl implements Protocol {
     }
 
     @Override
+    public Date getStartDate() {
+        return null;
+    }
+
+    @Override
+    public void setStartDate(Date pDate) {
+
+    }
+
+    @Override
     public Date getDate() {
         return null;
     }
 
     @Override
     public void setDate(Date pDate) {
+
+    }
+
+    @Override
+    public Date getEndDate() {
+        return null;
+    }
+
+    @Override
+    public void setEndDate(Date pDate) {
 
     }
 
@@ -69,6 +91,16 @@ public class Protocol_Impl implements Protocol {
     @Override
     public void setParliament(String sValue) {
 
+    }
+
+    @Override
+    public File getDocumentAsFile() {
+        return null;
+    }
+
+    @Override
+    public JCas getDocumentAsJCas() {
+        return null;
     }
 
     @Override

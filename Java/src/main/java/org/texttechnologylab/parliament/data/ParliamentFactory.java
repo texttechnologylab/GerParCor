@@ -9,10 +9,14 @@ public interface ParliamentFactory {
 
     MongoDBConnectionHandler getDatabaseHandler();
 
+    Protocol getProtocol(String sID);
+
     Set<Protocol> listProtocols();
     Set<Protocol> listProtocols(String sParliament);
     Set<Protocol> listProtocols(String sParliament, Date pStartDate, Date pEndDate);
 
+    Set<Protocol> listProtocols(Date pStartDate, Date pEndDate);
 
+    
 
 }
