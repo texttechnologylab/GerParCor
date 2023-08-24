@@ -21,6 +21,11 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     }
 
     @Override
+    public Protocol getProtocol(String sID) {
+        return null;
+    }
+
+    @Override
     public Set<Protocol> listProtocols() {
         return null;
     }
@@ -32,6 +37,11 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
 
     @Override
     public Set<Protocol> listProtocols(String sParliament, Date pStartDate, Date pEndDate) {
+        return null;
+    }
+
+    @Override
+    public Set<Protocol> listProtocols(Date pStartDate, Date pEndDate) {
         return null;
     }
 }

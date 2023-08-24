@@ -1,24 +1,13 @@
 package org.texttechnologylab.parliament.crawler.divisions.austria;
 
-import com.goebl.david.Webb;
-import it.unimi.dsi.fastutil.Hash;
-import org.apache.http.util.EntityUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.texttechnologylab.utilities.helper.FileUtils;
-import sun.misc.BASE64Decoder;
 
 import javax.net.ssl.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
