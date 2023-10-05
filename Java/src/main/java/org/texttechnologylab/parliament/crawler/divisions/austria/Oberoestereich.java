@@ -156,6 +156,45 @@ public class Oberoestereich {
         }
     }
 
+
+    @Test
+    public void zwentySevenTh() throws IOException {
+
+        Document pDocument = Jsoup.connect("https://www.land-oberoesterreich.gv.at/92799.htm").sslSocketFactory(socketFactory()).get();
+
+        String sBaseURL = "https://www.land-oberoesterreich.gv.at";
+        String sOutput = "/storage/projects/abrami/GerParCor/pdf/Austria/Oberoestereich/XXVII._Gesetzgebungsperiode/";
+
+        Elements pElements = pDocument.select("ul.liste-extra li a");
+        pElements.stream().forEach(el->{
+            String sLink = el.attr("href");
+            System.out.println(sLink.substring(sLink.indexOf("sitzung_")));
+            String subLink = sLink.substring(sLink.indexOf("sitzung_")+8);
+            subLink = subLink.replace("_am_", "__");
+            String sID = subLink.split("__")[0];
+            String sDatum = subLink.split("__")[1];
+            sDatum.replaceAll("_", " ");
+
+            String[] dSplit = sDatum.split("_");
+            String sYear = dSplit[dSplit.length-1];
+            sYear = sYear.replace(".pdf", "");
+            new File(sOutput+""+sYear).mkdir();
+
+            File dFile = new File(sOutput+""+sYear+"/"+sID+"__"+sDatum);
+
+            if(!dFile.exists()){
+                try {
+                    FileUtils.downloadFile(dFile, sBaseURL+sLink);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+//            System.out.println(el.attr("href"));
+        });
+
+    }
+
     @Test
     public void oldImages(){
 
