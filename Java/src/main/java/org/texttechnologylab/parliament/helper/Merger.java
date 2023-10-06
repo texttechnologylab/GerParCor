@@ -9,6 +9,7 @@ import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.dkpro.core.io.xmi.XmiWriter;
+import org.json.JSONObject;
 import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.annotation.DocumentModification;
 import org.texttechnologylab.utilities.helper.FileUtils;
@@ -22,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDescription;
 
@@ -39,7 +41,29 @@ public class Merger {
 //            niederAT("/storage/projects/abrami/GerParCor/txt/Austria/Niederoestereich/", "Austria/Niederoestereich/");
 //            salzburgAT("/storage/projects/abrami/GerParCor/txt/Austria/Salzburg/", "Austria/Salzburg/");
 //            steiermarkAT("/storage/projects/abrami/GerParCor/txt/Austria/Steiermark/", "Austria/Steiermark/");
-            tirolAT("/storage/projects/abrami/GerParCor/txt/Austria/Tirol/", "Austria/Tirol/");
+//            wienAT("/storage/projects/abrami/GerParCor/txt/Austria/Wien/", "Austria/Wien/");
+//            tirolAT("/storage/projects/abrami/GerParCor/txt/Austria/Tirol/", "Austria/Tirol/");
+//            baWueDE("/storage/projects/abrami/GerParCor/txt/Germany/BadenWuertemmberg/","Germany/BadenWuertemmberg/");
+//            brandenburg_DE("/storage/projects/abrami/GerParCor/txt/Germany/Brandenburg/", "Germany/Brandenburg/");
+//            berlin_DE("/storage/projects/abrami/GerParCor/txt/Germany/Berlin/", "/storage/projects/abrami/GerParCor/dates/Berlin/", "Germany/Berlin/");
+//            bayern_DE("/storage/projects/abrami/GerParCor/txt/Germany/Bayern/","Germany/Bayern/");
+//            bundesrat_DE("/storage/projects/abrami/GerParCor/txt/Germany/Bundesrat/","Germany/Bundesrat/");
+//            bremen_DE("/storage/projects/abrami/GerParCor/txt/Germany/Bremen/","Germany/Bremen/");
+//            hamburgDE("/storage/projects/abrami/GerParCor/txt/Germany/Hamburg/","Germany/Hamburg/");
+//            hessen_DE("/storage/projects/abrami/GerParCor/txt/Germany/Hessen/","Germany/Hessen/");
+//            meckPomDE("/storage/projects/abrami/GerParCor/txt/Germany/MeckPom/","Germany/MeckPom/");
+//            niedersachsen_DE("/storage/projects/abrami/GerParCor/txt/Germany/Niedersachsen/","Germany/Niedersachsen/");
+//            nrw_DE("/storage/projects/abrami/GerParCor/txt/Germany/NordrheinWestfahlen/","Germany/NordrheinWestfahlen/");
+//            rlp_DE("/storage/projects/abrami/GerParCor/txt/Germany/RheinlandPfalz/","Germany/RheinlandPfalz/");
+//            saarlandDE("/storage/projects/abrami/GerParCor/txt/Germany/Saarland/","Germany/Saarland/");
+//            sachsen_anhalt_DE("/storage/projects/abrami/GerParCor/txt/Germany/SachsenAnhalt/","Germany/SachsenAnhalt/");
+//            schleswigholsteinDE("/storage/projects/abrami/GerParCor/txt/Germany/SchleswigHolstein/","Germany/SchleswigHolstein/");
+//            sachsen_DE("/storage/projects/abrami/GerParCor/txt/Germany/Sachsen/","Germany/Sachsen/");
+//            thueringenDE("/storage/projects/abrami/GerParCor/txt/Germany/Thueringen/","Germany/Thueringen/");
+//            baWueDE_older("/storage/projects/abrami/GerParCor/txt/Germany/BadenWuertemmberg/","Germany/BadenWuertemmberg/");
+            lichtenstein("/storage/projects/abrami/GerParCor/txt/Liechtenstein/","Liechtenstein/");
+
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (UIMAException e) {
@@ -323,7 +347,7 @@ public class Merger {
 
 
     }
-    public static void tirolAT(String sInput, String sOutput) throws IOException, UIMAException {
+    public static void wienAT(String sInput, String sOutput) throws IOException, UIMAException {
 
         Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
 
@@ -391,11 +415,318 @@ public class Merger {
             sChangeFileName = sChangeFileName.replace("am 3. Oktober 2001", "vom 3. Oktober 2001");
             sChangeFileName = sChangeFileName.replace("14. Dezember 1976", "vom 14. Dezember 1976");
             sChangeFileName = sChangeFileName.replace("13. Dezember 1976", "vom 13. Dezember 1976");
-            sChangeFileName = sChangeFileName.replace("am 10. Dezember 1998", "vom 10. Dezember 1998");
+            sChangeFileName = sChangeFileName.replace("30.11.2011", "30. November 2011");
+            sChangeFileName = sChangeFileName.replace("von", "vom");
+            sChangeFileName = sChangeFileName.replace("am", "vom");
+            sChangeFileName = sChangeFileName.replace("Okober", "Oktober");
+
+            sChangeFileName = sChangeFileName.replace("am 28. März 2018_Kurzprotokoll", "vom 28. März 2018");
             sChangeFileName = sChangeFileName.contains("1. Dezember 1960") ? "vom 1. Dezember 1960" : sChangeFileName;
             sChangeFileName = sChangeFileName.contains("14. September 2023") ? "vom 14. September 2023" : sChangeFileName;
             sChangeFileName = sChangeFileName.contains("am 24. Juni 2022") ? "vom 24. Juni 2022" : sChangeFileName;
             sChangeFileName = sChangeFileName.contains("13. Juli 1963") ? "vom 13. Juli 1963" : sChangeFileName;
+            sChangeFileName = sChangeFileName.contains("21._22. Oktober 2021") ? "vom 21. Oktober 2021" : sChangeFileName;
+            sChangeFileName = sChangeFileName.contains("16. bis 18. November 2022") ? "vom 16. November 2022" : sChangeFileName;
+            sChangeFileName = sChangeFileName.contains("10. bis 12. Mai 2023") ? "vom 10. Mai 2023" : sChangeFileName;
+
+//            if(sChangeFileName.contains("1. Dezember 1921")){
+//                System.out.println("stop");
+//            }
+
+            String sSplit[] = sChangeFileName.split(" ");
+            String sID = sSplit[0];
+            String sName = sSplit[1];
+
+            String sSplit2[] = sChangeFileName.split("vom ");
+            String sDate = "";
+            if(sSplit2.length>1){
+                sDate = sSplit2[sSplit2.length-1];
+            }
+            else{
+                sDate = sSplit2[0];
+                sDate = sDate.substring(sDate.indexOf("Kurzprotokoll vom ")+20);
+                String sDateSplitNew[] = sDate.split(" ");
+                if(sDateSplitNew.length>3){
+                    sDate = sDate.substring(0, sDate.indexOf(" "+sDateSplitNew[3]));
+                }
+            }
+
+
+            if(sDate.contains("und")){
+                String sDatumSplit[] = sDate.split(" und ");
+                System.out.println(sDate);
+                sDate = sDatumSplit[0];
+                if(sDate.split(" ").length<3){
+                    String sOld = sDate;
+                    sDate = sOld + sDatumSplit[1].substring(sDate.length());
+                    System.out.println(sDate);
+                }
+            }
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                sDate = sDate.replace("Julii", "Juli");
+                Date pDate = sdf.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sFileName);
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("bagci");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("bagci");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sFileName);
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void vorarlbergAT(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        fSet = fSet.stream().filter(f->f.getName().contains("#1")).collect(Collectors.toSet());
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfBackup = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            System.out.println(sFileName);
+            sFileName = sFileName.replace(".txt", "");
+            if(sFileName.contains(" - ")) {
+                sFileName = sFileName.substring(0, sFileName.indexOf(" - "));
+            }
+            else{
+                sFileName = sFileName.substring(0, sFileName.indexOf("#"));
+            }
+            String sChangeFileName = sFileName.replace("Jänner", "Januar");
+            sChangeFileName = sChangeFileName.replace("Jaenner", "Januar");
+            sChangeFileName = sChangeFileName.replace("Maerz", "März");
+            sChangeFileName = sChangeFileName.replace("Apirl", "April");
+            sChangeFileName = sChangeFileName.replace("Julii", "Juli");
+            sChangeFileName = sChangeFileName.replace("Feber", "Februar");
+            sChangeFileName = sChangeFileName.replace("Okober", "Oktober");
+            sChangeFileName = sChangeFileName.replace("von", "vom");
+            sChangeFileName = sChangeFileName.replace("am", "vom");
+
+//            sChangeFileName = sChangeFileName.replace("am 28. März 2018_Kurzprotokoll", "vom 28. März 2018");
+//            sChangeFileName = sChangeFileName.contains("1. Dezember 1960") ? "vom 1. Dezember 1960" : sChangeFileName;
+//            sChangeFileName = sChangeFileName.contains("14. September 2023") ? "vom 14. September 2023" : sChangeFileName;
+//            sChangeFileName = sChangeFileName.contains("am 24. Juni 2022") ? "vom 24. Juni 2022" : sChangeFileName;
+//            sChangeFileName = sChangeFileName.contains("13. Juli 1963") ? "vom 13. Juli 1963" : sChangeFileName;
+//            sChangeFileName = sChangeFileName.contains("21._22. Oktober 2021") ? "vom 21. Oktober 2021" : sChangeFileName;
+//            sChangeFileName = sChangeFileName.contains("16. bis 18. November 2022") ? "vom 16. November 2022" : sChangeFileName;
+//            sChangeFileName = sChangeFileName.contains("10. bis 12. Mai 2023") ? "vom 10. Mai 2023" : sChangeFileName;
+
+//            if(sChangeFileName.contains("1. Dezember 1921")){
+//                System.out.println("stop");
+//            }
+
+            String sSplit[] = sChangeFileName.split(" ");
+            String sID = sSplit[0];
+            String sName = sSplit[1];
+
+            String sSplit2[] = sChangeFileName.split("vom ");
+            String sDate = "";
+            if(sSplit2.length>1){
+                sDate = sSplit2[sSplit2.length-1];
+            }
+            else{
+                sDate = sSplit2[0];
+                sDate = sDate.substring(sDate.indexOf("Kurzprotokoll vom ")+20);
+                String sDateSplitNew[] = sDate.split(" ");
+                if(sDateSplitNew.length>3){
+                    sDate = sDate.substring(0, sDate.indexOf(" "+sDateSplitNew[3]));
+                }
+            }
+
+
+            if(sDate.contains("und")){
+                String sDatumSplit[] = sDate.split(" und ");
+                System.out.println(sDate);
+                sDate = sDatumSplit[0];
+                if(sDate.split(" ").length<3){
+                    String sOld = sDate;
+                    sDate = sOld + sDatumSplit[1].substring(sDate.length());
+                    System.out.println(sDate);
+                }
+            }
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                sDate = sDate.replace("Julii", "Juli");
+                Date pDate = null;
+
+                try {
+                    pDate = sdf.parse(sDate);
+                } catch (ParseException pe){
+
+                    pDate = sdfBackup.parse(sDate);
+
+                }
+
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sFileName);
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("bagci");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("bagci");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sFileName);
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }    public static void
+
+    tirolAT(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName.replace("Jänner", "Januar");
+            sChangeFileName = sChangeFileName.replace("Jaenner", "Januar");
+            sChangeFileName = sChangeFileName.replace("Maerz", "März");
+            sChangeFileName = sChangeFileName.replace("Apirl", "April");
+            sChangeFileName = sChangeFileName.replace("Julii", "Juli");
+            sChangeFileName = sChangeFileName.replace("Feber", "Februar");
+            sChangeFileName = sChangeFileName.replace("28.Mai 2009", "28. Mai 2009");
+            sChangeFileName = sChangeFileName.replace("16., 17. und 18. Dezember 2015", "16. Dezember 2015");
+            sChangeFileName = sChangeFileName.replace("26.November 2020 Budget 2021", "26. November 2020 Budget 2021");
+            sChangeFileName = sChangeFileName.replace("vom 1. Dezember", "am 1. Dezember");
+            sChangeFileName = sChangeFileName.replace("1. Dezember bis 3. Dezember 1999", "1. Dezember 1999");
+
+            sChangeFileName = sChangeFileName.replace("29. November bis 2. Dezember 1994", "29. November 1994");
+            sChangeFileName = sChangeFileName.replace("20., 21. und 22. Dezember 2016", "29. Dezember 2016");
+            sChangeFileName = sChangeFileName.replace("12., 13. und 14. Dezember 2018", "12. Dezember 2018");
+            sChangeFileName = sChangeFileName.replace("18., 19 und 20. Dezember 2014", "18. Dezember 2014");
+            sChangeFileName = sChangeFileName.replace("28. November bis 29. November 1995", "28. November 1995");
+            sChangeFileName = sChangeFileName.replace("11., 12. und 13. Dezember 2013", "11. Dezember 2013");
+            sChangeFileName = sChangeFileName.replace("22.,23. u. 24. Juli 2010", "22. Juli 2010");
+            sChangeFileName = sChangeFileName.replace("vom 12. bis 14. Dezember 2007", "am 12. Dezember 2007");
+            sChangeFileName = sChangeFileName.replace("am 1. Dezember 1957", "vom 1. Dezember 1957");
+            sChangeFileName = sChangeFileName.replace("am 28. März 2018_Sitzungsbericht", "vom 28. März 2018");
+            sChangeFileName = sChangeFileName.replace("5. bis 7. Juli 2023_Kurzprotokoll - Anlagen", "5. Juli 2023");
+            sChangeFileName = sChangeFileName.replace("Kurzprotokoll - Anlagen", "");
+            sChangeFileName = sChangeFileName.replace("_Kurzprotokoll - Anlagen", "");
+            sChangeFileName = sChangeFileName.replace("6. bis 8. Juli 2022", "6. Juli 2022");
+            sChangeFileName = sChangeFileName.replace("14. bis 16. Oktober 2020", "14. Oktober 2020");
+            sChangeFileName = sChangeFileName.replace("am 27. Mai 1957", "vom 27. Mai 1957");
+            sChangeFileName = sChangeFileName.replace("am 27. Mai 1957", "vom 27. Mai 1957");
+            sChangeFileName = sChangeFileName.replace("am 1. Dezember 1921", "vom 1. Dezember 1921");
+            sChangeFileName = sChangeFileName.replace("18. bis 20. Mai 2022", "18. Mai 2022");
+            sChangeFileName = sChangeFileName.replace("21. November 1963", "vom 21. November 1963");
+            sChangeFileName = sChangeFileName.replace("am 5. Mai 1999", "vom 5. Mai 1999");
+            sChangeFileName = sChangeFileName.replace("von 13. Dezember 1985", "vom 13. Dezember 1985");
+            sChangeFileName = sChangeFileName.replace("16._17. November 2022", "16. November 2022");
+            sChangeFileName = sChangeFileName.replace("15._16. Dezember 2021", "15. Dezember 2021");
+            sChangeFileName = sChangeFileName.replace("am 11. Oktober 2007", "vom 11. Oktober 2007");
+            sChangeFileName = sChangeFileName.replace("29.10.2009", "29. Oktober 2009");
+            sChangeFileName = sChangeFileName.replace("9. und 10. Februar 2022", "9. Februar 2022");
+            sChangeFileName = sChangeFileName.replace("am 9. Dezember 1998", "vom 9. Dezember 1998");
+            sChangeFileName = sChangeFileName.replace("24.März 1988", "24. März 1988");
+            sChangeFileName = sChangeFileName.replace("am 10. Oktober 2007", "vom 10. Oktober 2007");
+            sChangeFileName = sChangeFileName.replace("16. bis 18. Dezember 2020", "16. Dezember 2020");
+            sChangeFileName = sChangeFileName.replace("15. Dezember 1976", "vom 15. Dezember 1976");
+            sChangeFileName = sChangeFileName.replace("von 11. Dezember 1985", "vom 11. Dezember 1985");
+            sChangeFileName = sChangeFileName.replace("am 4. Oktober 2001", "vom 4. Oktober 2001");
+            sChangeFileName = sChangeFileName.replace("am 3. Oktober 2001", "vom 3. Oktober 2001");
+            sChangeFileName = sChangeFileName.replace("14. Dezember 1976", "vom 14. Dezember 1976");
+            sChangeFileName = sChangeFileName.replace("13. Dezember 1976", "vom 13. Dezember 1976");
+            sChangeFileName = sChangeFileName.replace("30.11.2011", "30. November 2011");
+            sChangeFileName = sChangeFileName.replace("von", "vom");
+            sChangeFileName = sChangeFileName.replace("am", "vom");
+            sChangeFileName = sChangeFileName.replace("Okober", "Oktober");
+
+            sChangeFileName = sChangeFileName.replace("am 28. März 2018_Kurzprotokoll", "vom 28. März 2018");
+            sChangeFileName = sChangeFileName.contains("1. Dezember 1960") ? "vom 1. Dezember 1960" : sChangeFileName;
+            sChangeFileName = sChangeFileName.contains("14. September 2023") ? "vom 14. September 2023" : sChangeFileName;
+            sChangeFileName = sChangeFileName.contains("am 24. Juni 2022") ? "vom 24. Juni 2022" : sChangeFileName;
+            sChangeFileName = sChangeFileName.contains("13. Juli 1963") ? "vom 13. Juli 1963" : sChangeFileName;
+            sChangeFileName = sChangeFileName.contains("21._22. Oktober 2021") ? "vom 21. Oktober 2021" : sChangeFileName;
+            sChangeFileName = sChangeFileName.contains("16. bis 18. November 2022") ? "vom 16. November 2022" : sChangeFileName;
+            sChangeFileName = sChangeFileName.contains("10. bis 12. Mai 2023") ? "vom 10. Mai 2023" : sChangeFileName;
 
 //            if(sChangeFileName.contains("1. Dezember 1921")){
 //                System.out.println("stop");
@@ -754,6 +1085,1640 @@ public class Merger {
 
 
             } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+
+    public static void baWueDE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        fSet = fSet.stream().filter(f->!f.getAbsolutePath().contains("older") && !f.getAbsolutePath().contains("/17/")).collect(Collectors.toSet());
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String sSplit[] = sChangeFileName.split("_");
+            String sPer = sSplit[0];
+            String sID = sSplit[1];
+            String sDate = sSplit[2];
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdf.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sFileName);
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(Integer.valueOf(sID)+". Sitzung");
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void baWueDE_older(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        fSet = fSet.stream().filter(f->f.getAbsolutePath().contains("older")).collect(Collectors.toSet());
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String sYear = "";
+
+            if(sChangeFileName.startsWith("Serie")){
+                sYear = sChangeFileName.split(", ")[1];
+                if(sYear.contains("-")){
+                    sYear = sYear.split("-")[0];
+                }
+            }
+            else{
+                sYear = sChangeFileName.split(", ")[0];
+                if(sYear.contains("-")){
+                    sYear = sYear.split("-")[0];
+                }
+            }
+
+            if(sYear.contains(" ")){
+                sYear = sYear.split(" ")[0];
+            }
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            subPath = subPath.replace("/ ", "/");
+            try {
+//                Date pDate = sdf.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sFileName);
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setDateYear(Integer.valueOf(sYear));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+    }
+    public static void lichtenstein(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd", Locale.GERMAN);
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            subPath = subPath.replace("/ ", "/");
+            try {
+                Date pDate = sdf.parse(sChangeFileName);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sFileName);
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setDateYear(pDate.getYear());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateDay(pDate.getDay());
+                da.setTimestamp(pDate.getTime());
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+    }
+
+    public static void baWueDE_New(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        fSet = fSet.stream().filter(f->f.getAbsolutePath().contains("/17/")).collect(Collectors.toSet());
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String sSplit[] = sChangeFileName.split(" ");
+            String sPer = sSplit[0];
+            String sID = sSplit[1];
+            String sDate = sSplit[2];
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdf.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sDate);
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                if(sSplit.length>3) {
+                    da.setSubtitle(sID + " " + sSplit[3]);
+                }
+                else{
+                    da.setSubtitle(sID);
+                }
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+    public static void hamburgDE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String sSplit[] = sChangeFileName.split("_");
+            String sID = sSplit[0];
+            String sDate = sSplit[1];
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdf.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sDate);
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                if(sSplit.length>3) {
+                    da.setSubtitle(sID + " " + sSplit[3]);
+                }
+                else{
+                    da.setSubtitle(sID);
+                }
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void bayern_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy", Locale.GERMAN);
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String sID = sChangeFileName.substring(0, sChangeFileName.indexOf("PL"));
+            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdf.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID + " " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+    public static void bundesrat_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy", Locale.GERMAN);
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String sID = sChangeFileName.substring(sChangeFileName.indexOf(" "), sChangeFileName.indexOf(","));
+            String sDate = sChangeFileName.substring(sChangeFileName.indexOf(", ")+2);
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdfExport.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID + " " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+    public static void meckPomDE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy", Locale.GERMAN);
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String[] fileSplit = sChangeFileName.split("_");
+
+            String sID = fileSplit[0]+" "+fileSplit[1];
+            String sDate = fileSplit[2];
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdfExport.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID + " " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void saarlandDE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.GERMAN);
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String[] fileSplit = sChangeFileName.split("_");
+
+            String sID = fileSplit[1];
+            String sDate = fileSplit[2];
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdf.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID + ". Sitzung " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void schleswigholsteinDE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String[] fileSplit = sChangeFileName.split(", ");
+
+            String sID = fileSplit[0];
+            String sDate = fileSplit[1];
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdf.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID +", "+sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void thueringenDE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String[] fileSplit = sChangeFileName.split("_");
+
+            String sID = fileSplit[0];
+            String sDate = fileSplit[1];
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdfExport.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID +", "+sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void berlin_DE(String sInput, String sDates, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+        Set<File> fDatesSet = FileUtils.getFiles(sDates, ".json");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("ddMMyy", Locale.GERMAN);
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            File pFile = fDatesSet.stream().filter(f->{
+                String sFileInputName = file.getName().replace(".txt", "");
+                String sFileName = f.getName().replace(".json", "");
+                return sFileInputName.equalsIgnoreCase(sFileName);
+            }).findFirst().get();
+
+            JSONObject pObject = new JSONObject(FileUtils.getContentFromFile(pFile));
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            String[] sSplit = sChangeFileName.split("_");
+            String sID = sSplit[1];
+//            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdfExport.parse(pObject.getInt("day")+"."+pObject.getInt("month")+"."+pObject.getInt("year"));
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID + " " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void brandenburg_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String[] sSplitContentLines = sContent.split("\n");
+
+            String sDate = "";
+
+            for (String sSplitContentLine : sSplitContentLines) {
+                if(sSplitContentLine.startsWith("Potsdam")){
+                    System.out.println(sSplitContentLine);
+                    sDate = sSplitContentLine.split(", ")[2];
+                }
+                if(sDate.length()>0){
+                    break;
+                }
+            }
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+
+            String sID = sChangeFileName;
+//            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdfExport.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID + " " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void niedersachsen_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfBackup = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String[] sSplitContentLines = sContent.split("\n");
+
+            String sDate = "";
+
+            for (String sSplitContentLine : sSplitContentLines) {
+                if(sSplitContentLine.startsWith("Hannover")){
+                    System.out.println(sSplitContentLine);
+                    sDate = sSplitContentLine.split("den ")[1];
+                }
+                if(sDate.length()>0){
+                    break;
+                }
+            }
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+
+            String sID = Integer.valueOf(sChangeFileName)+"";
+//            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = null;
+
+                try {
+                    pDate = sdfExport.parse(sDate);
+                }
+                catch (Exception e){
+                    pDate = sdfBackup.parse(sDate);
+                }
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID+". Sitzung " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void nrw_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfBackup = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String[] sSplitContentLines = sContent.split("\n");
+
+            String sDate = "";
+
+            for (String sSplitContentLine : sSplitContentLines) {
+                if(sSplitContentLine.startsWith("Düsseldorf")){
+                    System.out.println(sSplitContentLine);
+                    sDate = sSplitContentLine.split(", ")[2];
+                }
+                if(sDate.length()>0){
+                    break;
+                }
+            }
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+
+            String sID = Integer.valueOf(sChangeFileName)+"";
+//            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+
+                Date pDate = null;
+
+                try {
+                    pDate = sdfExport.parse(sDate);
+                }
+                catch (Exception e){
+                    pDate = sdfBackup.parse(sDate);
+                }
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID+". Sitzung " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void rlp_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfBackup = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String[] sSplitContentLines = sContent.split("\n");
+
+            String sDate = "";
+
+            for (String sSplitContentLine : sSplitContentLines) {
+                if(sSplitContentLine.contains("Plenarsitzung am")){
+                    System.out.println(sSplitContentLine);
+                    sDate = sSplitContentLine.split(", dem")[1];
+                }
+                if(sDate.length()>0){
+                    break;
+                }
+            }
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+
+            String sID = Integer.valueOf(sChangeFileName)+"";
+//            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+
+                Date pDate = null;
+
+                try {
+                    pDate = sdfExport.parse(sDate);
+                }
+                catch (Exception e){
+                    pDate = sdfBackup.parse(sDate);
+                }
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID+". Sitzung " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+    public static void sachsen_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfBackup = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String[] sSplitContentLines = sContent.split("\n");
+
+            String sDate = "";
+
+            for (String sSplitContentLine : sSplitContentLines) {
+                if(sSplitContentLine.contains("Plenarsaal")){
+                    System.out.println(sSplitContentLine);
+                    sDate = sSplitContentLine.split(", ")[1];
+                }
+                if(sDate.length()>0){
+                    break;
+                }
+            }
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            if(sChangeFileName.contains("_")){
+                sChangeFileName = sChangeFileName.split("_")[1];
+            }
+            String sID = Integer.valueOf(sChangeFileName)+"";
+//            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+
+                Date pDate = null;
+
+                try {
+                    pDate = sdfExport.parse(sDate);
+                }
+                catch (Exception e){
+                    pDate = sdfBackup.parse(sDate);
+                }
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID+". Sitzung " + sdfBackup.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+    public static void sachsen_anhalt_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfBackup = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String[] sSplitContentLines = sContent.split("\n");
+
+            String sDate = "";
+
+            for (String sSplitContentLine : sSplitContentLines) {
+                if(sSplitContentLine.contains("Sitzung, ")){
+                    System.out.println(sSplitContentLine);
+                    sDate = sSplitContentLine.split(", ")[2];
+                }
+                if(sDate.length()>0){
+                    break;
+                }
+            }
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+            if(sChangeFileName.contains("_")){
+                sChangeFileName = sChangeFileName.split("_")[1];
+            }
+            String sID = Integer.valueOf(sChangeFileName)+"";
+//            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+
+                Date pDate = null;
+
+                if(sDate.equalsIgnoreCase("27.042023")){
+                    sDate = "27.04.2023";
+                }
+
+                try {
+                    pDate = sdfExport.parse(sDate);
+                }
+                catch (Exception e){
+
+                    pDate = sdfBackup.parse(sDate);
+                }
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID+". Sitzung " + sdfBackup.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void hessen_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String[] sSplitContentLines = sContent.split("\n");
+
+            String sDate = "";
+
+            for (String sSplitContentLine : sSplitContentLines) {
+                if(sSplitContentLine.startsWith("Wiesbaden")){
+                    System.out.println(sSplitContentLine);
+                    if(sSplitContentLine.contains("den ")) {
+                        sDate = sSplitContentLine.split("den ")[1];
+                    }
+                    else{
+                        String[] sSplit = sSplitContentLine.split(", ");
+                        sDate = sSplit[sSplit.length-1];
+                    }
+                }
+                if(sDate.length()>0){
+                    break;
+                }
+            }
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+
+            String sID = sChangeFileName;
+//            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdfExport.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID + " " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
+
+    public static void bremen_DE(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String[] sSplitContentLines = sContent.split("\n");
+
+            String sDate = "";
+
+
+            for (String sSplitContentLine : sSplitContentLines) {
+                if(sSplitContentLine.startsWith("am ") || sSplitContentLine.contains(" am ")){
+                    sDate = sSplitContentLine.substring(sSplitContentLine.indexOf("dem ")+4);
+                    if(sDate.contains("und")){
+                        sDate = sDate.substring(0, sDate.indexOf(", "));
+                    }
+                }
+
+                if(sDate.length()>0){
+                    break;
+                }
+            }
+
+            String sFileName = file.getName();
+            sFileName = sFileName.replace(".txt", "");
+            String sChangeFileName = sFileName;
+
+
+            String sID = Integer.valueOf(sChangeFileName.split("L")[1])+"";
+//            String sDate = sChangeFileName.substring(sChangeFileName.indexOf("PL")+2, sChangeFileName.indexOf("gesend"));
+
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.replace(file.getName(), "");
+            try {
+                Date pDate = sdfExport.parse(sDate);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sFileName);
+                dmd.setDocumentId(sFileName);
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+""+sID+"_"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("abrami");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.setSubtitle(sID + " " + sdfExport.format(pDate));
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                System.out.println(file.getName());
                 throw new RuntimeException(e);
             }
 
