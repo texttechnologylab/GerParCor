@@ -35,6 +35,8 @@ public class Merger {
     public static void main(String[] args){
 
         try {
+            vorarlbergAT_new("/storage/projects/abrami/GerParCor/txt/Austria/Vorarlberg_test4/", "Austria/Vorarlberg/");
+//            vorarlbergAT("/storage/projects/abrami/GerParCor/txt/Austria/Vorarlberg/", "Austria/Vorarlberg/");
 //            bundesratAT("/storage/projects/abrami/GerParCor/txt/Austria/Bundesrat/", "Austria/Bundesrat/");
 //            nationalratAT("/storage/projects/abrami/GerParCor/txt/Austria/Nationalrat/", "Austria/Nationalrat/");
 //            kaerntenAT("/storage/projects/abrami/GerParCor/txt/Austria/Kaernten/", "Austria/Kaernten/");
@@ -61,7 +63,7 @@ public class Merger {
 //            sachsen_DE("/storage/projects/abrami/GerParCor/txt/Germany/Sachsen/","Germany/Sachsen/");
 //            thueringenDE("/storage/projects/abrami/GerParCor/txt/Germany/Thueringen/","Germany/Thueringen/");
 //            baWueDE_older("/storage/projects/abrami/GerParCor/txt/Germany/BadenWuertemmberg/","Germany/BadenWuertemmberg/");
-            lichtenstein("/storage/projects/abrami/GerParCor/txt/Liechtenstein/","Liechtenstein/");
+//            lichtenstein("/storage/projects/abrami/GerParCor/txt/Liechtenstein/","Liechtenstein/");
 
 
         } catch (IOException e) {
@@ -644,7 +646,190 @@ public class Merger {
         }
 
 
+    }
+
+    public static void vorarlbergAT_new(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+//        fSet = fSet.stream().filter(f->f.getName().contains("#1")).collect(Collectors.toSet());
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfShort = new SimpleDateFormat("d.M.yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfOCR = new SimpleDateFormat("yyyyMMdd", Locale.GERMAN);
+        SimpleDateFormat sdfYear = new SimpleDateFormat("yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+            String sFileName = file.getName();
+            System.out.println(sFileName);
+            sFileName = sFileName.replace(".txt", "");
+
+            sFileName = sFileName.contains("09##13. und 14.12.2006##Komplette_Sitzung") ? "09##13.12.2006##Komplette_Sitzung" : sFileName;
+
+            String sSplit[] = sFileName.split("##");
+            String sID = sSplit[0];
+
+            try {
+                int iCheck = Integer.valueOf(sID);
+            }
+            catch (Exception e){
+                sID = "00";
+            }
+
+            String sDatum = sSplit[1];
+
+            System.out.println(file.getAbsolutePath());
+            String subPath = file.getAbsolutePath().replace(sInput, "");
+            subPath = subPath.substring(0, subPath.indexOf("/"));
+
+            Date pDate = null;
+
+            try {
+                pDate = sdf.parse(sDatum);
+            } catch (ParseException pe){
+                System.out.println(pe.getMessage());
+            }
+            if(pDate==null){
+                String sDescription = sSplit[2];
+                try {
+                    if (sDescription.contains("6. Sitzung des XXI. Vorarlberger")) {
+                        pDate = sdf.parse("12.07.1972");
+                    }
+                    if (sDescription.contains("am 2. und 3. Juli 1980")) {
+                        pDate = sdf.parse("02.07.1980");
+                    }
+
+                    if (sDescription.contains("OCR")) {
+                        String[] dSplit = sDescription.split(" ");
+                        pDate = sdfOCR.parse(dSplit[1]);
+                    }
+
+
+                    if(sDescription.split(" ").length==2){
+                        String tDateSplit = sDescription.split(" ")[0];
+                        try {
+                            pDate = sdfOCR.parse(tDateSplit);
+
+                        }
+                        catch (Exception e){
+
+                        }
+                    }
+
+                    if(pDate==null) {
+                        String sNewDate = sDescription.contains("14. und 15. Oktober 1970") ? "14.10.1970" : sDescription;
+                        sNewDate = sDescription.contains("16. und 17. Dezember 1970") ? "16.12.1970" : sNewDate;
+                        sNewDate = sDescription.contains("15. und 16. Dezember 1971") ? "15.12.1971" : sNewDate;
+                        sNewDate = sDescription.contains("7. und 8. Juli 1982") ? "07.07.1982" : sNewDate;
+                        sNewDate = sDescription.contains("12., 13. und 14. Dezember 1972") ? "12.12.1972" : sNewDate;
+                        sNewDate = sDescription.contains("17. und 18 Juli 1974") ? "17.07.1974" : sNewDate;
+                        sNewDate = sDescription.contains("28. Februar und 1. März 1973") ? "28.02.1973" : sNewDate;
+                        sNewDate = sDescription.contains("17. und 18. Oktober 1972") ? "17.10.1972" : sNewDate;
+                        sNewDate = sDescription.contains("8. und 9. Juli 1981") ? "08.07.1981" : sNewDate;
+                        sNewDate = sDescription.contains("fromDocFile-4B30B6CA45AAC7166525714600350EBF") ? "10.12.2003" : sNewDate;
+                        sNewDate = sDescription.contains("7. und 9. Dezember 1983") ? "07.12.1983" : sNewDate;
+                        sNewDate = sDescription.contains("11. und 12. Juli 1984") ? "11.07.1984" : sNewDate;
+                        sNewDate = sDescription.contains("19690716") ? "16.07.1969" : sNewDate;
+                        sNewDate = sDescription.contains("19641221") ? "21.12.1964" : sNewDate;
+                        sNewDate = sDescription.contains("19661214") ? "14.12.1966" : sNewDate;
+                        sNewDate = sDescription.contains("19681211") ? "11.12.1968" : sNewDate;
+                        sNewDate = sDescription.contains("19690129") ? "29.01.1969" : sNewDate;
+                        sNewDate = sDescription.contains("19651209") ? "09.12.1965" : sNewDate;
+                        sNewDate = sDescription.contains("19661123") ? "23.11.1966" : sNewDate;
+                        sNewDate = sDescription.contains("19. und 20 Juni 1974") ? "19.06.1974" : sNewDate;
+                        sNewDate = sDescription.contains("18. und 19.12.2019") ? "18.12.2019" : sNewDate;
+                        sNewDate = sDescription.contains("2., 3. und 4. Dezember 1981") ? "02.12.1981" : sNewDate;
+                        sNewDate = sDescription.contains("3., 4. und 5. Dezember 1980") ? "03.12.1988" : sNewDate;
+                        sNewDate = sDescription.contains("17. und 18. November 1971") ? "17.11.1971" : sNewDate;
+                        sNewDate = sDescription.contains("12. und 13. Dezember 1979") ? "12.12.1979" : sNewDate;
+                        sNewDate = sDescription.contains("6. und 7. Juli 1983") ? "06.07.1983" : sNewDate;
+                        sNewDate = sDescription.contains("12. und 13. Dezember 1973") ? "12.12.1973" : sNewDate;
+                        sNewDate = sDescription.contains("17. und 18. Dezember 1969") ? "17.12.1969" : sNewDate;
+                        sNewDate = sDescription.contains("17. und 18. Oktober 1973") ? "17.10.1973" : sNewDate;
+                        sNewDate = sDescription.contains("17. und 18. Oktober 1973") ? "17.10.1973" : sNewDate;
+                        sNewDate = sDescription.contains("9. und 10. Dezember 1982") ? "09.12.1982" : sNewDate;
+                        sNewDate = sDescription.contains("29. und 30 Mai 1974") ? "19.05.1974" : sNewDate;
+                        sNewDate = sDescription.contains("0325_22_Landesregierung_06_Sitzung_2020_DRUCK") ? "08.07.2020" : sNewDate;
+
+                        if (pDate == null) {
+                            pDate = sdf.parse(sNewDate);
+                        }
+                    }
+
+                }
+                catch (ParseException pe1){
+                    System.out.println(pe1.getMessage());
+                }
+
+                if(pDate==null){
+                    String[] sLines = sContent.split("\n");
+
+                    String sNewDatum= "";
+                    for (String sLine : sLines) {
+                        if(sLine.contains("LT-Sitzung")){
+                            System.out.println(sLine);
+                            sNewDatum = sLine.split("vom ")[1];
+                        }
+
+                        try {
+                            pDate = sdfShort.parse(sNewDatum);
+                            if(pDate!=null){
+                                break;
+                            }
+                        } catch (ParseException e) {
+                        }
+
+                    }
+
+                }
+
+            }
+
+            DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+            dmd.setDocumentTitle(sID+"_"+sDatum);
+            dmd.setDocumentId(sID+"_"+sDatum);
+            dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+"/"+sdfYear.format(pDate)+"/"+sID+"_"+sDatum);
+            dmd.setDocumentBaseUri(globalOutput);
+
+            DocumentModification dm1 = new DocumentModification(emptyCas);
+            dm1.setUser("bagci");
+            FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+            dm1.setTimestamp(ft.toMillis());
+            dm1.setComment("Download");
+            dm1.addToIndexes();
+
+            DocumentModification dm2 = new DocumentModification(emptyCas);
+            dm2.setUser("abrami");
+            dm2.setTimestamp(ft.toMillis());
+            dm2.setComment("Conversion");
+            dm2.addToIndexes();
+
+            DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+            da.setTimestamp(pDate.getTime());
+            da.setDateDay(pDate.getDay());
+            da.setDateMonth(pDate.getMonth());
+            da.setDateYear(pDate.getYear());
+            da.setSubtitle(Integer.valueOf(sID)+". Sitzung vom "+sDatum);
+            da.addToIndexes();
+
+            SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+        }
+
+
     }    public static void
+
 
     tirolAT(String sInput, String sOutput) throws IOException, UIMAException {
 
