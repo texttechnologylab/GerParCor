@@ -52,7 +52,7 @@ public class MongoDBConnectionHandler {
         seeds.add(seed);
         // defining some Options
         MongoClientOptions options = MongoClientOptions.builder()
-                .connectionsPerHost(20)
+                .connectionsPerHost(10)
                 .socketTimeout(300000)
                 .maxWaitTime(300000)
                 .socketKeepAlive(true)

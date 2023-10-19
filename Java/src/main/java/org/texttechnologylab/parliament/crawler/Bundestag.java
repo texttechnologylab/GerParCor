@@ -2,8 +2,10 @@ package org.texttechnologylab.parliament.crawler;
 
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
 import org.apache.uima.UIMAException;
+import org.apache.uima.cas.SerialFormat;
 import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.util.CasIOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.select.Elements;
 import org.junit.Test;
@@ -18,6 +20,7 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -44,8 +47,9 @@ public class Bundestag {
 
         try {
 
-            String sOutputPath = "/tmp/bundestag/19/xmi/";
-            TextImagerProcessing tiProcessing = new TextImagerProcessing(sOutputPath);
+            String sOutputPath = "Bundestag/15/";
+            String sBasePath = "/tmp/Bundestag/";
+//            TextImagerProcessing tiProcessing = new TextImagerProcessing(sOutputPath);
 //            System.setProperty("accessExternalDTD", "true");
             // optional, but recommended
             // process XML securely, avoid attacks like XML External Entities (XXE)
@@ -83,9 +87,10 @@ public class Bundestag {
 //            });
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+            SimpleDateFormat sdfExport = new SimpleDateFormat("yyyy-MM-dd");
 
             // processing
-            String sPath = "/tmp/bundestag/19/xml";
+            String sPath = "/home/staff_homes/abrami/Downloads/pp15-data/";
             Set<File> fileSet = FileUtils.getFiles(sPath, ".xml");
 
             fileSet.stream().forEach(f->{
@@ -123,21 +128,24 @@ public class Bundestag {
 //                    sText =  sText.replaceAll("\n", " ");
 
                     JCas pCas = JCasFactory.createText(sText, "de");
+                    Date pDate = sdf.parse(sDatum);
 
                     DocumentMetaData dmd = DocumentMetaData.create(pCas);
                     dmd.setDocumentTitle(sType+" vom "+sDatum);
-                    dmd.setDocumentId(f.getName());
+                    dmd.setDocumentId(sdfExport.format(pDate));
+                    dmd.setDocumentBaseUri(sBasePath);
+                    dmd.setDocumentUri(sBasePath+sOutputPath+sdfExport.format(pDate));
 
                     DocumentAnnotation dma = new DocumentAnnotation(pCas);
                     dma.setAuthor("Bundestagsverwaltung");
-                    dma.setSubtitle("Wahlperiode "+sPeriode+": "+sText +" - "+sNR);
+                    dma.setSubtitle("Wahlperiode "+sPeriode+": "+sNR);
 
-                    Date pDate = sdf.parse(sDatum);
 
                     dma.setDateDay(Integer.parseInt(sdfDay.format(pDate)));
                     dma.setDateMonth(Integer.parseInt(sdfMonth.format(pDate)));
                     dma.setDateYear(Integer.parseInt(sdfYear.format(pDate)));
                     dma.setTimestamp(pDate.getTime());
+                    dma.addToIndexes();
 
                     DocumentModification docMod = new DocumentModification(pCas);
                     docMod.setUser("abrami");
@@ -149,9 +157,9 @@ public class Bundestag {
                     dm.setTimestamp(System.currentTimeMillis());
                     dm.setUser("abrami");
                     dm.setComment("Converting");
+                    dm.addToIndexes();
 
-                    tiProcessing.runPipeline(pCas);
-
+                    CasIOUtils.save(pCas.getCas(), new FileOutputStream(new File(dmd.getDocumentUri()+".xmi")), SerialFormat.XMI_1_1);
 
                 } catch (SAXException e) {
                     e.printStackTrace();

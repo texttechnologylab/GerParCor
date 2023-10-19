@@ -1,27 +1,78 @@
 package org.texttechnologylab.parliament.duui;
 
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.GridFSUploadStream;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import com.mongodb.client.model.Filters;
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
+import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
+import de.tudarmstadt.ukp.dkpro.core.api.syntax.type.dependency.Dependency;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
+import org.apache.uima.cas.SerialFormat;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.util.CasIOUtils;
+import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.dkpro.core.api.io.JCasFileWriter_ImplBase;
+import org.texttechnologylab.annotation.AnnotationComment;
 import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.parliament.database.MongoDBConfig;
 import org.texttechnologylab.parliament.database.MongoDBConnectionHandler;
+import org.texttechnologylab.utilities.helper.StringUtils;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.texttechnologylab.parliament.duui.MongoDBStatics.GRIDID;
+import static org.texttechnologylab.parliament.duui.MongoDBStatics.iChunkSizeBytes;
 
 public class MongoDBImporter extends JCasFileWriter_ImplBase {
+
 
     public static final String PARAM_DBConnection = "dbconnection";
     @ConfigurationParameter(name = PARAM_DBConnection, mandatory = true)
     protected String dbconnection;
 
+
+    public static final String PARAM_Parliament = "parliament";
+    @ConfigurationParameter(name = PARAM_Parliament, mandatory = true)
+    protected String parliament;
+
+    public static final String PARAM_Country = "country";
+    @ConfigurationParameter(name = PARAM_Country, mandatory = true)
+    protected String country;
+
+    public static final String PARAM_Subpath = "subpath";
+    @ConfigurationParameter(name = PARAM_Subpath, mandatory = false, defaultValue = "")
+    protected String subpath;
+
+    public static final String PARAM_Comment = "comment";
+    @ConfigurationParameter(name = PARAM_Comment, mandatory = false, defaultValue = "")
+    protected String comment;
+
+    public static final String PARAM_Devision = "devision";
+    @ConfigurationParameter(name = PARAM_Devision, mandatory = true)
+    protected String devision;
+
+    public static final String PARAM_Historical = "historical";
+    @ConfigurationParameter(name = PARAM_Historical, mandatory = true)
+    protected String historical;
+
+
     MongoDBConnectionHandler dbConnectionHandler = null;
+    GridFSBucket gridFS = null;
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -31,6 +82,7 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
         try {
             dbConfig = new MongoDBConfig(dbconnection);
             dbConnectionHandler = new MongoDBConnectionHandler(dbConfig);
+            this.gridFS = GridFSBuckets.create(dbConnectionHandler.getDatabase(), "grid");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -40,22 +92,136 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
 
-        System.out.println(aJCas);
-        System.out.println("Annotations: "+JCasUtil.selectAll(aJCas).size());
-        JCasUtil.select(aJCas, DocumentAnnotation.class).stream().forEach(a->{
-            System.out.println(a.getAuthor());
-            System.out.println(a.getSubtitle());
-            System.out.println(a.getPlace());
-            System.out.println(a.getTimestamp());
-            DocumentMetaData dmd = DocumentMetaData.get(aJCas);
-            System.out.println(dmd.getDocumentUri());
-            System.out.println(dmd.getDocumentId());
-            System.out.println(dmd.getDocumentTitle());
-        });
-
-
+        try {
+            importJCas(aJCas);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
+    public void importJCas(JCas pCas) throws IOException, NoSuchAlgorithmException {
+
+        String sGridId = "";
+
+        try {
+            AnnotationComment pGridID = JCasUtil.select(pCas, AnnotationComment.class).stream().filter(ac -> {
+                return ac.getKey().equals(GRIDID);
+            }).findFirst().get();
+            if(pGridID!=null){
+                sGridId = pGridID.getValue();
+            }
+        }
+        catch (Exception e){
+//            System.out.println(e.getMessage());
+            String sHash = StringUtils.toMD5(pCas.getDocumentText());
+            sGridId = sHash;
+            AnnotationComment pGridID = new AnnotationComment(pCas);
+            pGridID.setKey(GRIDID);
+            pGridID.setValue(sGridId);
+            pGridID.addToIndexes();
+        }
+
+        GridFSUploadOptions options = new GridFSUploadOptions()
+                .chunkSizeBytes(iChunkSizeBytes)
+                .metadata(new Document("type", "uima"))
+                .metadata(new Document(GRIDID, sGridId));
+
+//        Bson pQuery = Filters.eq("metadata."+GRIDID, sGridId);
+        Bson pQuery = Filters.eq("hash", sGridId);
+
+        MongoCursor<Document> mongoDocuments = dbConnectionHandler.getCollection().find(pQuery).cursor();
+
+        if(!mongoDocuments.hasNext()){
+
+        GridFSUploadStream uploadStream = gridFS.openUploadStream(sGridId, options);
+        String newObjectID = uploadStream.getObjectId().toString();
+
+        CasIOUtils.save(pCas.getCas(), uploadStream, SerialFormat.XMI_1_1);
+
+//        byte[] data = Files.readAllBytes(tf.toPath());
+//        uploadStream.write(data);
+        uploadStream.close();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String finalSGridId = sGridId;
+
+        Set<Class> whiteList = new HashSet<>();
+        whiteList.add(Sentence.class);
+        whiteList.add(Token.class);
+        whiteList.add(NamedEntity.class);
+        whiteList.add(Dependency.class);
+        whiteList.add(Lemma.class);
+
+        JCasUtil.select(pCas, DocumentAnnotation.class).stream().forEach(a->{
+            DocumentMetaData dmd = DocumentMetaData.get(pCas);
+
+            Document nDocument = new Document();
+            nDocument.put("id", dmd.getDocumentId());
+            nDocument.put("documentURI", dmd.getDocumentUri());
+            nDocument.put("documentId", dmd.getDocumentId());
+            nDocument.put("documentBaseURI", dmd.getDocumentBaseUri());
+            nDocument.put("hash", finalSGridId);
+            nDocument.put("name", sdf.format(a.getTimestamp()));
+
+            Document pMeta = new Document();
+            pMeta.put("country", country);
+            pMeta.put("parliament", parliament);
+            if(subpath.length()>0) { pMeta.put("subpath", subpath); }
+            if(comment.length()>0) { pMeta.put("comment", comment); }
+            pMeta.put("historical", historical.equalsIgnoreCase("true") ? true : false);
+            pMeta.put("devision", devision);
+
+            nDocument.put("meta", pMeta);
+
+            Document pAnnotations = new Document();
+            for (Class aClass : whiteList) {
+                pAnnotations.put(aClass.getSimpleName(), countAnnotations(pCas, aClass));
+            }
+            nDocument.put("annotations", pAnnotations);
+
+            try{
+                nDocument.put("nameBackup", dmd.getDocumentTitle());
+            }
+            catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+            nDocument.put("timestamp", a.getTimestamp());
+            nDocument.put("year", a.getDateYear());
+            nDocument.put("month", a.getDateMonth());
+            nDocument.put("day", a.getDateDay());
+            nDocument.put("grid", finalSGridId);
+
+            dbConnectionHandler.getCollection().insertOne(nDocument);
+
+        });
+
+//            try (GridFSDownloadStream downloadStream = gridFS.openDownloadStream(finalSGridId)) {
+//                try {
+//                    JCas newCas = JCasFactory.createJCas();
+//
+//                    CasIOUtils.load(downloadStream, newCas.getCas());
+//
+//                    System.out.println("Before: "+JCasUtil.selectAll(pCas).size());
+//                    System.out.println("After: "+JCasUtil.selectAll(newCas).size());
+//
+//                } catch (UIMAException e) {
+//                    throw new RuntimeException(e);
+//                }
+//
+//            }
+
+        }
+    }
+
+    private int countAnnotations(JCas pCas, Class pType){
+
+        int iResult = 0;
+            iResult = JCasUtil.select(pCas, pType).size();
+        return iResult;
+
+    }
 
 }

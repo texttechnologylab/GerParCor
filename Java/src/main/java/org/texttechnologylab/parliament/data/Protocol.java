@@ -1,5 +1,6 @@
 package org.texttechnologylab.parliament.data;
 
+import org.apache.uima.UIMAException;
 import org.apache.uima.jcas.JCas;
 
 import java.io.File;
@@ -9,14 +10,9 @@ public interface Protocol extends Comparable<Protocol> {
 
     String getID();
 
-    Date getStartDate();
-    void setStartDate(Date pDate);
-
     Date getDate();
     void setDate(Date pDate);
 
-    Date getEndDate();
-    void setEndDate(Date pDate);
 
     String getTitle();
     void setTitle(String sValue);
@@ -31,7 +27,24 @@ public interface Protocol extends Comparable<Protocol> {
     String getParliament();
     void setParliament(String sValue);
 
+    String getDevision();
+    void setDevision(String sValue);
+
+    String getCountry();
+    void setCountry(String sValue);
+
+    String getSubPath();
+    void setSubPath(String sValue);
+
+    boolean isHistoric();
+    void setHistoric(boolean bValue);
+
+    String getUIMADocumentURI();
+    String getUIMADocumentBaseURI();
+    String getUIMADocumentID();
+    String getName();
+
     File getDocumentAsFile();
 
-    JCas getDocumentAsJCas();
+    JCas getDocumentAsJCas() throws UIMAException;
 }

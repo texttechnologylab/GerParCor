@@ -1,14 +1,18 @@
 package org.texttechnologylab.parliament;
 
+import org.junit.jupiter.api.Test;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.DUUIComposer;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.driver.DUUIUIMADriver;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.io.AsyncCollectionReader;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.lua.DUUILuaContext;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.lua.LuaConsts;
+import org.texttechnologylab.parliament.data.ParliamentFactory;
+import org.texttechnologylab.parliament.data.impl.ParliamentFactory_Impl;
 import org.texttechnologylab.parliament.database.MongoDBConfig;
 import org.texttechnologylab.parliament.database.MongoDBConnectionHandler;
 import org.texttechnologylab.parliament.duui.MongoDBImporter;
 import org.texttechnologylab.parliament.rest.RestHandler;
+import org.texttechnologylab.uimadb.databases.mongo.Mongo;
 import spark.Spark;
 import spark.servlet.SparkApplication;
 
@@ -21,33 +25,14 @@ public class GerParCor implements SparkApplication {
 
     public static void main(String[] args) throws Exception {
         GerParCor parliament = new GerParCor();
-        importData();
+//        importData();
 
         parliament.init();
     }
 
     public static void importData() throws Exception {
 
-        int iWorkers = 1;
 
-        AsyncCollectionReader testReader = new AsyncCollectionReader("/storage/xmi/GerParCorDownload", ".xmi.gz", 1, 10, false, "/tmp/testgerparcor", false, "all");
-
-        DUUILuaContext ctx = new DUUILuaContext().withJsonLibrary();
-
-        DUUIComposer composer = new DUUIComposer()
-                //       .withStorageBackend(new DUUIArangoDBStorageBackend("password",8888))
-                .withWorkers(iWorkers)
-                .withLuaContext(ctx).withSkipVerification(true);
-
-        // Instantiate drivers with options
-        DUUIUIMADriver uima_driver = new DUUIUIMADriver();
-
-        // A driver must be added before components can be added for it in the composer.
-        composer.addDriver(uima_driver);
-
-        composer.add(new DUUIUIMADriver.Component(createEngineDescription(MongoDBImporter.class, MongoDBImporter.PARAM_DBConnection, "/home/staff_homes/abrami/Projects/GitHub/GerParCor/Java/src/main/resources/rw")).build().withScale(iWorkers));
-
-        composer.run(testReader, "import");
 
     }
 
@@ -62,7 +47,9 @@ public class GerParCor implements SparkApplication {
             MongoDBConfig dbConfig = new MongoDBConfig(sDBConfig);
             MongoDBConnectionHandler pHandler = new MongoDBConnectionHandler(dbConfig);
 
-            RestHandler m = new RestHandler(pHandler);
+            ParliamentFactory pFactory = new ParliamentFactory_Impl(pHandler);
+
+            RestHandler m = new RestHandler(pFactory);
             m.init();
 
 
@@ -77,4 +64,5 @@ public class GerParCor implements SparkApplication {
     public void destroy() {
         SparkApplication.super.destroy();
     }
+
 }

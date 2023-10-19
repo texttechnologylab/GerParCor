@@ -13,10 +13,14 @@ public interface ParliamentFactory {
 
     Set<Protocol> listProtocols();
     Set<Protocol> listProtocols(String sParliament);
+    Set<Protocol> listProtocols(String sParliament, String sDevision);
     Set<Protocol> listProtocols(String sParliament, Date pStartDate, Date pEndDate);
 
     Set<Protocol> listProtocols(Date pStartDate, Date pEndDate);
 
-    
+    Set<String> listCountries();
+
+    Set<String> listDevisions();
+
 
 }

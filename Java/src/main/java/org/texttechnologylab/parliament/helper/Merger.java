@@ -796,9 +796,9 @@ public class Merger {
             }
 
             DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
-            dmd.setDocumentTitle(sID+"_"+sDatum);
-            dmd.setDocumentId(sID+"_"+sDatum);
-            dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+"/"+sdfYear.format(pDate)+"/"+sID+"_"+sDatum);
+            dmd.setDocumentTitle(sID+"_"+sdf.format(pDate));
+            dmd.setDocumentId(sID+"_"+sdf.format(pDate));
+            dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+"/"+sdfYear.format(pDate)+"/"+sID+"_"+sdf.format(pDate));
             dmd.setDocumentBaseUri(globalOutput);
 
             DocumentModification dm1 = new DocumentModification(emptyCas);
@@ -819,7 +819,7 @@ public class Merger {
             da.setDateDay(pDate.getDay());
             da.setDateMonth(pDate.getMonth());
             da.setDateYear(pDate.getYear());
-            da.setSubtitle(Integer.valueOf(sID)+". Sitzung vom "+sDatum);
+            da.setSubtitle(Integer.valueOf(sID)+". Sitzung vom "+sdf.format(pDate));
             da.addToIndexes();
 
             SimplePipeline.runPipeline(emptyCas, nlp);
