@@ -33,7 +33,7 @@ public class Protocol_Impl implements Protocol {
 
     @Override
     public String getID() {
-        return pDocument.getString("_id");
+        return pDocument.getObjectId("_id").toString();
     }
 
     @Override
@@ -189,4 +189,6 @@ public class Protocol_Impl implements Protocol {
     public String toString() {
         return this.getCountry()+"\t"+this.getID()+"\t"+this.getName();
     }
+
+
 }

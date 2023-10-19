@@ -76,12 +76,16 @@
 <#--Is self-explanatory as far as it shows.-->
 <#--<div class="grid-container">-->
 
+<#--<#list factory.listProtocols("Germany", "National") as p>-->
+<#--    ${p}<br>-->
+<#--</#list>-->
+
     <#list factory.listCountries() as c>
         <h1>${c}</h1><br>
         <#list factory.listDevisions() as d>
             <h2>${d}</h2><br>
             <#list factory.listProtocols(c, d) as p>
-                ${p}<br>
+                ${p} ${p.getParliament()}<br>
             </#list>
         </#list>
     </#list>
