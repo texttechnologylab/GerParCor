@@ -3,7 +3,6 @@ package org.texttechnologylab.parliament.data.impl;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.*;
 import org.bson.BsonDocument;
-import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.texttechnologylab.parliament.data.ParliamentFactory;
@@ -11,6 +10,8 @@ import org.texttechnologylab.parliament.data.Protocol;
 import org.texttechnologylab.parliament.database.MongoDBConnectionHandler;
 
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -120,5 +121,25 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
         });
 
         return rSet;
+    }
+
+    @Override
+    public void getTimeRanges(){
+        List<Bson> query = new ArrayList<>();
+
+        query.add(Aggregates.unwind("$timestamp"));
+        query.add(Aggregates.unwind("$meta.country"));
+        query.add(Aggregates.group("$meta.parliament", new BsonField("valueMin", BsonDocument.parse("{ $min: \"$timestamp\" }")), new BsonField("valueMax", BsonDocument.parse("{ $max: \"$timestamp\" }"))));
+        query.add(Aggregates.sort(Sorts.ascending("meta.country", "meta.parliament")));
+
+        MongoCursor<Document> pResult = this.getDatabaseHandler().getCollection().aggregate(query).cursor();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd");
+        pResult.forEachRemaining(r->{
+
+            System.out.println(r.get("_id") +" \t & " + sdf.format(new Timestamp(r.getLong("valueMin"))) +" \t & " + sdf.format(new Timestamp(r.getLong("valueMax"))) );
+        });
+
+
     }
 }

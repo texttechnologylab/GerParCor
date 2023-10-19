@@ -35,7 +35,8 @@ public class Merger {
     public static void main(String[] args){
 
         try {
-            vorarlbergAT_new("/storage/projects/abrami/GerParCor/txt/Austria/Vorarlberg_test4/", "Austria/Vorarlberg/");
+            oberoestereich_AT("/storage/projects/abrami/GerParCor/txt/Oberoestereich/", "Austria/Oberoestereich/");
+//            vorarlbergAT_new("/storage/projects/abrami/GerParCor/txt/Austria/Vorarlberg_test4/", "Austria/Vorarlberg/");
 //            vorarlbergAT("/storage/projects/abrami/GerParCor/txt/Austria/Vorarlberg/", "Austria/Vorarlberg/");
 //            bundesratAT("/storage/projects/abrami/GerParCor/txt/Austria/Bundesrat/", "Austria/Bundesrat/");
 //            nationalratAT("/storage/projects/abrami/GerParCor/txt/Austria/Nationalrat/", "Austria/Nationalrat/");
@@ -1278,6 +1279,87 @@ public class Merger {
 
     }
 
+    public static void oberoestereich_AT(String sInput, String sOutput) throws IOException, UIMAException {
+
+        Set<File> fSet = FileUtils.getFiles(sInput, ".txt");
+
+        JCas emptyCas = JCasFactory.createJCas();
+        AnalysisEngine nlp = nlp(globalOutput);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfYear = new SimpleDateFormat("yyyy", Locale.GERMAN);
+
+        for (File file : fSet) {
+
+            emptyCas.reset();
+
+            String sContent = FileUtils.getContentFromFile(file);
+            emptyCas.setDocumentText(sContent);
+            emptyCas.setDocumentLanguage("de");
+
+
+            String sPath = file.getAbsolutePath().replace("/"+file.getName(), "");
+
+            sPath = sPath.replace("Jänner", "Januar");
+            sPath = sPath.replace("Jaenner", "Januar");
+            sPath = sPath.replace("Maerz", "März");
+            sPath = sPath.replace("Apirl", "April");
+            sPath = sPath.replace("Julii", "Juli");
+            sPath = sPath.replace("Feber", "Februar");
+
+
+            sPath = sPath.substring(sPath.lastIndexOf("/"));
+            System.out.println(sPath);
+            sPath = sPath.replace("_Sitzung_", "__");
+            System.out.println(sPath);
+            String[] split = sPath.split("__");
+            String sID = split[0];
+            String sDatum = split[1].replace("_", " ");
+
+            String subPath = file.getAbsolutePath().split("/")[7].replace("\\.", "");
+
+
+            try {
+                Date pDate = sdf.parse(sDatum);
+
+                DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
+                dmd.setDocumentTitle(sID+" "+sdfExport.format(pDate));
+                dmd.setDocumentId(sdf.format(pDate));
+                dmd.setDocumentUri(globalOutput+""+sOutput+""+subPath+"/"+sdfExport.format(pDate));
+                dmd.setDocumentBaseUri(globalOutput);
+
+                DocumentModification dm1 = new DocumentModification(emptyCas);
+                dm1.setUser("bagci");
+                FileTime ft = (FileTime) Files.getAttribute(file.toPath(), "creationTime");
+                dm1.setTimestamp(ft.toMillis());
+                dm1.setComment("Download");
+                dm1.addToIndexes();
+
+                DocumentModification dm2 = new DocumentModification(emptyCas);
+                dm2.setUser("abrami");
+                dm2.setTimestamp(ft.toMillis());
+                dm2.setComment("Conversion");
+                dm2.addToIndexes();
+
+                DocumentAnnotation da = new DocumentAnnotation(emptyCas);
+                da.setTimestamp(pDate.getTime());
+                da.setDateDay(pDate.getDay());
+                da.setDateMonth(pDate.getMonth());
+                da.setDateYear(pDate.getYear());
+                da.addToIndexes();
+
+                SimplePipeline.runPipeline(emptyCas, nlp);
+
+
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+
+    }
 
     public static void baWueDE(String sInput, String sOutput) throws IOException, UIMAException {
 

@@ -28,7 +28,8 @@ public class RestHandler {
 
     public void init() throws IOException {
 
-        String templatesPath = "/home/staff_homes/abrami/Projects/GitHub/GerParCor/template";
+//        String templatesPath = "/home/staff_homes/abrami/Projects/GitHub/GerParCor/template";
+        String templatesPath = "/home/gabrami/Projects/GitHub/GerParCor/template";
         cf.setDirectoryForTemplateLoading(new File(templatesPath));
 
         get("/", "text/html", (request, response)->{

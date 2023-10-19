@@ -23,4 +23,5 @@ public interface ParliamentFactory {
     Set<String> listDevisions();
 
 
+    void getTimeRanges();
 }

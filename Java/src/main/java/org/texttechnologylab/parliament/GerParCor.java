@@ -30,11 +30,6 @@ public class GerParCor implements SparkApplication {
         parliament.init();
     }
 
-    public static void importData() throws Exception {
-
-
-
-    }
 
     @Override
     public void init() {
@@ -47,7 +42,10 @@ public class GerParCor implements SparkApplication {
             MongoDBConfig dbConfig = new MongoDBConfig(sDBConfig);
             MongoDBConnectionHandler pHandler = new MongoDBConnectionHandler(dbConfig);
 
+
             ParliamentFactory pFactory = new ParliamentFactory_Impl(pHandler);
+
+            pFactory.getTimeRanges();
 
             RestHandler m = new RestHandler(pFactory);
             m.init();
