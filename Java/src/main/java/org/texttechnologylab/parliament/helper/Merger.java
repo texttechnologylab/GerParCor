@@ -17,6 +17,7 @@ import org.texttechnologylab.utilities.helper.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1288,6 +1289,7 @@ public class Merger {
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd. MMMM yyyy", Locale.GERMAN);
         SimpleDateFormat sdfExport = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN);
+        SimpleDateFormat sdfBackup = new SimpleDateFormat("dd MMMM yyyy", Locale.GERMAN);
         SimpleDateFormat sdfYear = new SimpleDateFormat("yyyy", Locale.GERMAN);
 
         for (File file : fSet) {
@@ -1298,30 +1300,134 @@ public class Merger {
             emptyCas.setDocumentText(sContent);
             emptyCas.setDocumentLanguage("de");
 
+            String sPath = "";
 
-            String sPath = file.getAbsolutePath().replace("/"+file.getName(), "");
+            if(file.getName().equalsIgnoreCase("out.txt")){
+                sPath = file.getAbsolutePath().replace("/"+file.getName(), "");
+                sPath = sPath.substring(sPath.lastIndexOf("/")+1);
+            }
+            else{
+                sPath = file.getName();
+            }
+            System.out.println(file.getAbsolutePath());
 
             sPath = sPath.replace("Jänner", "Januar");
             sPath = sPath.replace("Jaenner", "Januar");
+            sPath = sPath.replace("jaenner", "Januar");
             sPath = sPath.replace("Maerz", "März");
             sPath = sPath.replace("Apirl", "April");
             sPath = sPath.replace("Julii", "Juli");
+            sPath = sPath.replace("maerz", "März");
             sPath = sPath.replace("Feber", "Februar");
+            sPath = sPath.replace("okt", "Oktober");
+            sPath = sPath.replace("Oktoberober", "Oktober");
+            sPath = sPath.replace("08_nov_2007", "08_November_2007");
+            sPath = sPath.replace("06_nov_2007", "08_November_2008");
+            sPath = sPath.replace("_nov_", "_November_");
+            sPath = sPath.replace("_feb_", "_Februar_");
+            sPath = sPath.replace(" des Oberösterreichischen Landtags am ", "__");
+            sPath = sPath.replace(" Sitzung des Oö. Landtags am ", "__");
+            sPath = sPath.replace("16_17_und_18_dezember_2003", "16 Dezember 2003");
+            sPath = sPath.replace("19._Sitzung_9.__10._Dezember_1987", "19._Sitzung_9._Dezember_1987");
+            sPath = sPath.replace("33._Sitzung_12.__13._Dezember_1983", "33._Sitzung_12._Dezember_1983");
+            sPath = sPath.replace("18._Sitzung_18.__19._Dezember_1975", "18._Sitzung_18._Dezember_1975");
+            sPath = sPath.replace("46._Sitzung_12.__13.__14._Dezember_1990", "46._Sitzung_12._Dezember_1990");
+            sPath = sPath.replace("20._Sitzung_11.__12._Dezember_1969", "20._Sitzung_11._Dezember_1969");
+            sPath = sPath.replace("13_am_14_15_und_16_dezember_2004", "13._Sitzung_16._dezember_2004");
+            sPath = sPath.replace("28._Sitzung_6.__7._Dezember_1989", "28._Sitzung_6._Dezember_1989");
+            sPath = sPath.replace("3., 4. und 5. Dezember 2019", "3. Dezember 2019");
+            sPath = sPath.replace("_am_5_6_und_7_dezember_2005", "5._Dezember_2005");
+            sPath = sPath.replace("255._Dezember_2005", "25._Sitzung_5._Dezember_2005");
+            sPath = sPath.replace("12._Sitzung_10.__11._Dezember_1962", "12._Sitzung_10._Dezember_1962");
+            sPath = sPath.replace("3._Sitzung_18.__19._Dezember_1985", "3._Sitzung_18._Dezember_1985");
+            sPath = sPath.replace("01_am_23_und_27_Oktober_2003", "01._Sitzung_23._Oktober_2003");
+            sPath = sPath.replace("33._Sitzung_9.__10._Dezember_1971", "33._Sitzung_9._Dezember_1971");
+            sPath = sPath.replace("21._Sitzung_18.__19._Dezember_1957", "21._Sitzung_18._Dezember_1957");
+            sPath = sPath.replace("03_am_15_16_und_17_dezember_2009", "03._Sitzung_15_dezember_2009");
+            sPath = sPath.replace("15., 16. und 17. Dezember 2015", "15. Dezember 2015");
+            sPath = sPath.replace("14., 15. und 16. Dezember 2021", "14. Dezember 2021");
+            sPath = sPath.replace("3._Sitzung_14.__15._Dezember_1961", "3._Sitzung_14._Dezember_1961");
+            sPath = sPath.replace("43._Sitzung_12.__13._Dezember_1972", "43._Sitzung_12._Dezember_1972");
+            sPath = sPath.replace("3._Sitzung_20.__21._Dezember_1979", "3._Sitzung_20._Dezember_1979");
+            sPath = sPath.replace("4., 5. und 6. Dezember 2018", "4. Dezember 2018");
+            sPath = sPath.replace("14_15_und_16_dezember_2010", "12._Sitzung_14._dezember_2010");
+            sPath = sPath.replace("42._Sitzung_10.__11._Dezember_1984", "42._Sitzung_10._Dezember_1984");
+            sPath = sPath.replace("26._Sitzung_11.__12._Dezember_1964", "26._Sitzung_11._Dezember_1964");
+            sPath = sPath.replace("35._Sitzung_9.__10._Dezember_1965", "35._Sitzung_9._Dezember_1965");
+            sPath = sPath.replace("11._Sitzung_10.__11._Dezember_1986", "11._Sitzung_10._Dezember_1986");
+            sPath = sPath.replace("27._Sitzung_2.__3._Dezember_1970", "27._Sitzung_2._Dezember_1970");
+            sPath = sPath.replace("13., 14. und 15. Dezember 2016", "13._Dezember_2016");
+            sPath = sPath.replace("02_03_04_dezember_2014", "02._dezember_2014");
+            sPath = sPath.replace("03_04_und_05_dezember_2013", "03._dezember_2013");
+            sPath = sPath.replace("5_6_und_7_dezember_2006", "5._dezember_2006");
+            sPath = sPath.replace("42._Sitzung_13.__14._Dezember_1978", "42._Sitzung_13._Dezember_1978");
+            sPath = sPath.replace("3._Sitzung_20.__21._Dezember_1967", "3._Sitzung_20._Dezember_1967");
+            sPath = sPath.replace("4_5_und_6_dezember_2007", "4._dezember_2007");
+            sPath = sPath.replace("2_3_und_4_dezember_2008", "2._dezember_2008");
+            sPath = sPath.replace("05_06_und_07_dezember_2011", "5._dezember_2011");
+            sPath = sPath.replace("04_05_und_06_dezember_2012", "4._dezember_2012");
+            sPath = sPath.replace("5., 6. und 7. Dezember 2017", "5._dezember_2017");
+            sPath = sPath.replace("36._Sitzung_13.__14._Dezember_1989", "36._Sitzung_13._Dezember_1989");
+            sPath = sPath.replace("10._Sitzung_17.__18._Dezember_1980", "10._Sitzung_17._Dezember_1980");
+            sPath = sPath.replace("20._Sitzung_11.__12._Dezember_1963", "20._Sitzung_11._Dezember_1963");
+            sPath = sPath.replace("38._Sitzung_17.__18._Dezember_1959", "38._Sitzung_17._Dezember_1959");
+            sPath = sPath.replace("43._Sitzung_13.__14._Dezember_1966", "43._Sitzung_13._Dezember_1966");
+            sPath = sPath.replace("33._Sitzung_5.__6._Dezember_1977", "33._Sitzung_5._Dezember_1977");
+            sPath = sPath.replace("25._Sitzung_9.__10._Dezember_1976", "25._Sitzung_9._Dezember_1976");
+            sPath = sPath.replace("11._Sitzung_5.__6._Dezember_1974", "11._Sitzung_5._Dezember_1974");
+            sPath = sPath.replace("26._Sitzung_15.__16._Dezember_1982", "26._Sitzung_15._Dezember_1982");
+            sPath = sPath.replace("3._Sitzung_18.__19._Dezember_1973", "3._Sitzung_18._Dezember_1973");
+            sPath = sPath.replace("17._Sitzung_10.__11._Dezember_1981", "17._Sitzung_10._Dezember_1981");
+            sPath = sPath.replace("46._Sitzung_13.__14._Dezember_1960", "46._Sitzung_13._Dezember_1960");
+            sPath = sPath.replace("11._Sitzung_12.__13._Dezember_1968", "11._Sitzung_12._Dezember_1968");
+            sPath = sPath.replace("30._Sitzung_18.__19._Dezember_1958", "30._Sitzung_18._Dezember_1958");
+            sPath = sPath.replace("5., 6. und 7. Dezember 2022", "5._Dezember_2022");
+
+            String[] split = null;
+
+            boolean ltg = false;
+
+            if(sPath.contains("_Sitzung_")) {
+                sPath = sPath.replace("_Sitzung_", "__");
+            }
+            else if(sPath.contains("landtagssitzung")){
+                sPath = sPath.replace("_landtagssitzung_", "__");
+                ltg = true;
+            }
+            System.out.println("\t"+sPath);
+
+            sPath = sPath.replace("am_", "");
+
+            split = sPath.split("__");
+
+            String sID = "";
+            String sDatum = "";
+
+            if(ltg){
+                sID =split[1].split("_")[0];
+                sDatum = split[1].substring(split[1].indexOf("_")+1);
+                sDatum = sDatum.replace("_", " ");
+                sDatum = sDatum.replace(".txt", "");
+            }
+            else{
+                sID =split[0];
+                sDatum = split[1].replace("_", " ");
+            }
 
 
-            sPath = sPath.substring(sPath.lastIndexOf("/"));
-            System.out.println(sPath);
-            sPath = sPath.replace("_Sitzung_", "__");
-            System.out.println(sPath);
-            String[] split = sPath.split("__");
-            String sID = split[0];
-            String sDatum = split[1].replace("_", " ");
+
 
             String subPath = file.getAbsolutePath().split("/")[7].replace("\\.", "");
 
 
             try {
-                Date pDate = sdf.parse(sDatum);
+                Date pDate = null;
+                try {
+                    pDate = sdf.parse(sDatum);
+                }
+                catch (Exception e){
+                    pDate = sdfBackup.parse(sDatum);
+                }
 
                 DocumentMetaData dmd = DocumentMetaData.create(emptyCas);
                 dmd.setDocumentTitle(sID+" "+sdfExport.format(pDate));

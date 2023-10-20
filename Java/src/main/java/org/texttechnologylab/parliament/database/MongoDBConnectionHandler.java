@@ -4,6 +4,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.*;
 import com.mongodb.client.*;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -107,7 +108,7 @@ public class MongoDBConnectionHandler {
     public Document getObject(String sID, String sCollection){
 
         BasicDBObject whereQuery = new BasicDBObject();
-        whereQuery.put("_id", sID);
+        whereQuery.put("_id", new ObjectId(sID));
 
         FindIterable<Document> result = this.getCollection(sCollection).find(whereQuery);
 

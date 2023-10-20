@@ -2,8 +2,9 @@
 <head>
     <meta charset='utf-8'>
     <meta name='author' content='Giuseppe Abrami'>
+    <meta name='author' content='TTLab'>
 
-    <title>Musterlösung Übung 4 &copy; by Giuseppe Abrami</title>
+    <title>GerParCor</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js'></script>
@@ -52,8 +53,8 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            grid-template-rows: 100% 100% 100%;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-rows: 100% 100% 100% 100%;
             grid-column-gap: 5px;
             grid-row-gap: 5px;
             align-items: start;
@@ -74,24 +75,35 @@
 
 <#--Definition of the individual containers for the respective contents.-->
 <#--Is self-explanatory as far as it shows.-->
-<#--<div class="grid-container">-->
 
 <#--<#list factory.listProtocols("Germany", "National") as p>-->
 <#--    ${p}<br>-->
 <#--</#list>-->
+<div class="grid-container">
 
     <#list factory.listCountries() as c>
-        <h1>${c}</h1><br>
-        <#list factory.listDevisions() as d>
-            <h2>${d}</h2><br>
-            <#list factory.listProtocols(c, d) as p>
-                ${p} ${p.getParliament()}<br>
+        <h1>${c}</h1>
+
+            <#list factory.listDevisions() as d>
+                <div class="topBox">${d}</div>
             </#list>
-        </#list>
+        <br>
+<#--                <#list factory.listProtocols(c, d) as p>-->
+<#--                    ${p} ${p.getParliament()}<br>-->
+
+
+<#--        <h1>${c}</h1><br>-->
+<#--        <#list factory.listDevisions() as d>-->
+<#--            <h2>${d}</h2><br>-->
+<#--            <#list factory.listProtocols(c, d) as p>-->
+<#--                ${p} ${p.getParliament()}<br>-->
+<#--            </#list>-->
+<#--        </#list>-->
+
     </#list>
+</div>
 
 
-<#--</div>-->
 
 </body>
 </html>

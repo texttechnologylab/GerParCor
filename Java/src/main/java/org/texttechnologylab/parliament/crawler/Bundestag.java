@@ -35,6 +35,131 @@ import java.util.Set;
 public class Bundestag {
 
     @Test
+    public void bundestagNeu20(){
+
+        // Instantiate the Factory
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+        SimpleDateFormat sdfDay = new SimpleDateFormat("dd");
+        SimpleDateFormat sdfMonth = new SimpleDateFormat("MM");
+        SimpleDateFormat sdfYear = new SimpleDateFormat("yyyy");
+
+
+        try {
+
+            String sOutputPath = "20/";
+            String sBasePath = "/tmp/Bundestag/";
+//            TextImagerProcessing tiProcessing = new TextImagerProcessing(sOutputPath);
+//            System.setProperty("accessExternalDTD", "true");
+            // optional, but recommended
+            // process XML securely, avoid attacks like XML External Entities (XXE)
+            dbf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
+            dbf.setValidating(false);
+            dbf.setNamespaceAware(false);
+//            dbf.setFeature("http://xml.org/sax/features/namespaces", false);
+//            dbf.setFeature("http://xml.org/sax/features/validation", false);
+//            dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", true);
+//            dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", true);
+
+            // parse XML file
+            DocumentBuilder db = dbf.newDocumentBuilder();
+
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+            SimpleDateFormat sdfExport = new SimpleDateFormat("yyyy-MM-dd");
+
+            // processing
+            String sPath = "/tmp/bundestagNeu/20";
+            Set<File> fileSet = FileUtils.getFiles(sPath, ".xml");
+
+            fileSet.stream().forEach(f->{
+
+                Document doc = null;
+                try {
+                    doc = db.parse(f);
+
+                    // optional, but recommended
+                    // http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
+                    doc.getDocumentElement().normalize();
+//                    doc.normalizeDocument();
+
+                    String sDatum = doc.getElementsByTagName("datum").item(0).getAttributes().getNamedItem("date").getNodeValue();
+                    String sPeriode = doc.getElementsByTagName("wahlperiode").item(0).getTextContent();
+                    String sNR = doc.getElementsByTagName("sitzungsnr").item(0).getTextContent();
+                    String sText = doc.getElementsByTagName("inhaltsverzeichnis").item(0).getTextContent();
+
+                    sText =  sText.replaceAll("[\\x00-\\x09]", "");
+                    sText =  sText.replaceAll("[\\x0B-\\x1F]", "");
+                    sText =  sText.replaceAll("[\\x20]", " ");
+                    sText =  sText.replaceAll("[\\x7F-\\x9F]", "");
+                    sText =  sText.replaceAll("\u0096", "'");
+                    sText =  sText.replaceAll("\u0093", "");
+                    sText =  sText.replaceAll("\u0084", "");
+                    sText =  sText.replaceAll("\u0085", "");
+                    sText =  sText.replaceAll("\\-\n", "");
+                    sText =  sText.replaceAll("\n", " ");
+                    sText =  sText.replaceAll("  ", " ");
+                    sText =  sText.replaceAll("&#38;", "&");
+//                    sText =  sText.replaceAll("\n", " ");
+//                    sText =  sText.replaceAll("I n h a l t :", "Inhalt:");
+                    //sText =  sText.replaceAll("&amp;#38", "&");
+//                    sText =  sText.replaceAll("\n", " ");
+
+                    JCas pCas = JCasFactory.createText(sText, "de");
+                    Date pDate = sdf.parse(sDatum);
+
+                    DocumentMetaData dmd = DocumentMetaData.create(pCas);
+                    dmd.setDocumentTitle(sNR+" vom "+sDatum);
+                    dmd.setDocumentId(sdfExport.format(pDate));
+                    dmd.setDocumentBaseUri(sBasePath);
+                    dmd.setDocumentUri(sBasePath+sOutputPath+sdfExport.format(pDate));
+
+                    DocumentAnnotation dma = new DocumentAnnotation(pCas);
+                    dma.setAuthor("Bundestagsverwaltung");
+                    dma.setSubtitle("Wahlperiode "+sPeriode+": "+sNR);
+
+                    dma.setDateDay(Integer.parseInt(sdfDay.format(pDate)));
+                    dma.setDateMonth(Integer.parseInt(sdfMonth.format(pDate)));
+                    dma.setDateYear(Integer.parseInt(sdfYear.format(pDate)));
+                    dma.setTimestamp(pDate.getTime());
+                    dma.addToIndexes();
+
+                    DocumentModification docMod = new DocumentModification(pCas);
+                    docMod.setUser("abrami");
+                    docMod.setComment("Initial Transformation");
+                    docMod.setTimestamp(System.currentTimeMillis());
+                    docMod.addToIndexes();
+
+                    DocumentModification dm = new DocumentModification(pCas);
+                    dm.setTimestamp(System.currentTimeMillis());
+                    dm.setUser("abrami");
+                    dm.setComment("Converting");
+                    dm.addToIndexes();
+
+                    CasIOUtils.save(pCas.getCas(), new FileOutputStream(new File(dmd.getDocumentUri()+".xmi")), SerialFormat.XMI_1_1);
+
+                } catch (SAXException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (UIMAException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+
+            });
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+
+    @Test
     public void bundestagNeu(){
 
         // Instantiate the Factory
