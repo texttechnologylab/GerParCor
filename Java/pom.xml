@@ -10,8 +10,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <ttlab.textimager.version>a1a0b0e94fdb448eb23327c760cb06f80f75c436</ttlab.textimager.version>
-        <ttlab.typesystem.version>1d23e466bcae2cf36fb06aa41ae85b319a7f2fe2</ttlab.typesystem.version>
+        <ttlab.textimager.version>2740010ef66a43710cc2f067a22505627eed0c1a</ttlab.textimager.version>
+<!--        <ttlab.textimager.version>a1a0b0e94fdb448eb23327c760cb06f80f75c436</ttlab.textimager.version>-->
+        <ttlab.typesystem.version>1.9.5</ttlab.typesystem.version>
     </properties>
 
     <build>
@@ -96,6 +97,26 @@
     <dependencies>
 
         <dependency>
+            <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
+            <artifactId>de.tudarmstadt.ukp.dkpro.core.opennlp-asl</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/de.tudarmstadt.ukp.dkpro.core/de.tudarmstadt.ukp.dkpro.core.io.text-asl -->
+        <dependency>
+            <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
+            <artifactId>de.tudarmstadt.ukp.dkpro.core.io.text-asl</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/de.tudarmstadt.ukp.dkpro.core/de.tudarmstadt.ukp.dkpro.core.tokit-asl -->
+        <dependency>
+            <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
+            <artifactId>de.tudarmstadt.ukp.dkpro.core.tokit-asl</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+
+
+
+        <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
             <version>3.12.11</version>
@@ -157,7 +178,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.texttechnologylab</groupId>
+            <groupId>com.github.texttechnologylab</groupId>
             <artifactId>DockerUnifiedUIMAInterface</artifactId>
             <version>1.0</version>
         </dependency>
@@ -190,16 +211,24 @@
         <version>d4bbe7ba52</version>
     </dependency>
 
-    <dependency>
-        <groupId>com.github.texttechnologylab</groupId>
-        <artifactId>UIMATypeSystem</artifactId>
-        <version>1d23e466bc</version>
-    </dependency>
+
+        <dependency>
+            <groupId>com.github.texttechnologylab</groupId>
+            <artifactId>UIMATypeSystem</artifactId>
+            <version>1.9.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.github.texttechnologylab.textimager-uima</groupId>
+                    <artifactId>textimager-uima-types</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <dependency>
         <groupId>com.github.texttechnologylab.textimager-uima</groupId>
         <artifactId>textimager-uima-types</artifactId>
-        <version>0.3.0.2</version>
+        <version>${ttlab.textimager.version}</version>
+<!--        <version>0.3.0.2</version>-->
         <exclusions>
             <exclusion>
                 <groupId>com.github.texttechnologylab</groupId>

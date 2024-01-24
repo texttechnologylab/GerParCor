@@ -14,12 +14,14 @@ import org.bson.Document;
 import org.json.JSONObject;
 import org.texttechnologylab.parliament.data.ParliamentFactory;
 import org.texttechnologylab.parliament.data.Protocol;
+import org.texttechnologylab.utilities.helper.ArchiveUtils;
 import org.texttechnologylab.utilities.helper.TempFileHandler;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.sql.Date;
 
 public class Protocol_Impl implements Protocol {
@@ -175,11 +177,20 @@ public class Protocol_Impl implements Protocol {
 
         String gridID = pDocument.getString("grid");
         GridFSBucket gridFS = GridFSBuckets.create(pFactory.getDatabaseHandler().getDatabase(), "grid");
+
         try (GridFSDownloadStream downloadStream = gridFS.openDownloadStream(gridID)) {
             CasIOUtils.load(downloadStream, pCas.getCas());
             CasIOUtils.save(pCas.getCas(), pOutputStream, SerialFormat.XMI_1_1);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            File tFile = TempFileHandler.getTempFile("aaa", ".xmi.gz");
+            tFile.deleteOnExit();
+            gridFS.downloadToStream(gridID, new FileOutputStream(tFile));
+            File nFile = ArchiveUtils.decompressGZ(tFile);
+            nFile.deleteOnExit();
+            Files.copy(nFile.toPath(), pOutputStream);
+
+
+
         }
 
     }
