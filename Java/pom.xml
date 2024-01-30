@@ -12,6 +12,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ttlab.textimager.version>2740010ef66a43710cc2f067a22505627eed0c1a</ttlab.textimager.version>
 <!--        <ttlab.textimager.version>a1a0b0e94fdb448eb23327c760cb06f80f75c436</ttlab.textimager.version>-->
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <ttlab.typesystem.version>1.9.5</ttlab.typesystem.version>
     </properties>
 
