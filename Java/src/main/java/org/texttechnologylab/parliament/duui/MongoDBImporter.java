@@ -27,9 +27,14 @@ import org.texttechnologylab.annotation.AnnotationComment;
 import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.parliament.database.MongoDBConfig;
 import org.texttechnologylab.parliament.database.MongoDBConnectionHandler;
+import org.texttechnologylab.utilities.helper.ArchiveUtils;
 import org.texttechnologylab.utilities.helper.StringUtils;
+import org.texttechnologylab.utilities.helper.TempFileHandler;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
@@ -39,7 +44,6 @@ import static org.texttechnologylab.parliament.duui.MongoDBStatics.GRIDID;
 import static org.texttechnologylab.parliament.duui.MongoDBStatics.iChunkSizeBytes;
 
 public class MongoDBImporter extends JCasFileWriter_ImplBase {
-
 
     public static final String PARAM_DBConnection = "dbconnection";
     @ConfigurationParameter(name = PARAM_DBConnection, mandatory = true)
@@ -104,6 +108,8 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
 
     public void importJCas(JCas pCas) throws IOException, NoSuchAlgorithmException {
 
+        boolean bCompress = true;
+
         String sGridId = "";
 
         try {
@@ -124,26 +130,31 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
             pGridID.addToIndexes();
         }
 
+
+
         GridFSUploadOptions options = new GridFSUploadOptions()
-                .chunkSizeBytes(iChunkSizeBytes)
+                .chunkSizeBytes(358400)
                 .metadata(new Document("type", "uima"))
+                .metadata(new Document("compressed", bCompress))
                 .metadata(new Document(GRIDID, sGridId));
 
-//        Bson pQuery = Filters.eq("metadata."+GRIDID, sGridId);
-        Bson pQuery = Filters.eq("hash", sGridId);
-
-        MongoCursor<Document> mongoDocuments = dbConnectionHandler.getCollection().find(pQuery).cursor();
-
-        if(!mongoDocuments.hasNext()){
-
         GridFSUploadStream uploadStream = gridFS.openUploadStream(sGridId, options);
-        String newObjectID = uploadStream.getObjectId().toString();
+        try {
 
-        CasIOUtils.save(pCas.getCas(), uploadStream, SerialFormat.XMI_1_1);
-
-//        byte[] data = Files.readAllBytes(tf.toPath());
-//        uploadStream.write(data);
-        uploadStream.close();
+            if (bCompress) {
+                File pTempFile = TempFileHandler.getTempFile("aaa", ".temp");
+                CasIOUtils.save(pCas.getCas(), new FileOutputStream(pTempFile), SerialFormat.XMI_1_1);
+                File compressedFile = ArchiveUtils.compressGZ(pTempFile);
+                byte[] data = Files.readAllBytes(compressedFile.toPath());
+                uploadStream.write(data);
+                uploadStream.flush();
+                pTempFile.delete();
+                compressedFile.delete();
+            } else {
+                CasIOUtils.save(pCas.getCas(), uploadStream, SerialFormat.XMI_1_1);
+            }
+            uploadStream.flush();
+            uploadStream.close();
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String finalSGridId = sGridId;
@@ -198,21 +209,10 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
 
         });
 
-//            try (GridFSDownloadStream downloadStream = gridFS.openDownloadStream(finalSGridId)) {
-//                try {
-//                    JCas newCas = JCasFactory.createJCas();
-//
-//                    CasIOUtils.load(downloadStream, newCas.getCas());
-//
-//                    System.out.println("Before: "+JCasUtil.selectAll(pCas).size());
-//                    System.out.println("After: "+JCasUtil.selectAll(newCas).size());
-//
-//                } catch (UIMAException e) {
-//                    throw new RuntimeException(e);
-//                }
-//
-//            }
 
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
         }
     }
 
