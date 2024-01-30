@@ -1,5 +1,6 @@
 package org.texttechnologylab.parliament.duui;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSUploadStream;
@@ -19,9 +20,9 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.dkpro.core.api.io.JCasFileWriter_ImplBase;
 import org.hucompute.textimager.uima.type.Sentiment;
-import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConfig;
-import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConnectionHandler;
 import org.texttechnologylab.annotation.AnnotationComment;
+import org.texttechnologylab.parliament.database.MongoDBConfig;
+import org.texttechnologylab.parliament.database.MongoDBConnectionHandler;
 import org.texttechnologylab.utilities.helper.ArchiveUtils;
 import org.texttechnologylab.utilities.helper.TempFileHandler;
 
@@ -150,7 +151,11 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
                 }
                 pDocument.put("meta", pMeta);
 
-                this.dbConnectionHandler.updateObject(sDocumentId, pDocument);
+                BasicDBObject whereQuery = new BasicDBObject();
+                whereQuery.put("_id", sDocumentId);
+
+                this.dbConnectionHandler.getCollection().updateOne(whereQuery, pDocument);
+//                this.dbConnectionHandler.updateObject(sDocumentId, pDocument);
                 System.out.println("Write: "+sDocumentId);
             } catch (IOException e) {
                 throw new RuntimeException(e);
