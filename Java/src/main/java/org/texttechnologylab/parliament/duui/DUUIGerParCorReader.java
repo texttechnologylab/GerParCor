@@ -40,6 +40,9 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
     private MongoDBConfig dbConfig = null;
     private MongoDBConnectionHandler mongoDBConnectionHandler = null;
 
+    private final String GRIDID = "grid";
+    private final String DOCUMENTID = "mongoid";
+
     private GridFSBucket gridFS = null;
 
     //_currentMemorySize.getAndAdd(-factor * (long) file.length);
@@ -166,7 +169,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     private void getCas(JCas pEmpty, Document pDocument) throws IOException {
 
-        String gridID = pDocument.getString("grid");
+        String gridID = pDocument.getString(GRIDID);
 
 
         try (GridFSDownloadStream downloadStream = gridFS.openDownloadStream(gridID)) {
@@ -200,7 +203,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
 
             try {
-                AnnotationComment id = JCasUtil.select(pEmpty, AnnotationComment.class).stream().filter(ac -> ac.getKey().equals("mongoid")).findFirst().get();
+                AnnotationComment id = JCasUtil.select(pEmpty, AnnotationComment.class).stream().filter(ac -> ac.getKey().equals(DOCUMENTID)).findFirst().get();
                 if (id != null) {
                     if (!(id.getValue().equalsIgnoreCase(pDocument.getObjectId("_id").toString()))) {
                         id.setValue(pDocument.getObjectId("_id").toString());
@@ -209,8 +212,23 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
                 }
             } catch (Exception e) {
                 AnnotationComment id = new AnnotationComment(pEmpty);
-                id.setKey("mongoid");
+                id.setKey(DOCUMENTID);
                 id.setValue(pDocument.getObjectId("_id").toString());
+                id.addToIndexes();
+            }
+
+            try {
+                AnnotationComment id = JCasUtil.select(pEmpty, AnnotationComment.class).stream().filter(ac -> ac.getKey().equals(GRIDID)).findFirst().get();
+                if (id != null) {
+                    if (!(id.getValue().equalsIgnoreCase(pDocument.getString(GRIDID)))) {
+                        id.setValue(pDocument.getString(GRIDID));
+                        id.addToIndexes();
+                    }
+                }
+            } catch (Exception e) {
+                AnnotationComment id = new AnnotationComment(pEmpty);
+                id.setKey(GRIDID);
+                id.setValue(pDocument.getString(GRIDID));
                 id.addToIndexes();
             }
 

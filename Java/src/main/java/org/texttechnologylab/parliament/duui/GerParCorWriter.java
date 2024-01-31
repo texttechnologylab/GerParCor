@@ -18,6 +18,7 @@ import org.apache.uima.util.CasIOUtils;
 import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 import org.dkpro.core.api.io.JCasFileWriter_ImplBase;
 import org.hucompute.textimager.uima.type.Sentiment;
 import org.texttechnologylab.annotation.AnnotationComment;
@@ -34,6 +35,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.DoubleStream;
 
+import static org.texttechnologylab.parliament.duui.MongoDBStatics.GRIDID;
+import static org.texttechnologylab.parliament.duui.MongoDBStatics.iChunkSizeBytes;
+
 /**
  * GerParCor Database Writer
  *
@@ -44,7 +48,9 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
     private static Set<String> classNames = new HashSet<>(0);
 
     public static final String PARAM_DBConnection = "dbconnection";
-    private final String GRIDID = "gridid";
+    private final String GRIDID = "grid";
+    private final String DOCUMENTID = "mongoid";
+
     @ConfigurationParameter(name = PARAM_DBConnection, mandatory = true)
     protected String dbconnection;
 
@@ -92,7 +98,7 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
                 return ac.getKey().equals(GRIDID);
             }).findFirst().get();
             AnnotationComment pDocumentID = JCasUtil.select(aJCas, AnnotationComment.class).stream().filter(ac -> {
-                return ac.getKey().equals("mongoid");
+                return ac.getKey().equals(DOCUMENTID);
             }).findFirst().get();
 
             if (pGridID != null) {
@@ -102,7 +108,7 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
                 sDocumentId = pDocumentID.getValue();
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
 
         if (sGridId.length() > 0) {
@@ -115,16 +121,16 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
             }
 
             GridFSUploadOptions options = new GridFSUploadOptions()
-                    .chunkSizeBytes(358400)
-                    .metadata(new Document("type", "uima"))
+                    .chunkSizeBytes(iChunkSizeBytes)
                     .metadata(new Document("compressed", bCompress))
+                    .metadata(new Document("type", "uima"))
                     .metadata(new Document(GRIDID, sGridId));
 
             GridFSUploadStream uploadStream = gridFS.openUploadStream(sGridId, options);
             try {
 
                 if (bCompress) {
-                    File pTempFile = TempFileHandler.getTempFile("aaa", ".temp");
+                    File pTempFile = TempFileHandler.getTempFile("aaa", ".xmi");
                     CasIOUtils.save(aJCas.getCas(), new FileOutputStream(pTempFile), SerialFormat.XMI_1_1);
                     File compressedFile = ArchiveUtils.compressGZ(pTempFile);
                     byte[] data = Files.readAllBytes(compressedFile.toPath());
@@ -152,9 +158,9 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
                 pDocument.put("meta", pMeta);
 
                 BasicDBObject whereQuery = new BasicDBObject();
-                whereQuery.put("_id", sDocumentId);
+                whereQuery.put("_id", new ObjectId(sDocumentId));
 
-                this.dbConnectionHandler.getCollection().updateOne(whereQuery, pDocument);
+                this.dbConnectionHandler.getCollection().replaceOne(whereQuery, pDocument);
 //                this.dbConnectionHandler.updateObject(sDocumentId, pDocument);
                 System.out.println("Write: "+sDocumentId);
             } catch (IOException e) {

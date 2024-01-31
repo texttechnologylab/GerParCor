@@ -9,6 +9,7 @@ import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegment
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategyByDelemiter;
 import org.texttechnologylab.parliament.duui.CountAnnotations;
 import org.texttechnologylab.parliament.duui.DUUIGerParCorReader;
+import org.texttechnologylab.parliament.duui.GerParCorWriter;
 import org.texttechnologylab.parliament.duui.SetLanguage;
 import org.texttechnologylab.uima.type.CategorizedSentiment;
 
@@ -67,6 +68,53 @@ public class Processor {
         composer.run(processor, "reloaded");
 
         composer.shutdown();
+
+    }
+
+    @Test
+    public void executeSpaCy() throws Exception {
+
+        int iScale = 5;
+
+        File pFile = new File(Processor.class.getClassLoader().getResource("new").getFile());
+
+        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+        String sFilter = "{\"annotations.Token\":0}";
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+
+        DUUIComposer composer = new DUUIComposer()
+                .withSkipVerification(true)
+                .withWorkers(iScale)
+                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+
+        DUUIDockerDriver dockerDriver = new DUUIDockerDriver();
+        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+        DUUIRemoteDriver remoteDriver = new DUUIRemoteDriver();
+        DUUISwarmDriver swarmDriver = new DUUISwarmDriver();
+        composer.addDriver(dockerDriver, remoteDriver, uimaDriver, swarmDriver);
+
+        DUUIPipelineComponent component = new DUUIDockerDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withImageFetching().withScale(iScale)
+                .build();
+
+        //DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
+//                .build();
+
+        DUUISegmentationStrategy pStrategy = new DUUISegmentationStrategyByDelemiter()
+                .withDelemiter(".")
+                .withLength(300000);
+
+        composer.add(component.withSegmentationStrategy(pStrategy));
+
+        AnalysisEngineDescription writerEngine = createEngineDescription(GerParCorWriter.class,
+                GerParCorWriter.PARAM_DBConnection, pFile.getAbsolutePath()
+        );
+
+        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.run(processor, "spacy");
+
+        //composer.shutdown();
 
     }
     public void example() throws Exception {

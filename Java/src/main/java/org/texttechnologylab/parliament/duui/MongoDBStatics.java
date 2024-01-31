@@ -5,7 +5,7 @@ import org.bson.Document;
 
 public class MongoDBStatics {
 
-    public static final String GRIDID = "gridid";
+    public static final String GRIDID = "grid";
 
     public static final int iChunkSizeBytes = 358400;
 

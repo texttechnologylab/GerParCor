@@ -11,13 +11,13 @@ import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDesc
 
 public class Importer {
 
-    private static int iWorkers = 10;
+    private static int iWorkers = 2;
 
 
     @Test
     public void importGermany() throws Exception {
 
-        importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundestag", "xmi.gz", "Germany", "Bundestag", "National", "false", "");
+//        importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundestag", "xmi.gz", "Germany", "Bundestag", "National", "false", "");
 
         importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundesrat/xmi", "xmi.gz", "Germany", "Bundesrat", "National", "false", "");
 //
@@ -28,26 +28,28 @@ public class Importer {
 //
         importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Reichstag_Empire", "xmi.gz", "Germany", "Reichstag", "National", "true", "North German Union / Zollparlamente");
 
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Alter Landtag Württemberg (1797-1799)", "xmi.gz", "Germany", "Alter Landtag Württemberg", "Regional", "true", "", "1797-1799");
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Landtag Baden-Württemberg (1953-1996)", "xmi.gz", "Germany", "Landtag Baden-Württemberg", "Regional", "true", "", "1953-1996");
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Landtag Württemberg", "xmi.gz", "Germany", "Landtag Württemberg", "Regional", "true", "", "");
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Landtag Württemberg-Baden (1946-1952)", "xmi.gz", "Germany", "Landtag Württemberg-Baden", "Regional", "true", "", "1946-1952");
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Landtag Württemberg-Hohenzollern (1946-1952)", "xmi.gz", "Germany", "Landtag Württemberg-Hohenzollern", "Regional", "true", "", "1946-1952");
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Ständeversammlung Württemberg (1815-1819)", "xmi.gz", "Germany", "Ständeversammlung Württemberg", "Regional", "true", "", "1815-1819");
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Verfassungsgebende Landesversammlung Baden-Württemberg", "xmi.gz", "Germany", "Verfassungsgebende Landesversammlung Baden-Württemberg", "Regional", "true", "", "");
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Verfassungsgebende Landesversammlungen Württemberg (1849-1850, 1919-1920)", "xmi.gz", "Germany", "Verfassungsgebende Landesversammlungen Württemberg", "Regional", "true", "", "1849-1850, 1919-1920");
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Verfassungsgebende Landesversammlung Württemberg-Baden", "xmi.gz", "Germany", "Verfassungsgebende Landesversammlung Württemberg-Baden", "Regional", "true", "", "");
-        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Verfassungsgebende Landesversammlung Württemberg-Hohenzollern", "xmi.gz", "Germany", "Verfassungsgebende Landesversammlung Württemberg-Hohenzollern", "Regional", "true", "", "");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Alter Landtag Württemberg (1797-1799)", "xmi.gz", "Germany", "Alter Landtag Württemberg", "Regional", "true", "", "1797-1799");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Landtag Baden-Württemberg (1953-1996)", "xmi.gz", "Germany", "Landtag Baden-Württemberg", "Regional", "true", "", "1953-1996");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Landtag Württemberg", "xmi.gz", "Germany", "Landtag Württemberg", "Regional", "true", "", "");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Landtag Württemberg-Baden (1946-1952)", "xmi.gz", "Germany", "Landtag Württemberg-Baden", "Regional", "true", "", "1946-1952");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Landtag Württemberg-Hohenzollern (1946-1952)", "xmi.gz", "Germany", "Landtag Württemberg-Hohenzollern", "Regional", "true", "", "1946-1952");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Ständeversammlung Württemberg (1815-1819)", "xmi.gz", "Germany", "Ständeversammlung Württemberg", "Regional", "true", "", "1815-1819");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Verfassungsgebende Landesversammlung Baden-Württemberg", "xmi.gz", "Germany", "Verfassungsgebende Landesversammlung Baden-Württemberg", "Regional", "true", "", "");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Verfassungsgebende Landesversammlungen Württemberg (1849-1850, 1919-1920)", "xmi.gz", "Germany", "Verfassungsgebende Landesversammlungen Württemberg", "Regional", "true", "", "1849-1850, 1919-1920");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Verfassungsgebende Landesversammlung Württemberg-Baden", "xmi.gz", "Germany", "Verfassungsgebende Landesversammlung Württemberg-Baden", "Regional", "true", "", "");
+//        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Verfassungsgebende Landesversammlung Württemberg-Hohenzollern", "xmi.gz", "Germany", "Verfassungsgebende Landesversammlung Württemberg-Hohenzollern", "Regional", "true", "", "");
 //
-        for (String s : "BadenWuertemberg;Bayern;Berlin;Brandenburg;Bremen;Hamburg;Hessen;MeckPom;Niedersachsen;NordrheinWestfalen;RheinlandPfalz;Saarland;Sachsen;SachsenAnhalt;SchleswigHolstein;Thueringen".split(";")) {
-            importSubDir("/storage/xmi/GerParCorDownload/Germany/Regional/"+s, "xmi.gz", "Germany", s, "Regional", "false", "");
-        }
+//        for (String s : "BadenWuertemberg;Bayern;Berlin;Brandenburg;Bremen;Hamburg;Hessen;MeckPom;Niedersachsen;NordrheinWestfalen;RheinlandPfalz;Saarland;Sachsen;SachsenAnhalt;SchleswigHolstein;Thueringen".split(";")) {
+//            importSubDir("/storage/xmi/GerParCorDownload/Germany/Regional/"+s, "xmi.gz", "Germany", s, "Regional", "false", "");
+//        }
 
 
     }
 
     @Test
     public void importAustria() throws Exception {
+
+//        importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundestag", "xmi.gz", "Germany", "Bundestag", "National", "false", "");
 
         importSubDir("/storage/xmi/GerParCorDownload/Austria/National/Bundesrat", "xmi.gz", "Austria", "Bundesrat", "National", "false", "");
 
@@ -62,12 +64,19 @@ public class Importer {
 
     }
 
+
+    @Test
+    public void importLiechtenstein() throws Exception {
+        importMethod("/storage/xmi/GerParCorDownload/Liechtenstein/xmi", "xmi.gz", "Liechtenstein", "Landtag", "National", "false", "", "");
+
+    }
+
     @Test
     public void importSchweiz() throws Exception {
 
 //        importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundestag", "xmi.gz", "Germany", "Bundestag", "National", "false", "");
 
-        importMethod("/storage/xmi/GerParCorDownload/Schweiz/xmi", "xmi.gz", "Schweiz", "Nationalrat", "National", "false", "", "");
+//        importMethod("/storage/xmi/GerParCorDownload/Schweiz/xmi", "xmi.gz", "Schweiz", "Nationalrat", "National", "false", "", "");
 
     }
 
@@ -75,7 +84,7 @@ public class Importer {
         File[] dirs = new File(sInput).listFiles(File::isDirectory);
 
         for (File dir : dirs) {
-            importMethod(sInput+"/"+dir.getName(), sEnding, sCountry, sParliament, sDevision, sHistorical, dir.getName(), sComment);
+//            importMethod(sInput+"/"+dir.getName(), sEnding, sCountry, sParliament, sDevision, sHistorical, dir.getName(), sComment);
         }
     }
 
@@ -100,7 +109,7 @@ public class Importer {
         composer.addDriver(uima_driver);
 
         composer.add(new DUUIUIMADriver.Component(createEngineDescription(MongoDBImporter.class,
-                MongoDBImporter.PARAM_DBConnection, "src/main/resources/rw",
+                MongoDBImporter.PARAM_DBConnection, "/home/staff_homes/abrami/Projects/GitHub/GerParCor/Java/src/main/resources/rw",
                 MongoDBImporter.PARAM_Country, sCountry,
                 MongoDBImporter.PARAM_Parliament, sParliament,
                 MongoDBImporter.PARAM_Devision, sDevision,

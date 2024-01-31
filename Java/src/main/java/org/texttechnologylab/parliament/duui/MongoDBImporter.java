@@ -1,11 +1,9 @@
 package org.texttechnologylab.parliament.duui;
 
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
-import com.mongodb.client.model.Filters;
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
 import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma;
@@ -21,7 +19,6 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.CasIOUtils;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.dkpro.core.api.io.JCasFileWriter_ImplBase;
 import org.texttechnologylab.annotation.AnnotationComment;
 import org.texttechnologylab.annotation.DocumentAnnotation;
@@ -41,7 +38,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.texttechnologylab.parliament.duui.MongoDBStatics.GRIDID;
-import static org.texttechnologylab.parliament.duui.MongoDBStatics.iChunkSizeBytes;
 
 public class MongoDBImporter extends JCasFileWriter_ImplBase {
 
@@ -142,7 +138,7 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
         try {
 
             if (bCompress) {
-                File pTempFile = TempFileHandler.getTempFile("aaa", ".temp");
+                File pTempFile = TempFileHandler.getTempFile("aaa", ".xmi");
                 CasIOUtils.save(pCas.getCas(), new FileOutputStream(pTempFile), SerialFormat.XMI_1_1);
                 File compressedFile = ArchiveUtils.compressGZ(pTempFile);
                 byte[] data = Files.readAllBytes(compressedFile.toPath());
