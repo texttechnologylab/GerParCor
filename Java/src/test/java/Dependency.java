@@ -17,15 +17,15 @@ public class Dependency {
     @Test
     public void run(){
 
-        String pMongoDbConfigPath = System.getProperty("config", "src/main/resources/mongodb.ini");
+        String pMongoDbConfigPath = System.getProperty("config", "src/main/resources/new_ro");
         String pFilter = System.getProperty("filter", "{}");
         String pOutput = System.getProperty("output", "/tmp/dep");
 //        String pOutput = System.getProperty("output", "/storage/projects/stoeckel/syntactic-language-change/mdd/");
-        boolean pOverwrite = Boolean.parseBoolean(System.getProperty("overwrite", "true"));
+        boolean pOverwrite = Boolean.parseBoolean(System.getProperty("overwrite", "false"));
         CompressionMethod pCompression = CompressionMethod.valueOf(System.getProperty("compression", "NONE"));
         boolean pFailOnError = Boolean.parseBoolean(System.getProperty("failOnError", "false"));
 
-        int pScale = 120;
+        int pScale = 1;
 
         try {
             MongoDBConfig mongoDbConfig = new MongoDBConfig(pMongoDbConfigPath);
@@ -50,13 +50,7 @@ public class Dependency {
                     )
             ).withScale(pScale).build();
 
-            DUUIPipelineComponent problems = new DUUIUIMADriver.Component(
-                    createEngineDescription(
-                            CheckingProblems.class
-                    )
-            ).withScale(pScale).build();
-            composer.add(problems);
-
+            composer.add(dependency);
             composer.run(processor, "mDD");
 //            composer.shutdown();
 

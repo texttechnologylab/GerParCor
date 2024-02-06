@@ -45,9 +45,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     private GridFSBucket gridFS = null;
 
-    //_currentMemorySize.getAndAdd(-factor * (long) file.length);
-
-    private static AtomicInteger docNumber = new AtomicInteger();
+    private AtomicInteger docNumber = new AtomicInteger();
     private long _maxItems = 0;
 
     private MongoCursor<Document> results = null;
@@ -56,16 +54,21 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     private boolean bOverrideMeta = false;
 
-    private int iLimit = 100;
-    private int iSkip = 0;
+    private int iLimit = 1000;
+    private AtomicInteger iSkip = new AtomicInteger(0);
 
     public DUUIGerParCorReader(MongoDBConfig dbConfig) {
         this(dbConfig, "{}");
     }
 
     public DUUIGerParCorReader(MongoDBConfig dbConfig, String sFilter) {
+        this(dbConfig, sFilter, 1000);
+    }
+
+    public DUUIGerParCorReader(MongoDBConfig dbConfig, String sFilter, int iLimit) {
         this.dbConfig = dbConfig;
         this.sQuery = sFilter;
+        this.iLimit = iLimit;
         System.out.println("Init connection to " + dbConfig.getMongoDatabase() + "\t" + dbConfig.getMongoCollection());
         init();
     }
@@ -98,15 +101,17 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
             public void run() {
                 while (docNumber.get() < _maxItems) {
                     while (results.hasNext()) {
-                        if (loadedItems.size() < 10) {
+                        if (loadedItems.size() < iLimit) {
                             loadedItems.add(results.next());
-                        }
-                        try {
-                            Thread.sleep(1000l);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
+//                            System.out.println("Size: "+loadedItems.size());
                         }
                     }
+                    try {
+                        Thread.sleep(1000l);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     getMoreItems();
                 }
             }
@@ -117,11 +122,15 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
     }
 
     private void getMoreItems() {
-        results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(++iSkip).cursor();
+        System.out.println("Loaded-Items: "+loadedItems.size());
+        System.out.println("Skip: "+iSkip.incrementAndGet());
+        results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit*(iSkip.get())).cursor();
     }
 
     @Override
     public void getNextCas(JCas pCas) {
+
+        pCas.reset();
 
         Document pDocument = loadedItems.poll();
 
@@ -129,14 +138,12 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
             pDocument = results.next();
         }
 
-        docNumber.addAndGet(1);
-
-
         try {
             getCas(pCas, pDocument);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        docNumber.addAndGet(1);
 
 
         if (getOverrideMeta()) {
@@ -153,7 +160,9 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         progress.setDone(docNumber.get());
         progress.setLeft(_maxItems - docNumber.get());
 
-        System.out.printf("%s: \t %s \t %s\n", progress, formatSize(pCas.size()), pDocument.getObjectId("_id").toString());
+        if(docNumber.get()%25==0) {
+            System.out.printf("%s: \t %s \t %s\n", progress, formatSize(pCas.size()), pDocument.getObjectId("_id").toString());
+        }
 
     }
 

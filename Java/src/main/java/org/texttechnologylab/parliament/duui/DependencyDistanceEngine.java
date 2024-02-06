@@ -16,20 +16,26 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.AnnotationBase;
+import org.apache.uima.jcas.tcas.Annotation;
 import org.texttechnologylab.annotation.DocumentAnnotation;
+import org.texttechnologylab.utilities.helper.StringUtils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DependencyDistanceEngine extends JCasFileWriter_ImplBase {
     public static final String PARAM_FAIL_ON_ERROR = "pFailOnError";
     @ConfigurationParameter(name = PARAM_FAIL_ON_ERROR, mandatory = false, defaultValue = "false")
     protected Boolean pFailOnError;
+
     public static final String PARAM_ULID_SUFFIX = "pUlidSuffix";
     @ConfigurationParameter(name = PARAM_ULID_SUFFIX, mandatory = false, defaultValue = "false")
     protected Boolean pUlidSuffix;
@@ -37,157 +43,244 @@ public class DependencyDistanceEngine extends JCasFileWriter_ImplBase {
     @Override
     public void process(JCas jCas) throws AnalysisEngineProcessException {
         try {
-            DocumentAnnotation documentAnnotation = JCasUtil.selectSingle(jCas, DocumentAnnotation.class);
-            DocumentMetaData documentMetaData = JCasUtil.selectSingle(jCas, DocumentMetaData.class);
-            DocumentDataPoint documentDataPoint = new DocumentDataPoint(documentAnnotation, documentMetaData);
+            final DocumentDataPoint documentDataPoint = DocumentDataPoint.fromJCas(jCas);
 
-            ArrayList<Sentence> sentences = new ArrayList<>(new ArrayList<>(JCasUtil.select(jCas, Sentence.class)));
-            HashMap<Sentence, Collection<Token>> tokenMap = new HashMap<>(JCasUtil.indexCovered(jCas, Sentence.class, Token.class));
-            HashMap<Sentence, Collection<Dependency>> dependencyMap = new HashMap<>(JCasUtil.indexCovered(jCas, Sentence.class, Dependency.class));
+//            String sID = StringUtils.toMD5(jCas.getDocumentText());
+//            DocumentAnnotation documentAnnotation = JCasUtil.selectSingle(jCas, DocumentAnnotation.class);
+//
+//            String sYear = "0000";
+//
+//            try{
+//                sYear = String.valueOf(documentAnnotation.getDateYear());
+//            }
+//            catch (Exception e){
+//                sYear = "0000";
+//            }
 
 
-            TreeMap<Integer, Token> tokenBeginMap = new TreeMap<>();
-            for (Sentence sentence : sentences) {
-                if (!tokenMap.containsKey(sentence)) {
-                    getLogger().debug(String.format("Sentence not in tokenMap: '%s'", sentence.toString()));
-                    continue;
-                }
+            String dateYear = documentDataPoint.getDocumentAnnotation().getOrDefault("dateYear", "0000");
+            String metaHash = documentDataPoint.getMetaHash();
 
-                Collection<Token> tokens = tokenMap.get(sentence);
-                if (tokens == null) {
-                    getLogger().debug(String.format("Tokens are null for sentence: '%s'", sentence.toString()));
-                    continue;
-                }
-
-                if (tokens.size() < 3) {
-                    getLogger().debug(String.format("Sentence too short: '%s'", sentence.toString()));
-                    continue;
-                }
-
-                Collection<Dependency> dependencies = dependencyMap.get(sentence);
-                if (dependencies == null || dependencies.size() < 2) {
-                    getLogger().debug(String.format("Skipping due to dependencies: %s", dependencies));
-                    continue;
-                }
-
-                tokenBeginMap.clear();
-                int numberOfSyntacticLinks = 0;
-                int rootDistance = -1;
-                for (Dependency dependency : dependencies) {
-                    if (dependency instanceof ROOT) {
-                        rootDistance = numberOfSyntacticLinks + 1;
-                        continue;
-                    }
-                    if (dependency instanceof PUNCT) {
-                        continue;
-                    }
-                    numberOfSyntacticLinks += 1;
-
-                    Token governor = dependency.getGovernor();
-                    tokenBeginMap.put(governor.getBegin(), governor);
-                    Token dependent = dependency.getDependent();
-                    tokenBeginMap.put(dependent.getBegin(), dependent);
-                }
-
-                SentenceDataPoint dataPoint = new SentenceDataPoint(rootDistance, numberOfSyntacticLinks);
-                for (Dependency dependency : dependencies) {
-                    if (dependency instanceof ROOT) {
-                        continue;
-                    }
-                    if (dependency instanceof PUNCT) {
-                        continue;
-                    }
-
-                    Token governor = dependency.getGovernor();
-                    Token dependent = dependency.getDependent();
-
-                    int governorTailSize = tokenBeginMap.tailMap(governor.getBegin()).size();
-                    int dependentTailSize = tokenBeginMap.tailMap(dependent.getBegin()).size();
-                    int dist = Math.abs(governorTailSize - dependentTailSize);
-
-                    dataPoint.add(dist);
-                }
-                documentDataPoint.add(dataPoint);
+            String outputFile = String.join("/", dateYear, metaHash);
+//            String outputFile = String.join("/", sYear, sID);
+            if (pUlidSuffix) {
+                outputFile = String.join("-", outputFile, ULID.random());
             }
 
-            documentDataPoint.save();
-        } catch (Exception e) {
+            try {
+                // Try to get the output stream _before_ processing the document
+                // as we will get an IOException if the target file already exists
+                NamedOutputStream outputStream = getOutputStream(outputFile, ".json");
+
+                try {
+                    processDocument(jCas, documentDataPoint);
+                } catch (Exception e) {
+                    // Unexpected: processDocument() is pretty safe, so something bad happened
+                    throw new AnalysisEngineProcessException(
+                            "Error while processing the document. This should not happen!",
+                            null,
+                            e);
+                }
+
+                try {
+                    save(documentDataPoint, outputStream);
+                } catch (IOException e) {
+                    // Unexpected: We could not write to the output stream?
+                    throw new AnalysisEngineProcessException(
+                            "Could not save document data point to output stream.",
+                            null,
+                            e);
+                }
+            } catch (IOException e) {
+                // Expected: getOutputStream() failed, most likely because the target file
+                // already exists
+                getLogger().error(e.getMessage());
+                if (pFailOnError)
+                    throw new AnalysisEngineProcessException(e);
+            }
+        } catch (AnalysisEngineProcessException e) {
+            // Something unexpected happened or an execption was passed on because
+            // pFailOnError is true
             getLogger().error(e.getMessage());
             e.printStackTrace();
             if (pFailOnError) {
-                throw new AnalysisEngineProcessException(e);
+                throw e;
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private class SentenceDataPoint {
-        int rootDistance;
-        int numberOfSyntacticLinks;
-        List<Integer> dependencyDistances;
+    protected void processDocument(JCas jCas, final DocumentDataPoint documentDataPoint) {
+        final ArrayList<Sentence> sentences = new ArrayList<>(new ArrayList<>(JCasUtil.select(jCas, Sentence.class)));
+        final HashMap<Sentence, Collection<Token>> tokenMap = new HashMap<>(
+                JCasUtil.indexCovered(jCas, Sentence.class, Token.class));
+        final HashMap<Sentence, Collection<Dependency>> dependencyMap = new HashMap<>(
+                JCasUtil.indexCovered(jCas, Sentence.class, Dependency.class));
 
-        public SentenceDataPoint(int rootDistance, int numberOfSyntacticLinks) {
-            this.rootDistance = rootDistance;
-            this.numberOfSyntacticLinks = numberOfSyntacticLinks;
-            this.dependencyDistances = new ArrayList<>();
-        }
+        for (Sentence sentence : sentences) {
+            if (!sentenceIsValid(sentence, tokenMap))
+                continue;
 
-        public void add(int distance) {
-            this.dependencyDistances.add(distance);
-        }
+            final Collection<Dependency> dependencies = dependencyMap.get(sentence);
+            if (dependencies == null || dependencies.size() < 2) {
+                getLogger().debug(String.format("Skipping due to dependencies: %s", dependencies));
+                continue;
+            }
 
-        public float mdd() {
-            float mDD = (float) this.dependencyDistances.stream().reduce(0, Integer::sum);
-            return mDD / (float) this.numberOfSyntacticLinks;
+            documentDataPoint.add(processDependencies(new ArrayList<>(dependencyMap.get(sentence))));
         }
     }
 
-    private class DocumentDataPoint {
-        Map<String, String> documentAnnotation;
-        Map<String, String> documentMetaData;
-        List<SentenceDataPoint> sentences;
-
-        public DocumentDataPoint(DocumentAnnotation documentAnnotation, DocumentMetaData documentMetaData) {
-            this.documentAnnotation = new TreeMap<>();
-            for (Feature feature : documentAnnotation.getType().getFeatures()) {
-                try {
-                    String featureValueAsString = documentAnnotation.getFeatureValueAsString(feature);
-                    if (Objects.nonNull(featureValueAsString))
-                        this.documentAnnotation.put(feature.getShortName(), featureValueAsString);
-                } catch (CASRuntimeException ignored) {
-                }
-            }
-            this.documentMetaData = new TreeMap<>();
-            for (Feature feature : documentMetaData.getType().getFeatures()) {
-                try {
-                    String featureValueAsString = documentMetaData.getFeatureValueAsString(feature);
-                    if (Objects.nonNull(featureValueAsString))
-                        this.documentMetaData.put(feature.getShortName(), featureValueAsString);
-                } catch (CASRuntimeException ignored) {
-                }
-            }
-            this.sentences = new ArrayList<>();
+    private boolean sentenceIsValid(Sentence sentence, HashMap<Sentence, Collection<Token>> tokenMap) {
+        if (!tokenMap.containsKey(sentence)) {
+            getLogger().debug(String.format("Sentence not in tokenMap: '%s'", sentence.toString()));
+            return false;
         }
 
-        public void add(SentenceDataPoint dataPoint) {
-            this.sentences.add(dataPoint);
+        final Collection<Token> tokens = tokenMap.get(sentence);
+        if (tokens == null) {
+            getLogger().debug(String.format("Tokens are null for sentence: '%s'", sentence.toString()));
+            return false;
         }
 
-        public void save() throws IOException {
-            try {
-                MessageDigest digest = MessageDigest.getInstance("SHA-256");
-                this.documentMetaData.forEach((k, v) -> digest.update(v.getBytes(StandardCharsets.UTF_8)));
-                this.documentAnnotation.forEach((k, v) -> digest.update(v.getBytes(StandardCharsets.UTF_8)));
-                String metaHash = Hex.encodeHexString(digest.digest());
+        if (tokens.size() < 3) {
+            getLogger().debug(String.format("Sentence too short: '%s'", sentence.toString()));
+            return false;
+        }
+        return true;
+    }
 
-                if (pUlidSuffix) metaHash += "-" + ULID.random();
+    private SentenceDataPoint processDependencies(final ArrayList<Dependency> dependencies) {
+        dependencies.sort(Comparator.comparingInt(o -> o.getDependent().getBegin()));
+        ArrayList<Token> tokens = dependencies.stream()
+                .flatMap(d -> Arrays.stream(new Token[] { d.getGovernor(), d.getDependent() })).distinct()
+                .sorted(Comparator.comparingInt(Annotation::getBegin)).collect(Collectors.toCollection(ArrayList::new));
 
-                try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(getOutputStream(metaHash, ".json"), StandardCharsets.UTF_8))) {
-                    String json = new Gson().toJson(this);
-                    writer.write(json);
-                }
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
+        int rootDistance = -1;
+        int numberOfSyntacticLinks = 0;
+        SentenceDataPoint sentenceDataPoint = new SentenceDataPoint();
+        for (Dependency dependency : dependencies) {
+            numberOfSyntacticLinks++;
+            String dependencyType = dependency.getDependencyType();
+            if (dependency instanceof PUNCT || dependencyType.equalsIgnoreCase("PUNCT")) {
+                continue;
             }
+            Token governor = dependency.getGovernor();
+            Token dependent = dependency.getDependent();
+            if (dependency instanceof ROOT || governor == dependent || dependencyType.equalsIgnoreCase("ROOT")) {
+                rootDistance = numberOfSyntacticLinks;
+                continue;
+            }
+
+            int dist = Math.abs(tokens.indexOf(governor) - tokens.indexOf(dependent));
+
+            sentenceDataPoint.add(dist);
+        }
+        sentenceDataPoint.rootDistance = rootDistance;
+        sentenceDataPoint.numberOfSyntacticLinks = numberOfSyntacticLinks;
+        return sentenceDataPoint;
+    }
+
+    protected static void save(DocumentDataPoint dataPoints, OutputStream outputStream) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
+            String json = new Gson().toJson(dataPoints);
+            writer.write(json);
         }
     }
 }
+
+class DocumentDataPoint {
+    protected final TreeMap<String, String> documentAnnotation;
+    protected final TreeMap<String, String> documentMetaData;
+    protected final ArrayList<SentenceDataPoint> sentences;
+
+    public DocumentDataPoint(DocumentAnnotation documentAnnotation, DocumentMetaData documentMetaData) {
+        this.documentAnnotation = featureMap(documentAnnotation);
+        this.documentMetaData = featureMap(documentMetaData);
+        this.sentences = new ArrayList<>();
+    }
+
+    public static TreeMap<String, String> featureMap(AnnotationBase annotation) {
+        TreeMap<String, String> map = new TreeMap<>();
+        for (Feature feature : annotation.getType().getFeatures()) {
+            try {
+                String featureValueAsString = annotation.getFeatureValueAsString(feature);
+                if (Objects.nonNull(featureValueAsString))
+                    map.put(feature.getShortName(), featureValueAsString);
+            } catch (CASRuntimeException ignored) {
+            }
+        }
+        return map;
+    }
+
+    public static DocumentDataPoint fromJCas(JCas jCas) {
+        DocumentAnnotation documentAnnotation = JCasUtil.selectSingle(jCas, DocumentAnnotation.class);
+        DocumentMetaData documentMetaData = DocumentMetaData.get(jCas);
+        return new DocumentDataPoint(documentAnnotation, documentMetaData);
+    }
+
+    public void add(SentenceDataPoint sentenceDataPoint) {
+        this.sentences.add(sentenceDataPoint);
+    }
+
+    public String getMetaHash() {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+            this.documentMetaData
+                    .forEach((k, v) -> digest.update(String.join(":", k, v).getBytes(StandardCharsets.UTF_8)));
+            this.documentAnnotation
+                    .forEach((k, v) -> digest.update(String.join(":", k, v).getBytes(StandardCharsets.UTF_8)));
+            String metaHash = Hex.encodeHexString(digest.digest());
+            return metaHash;
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Map<String, String> getDocumentAnnotation() {
+        return this.documentAnnotation;
+    }
+
+    public Map<String, String> getDocumentMetaData() {
+        return this.documentMetaData;
+    }
+
+    public List<SentenceDataPoint> getSentences() {
+        return this.sentences;
+    }
+}
+
+class SentenceDataPoint {
+
+    public int rootDistance = -1;
+    public int numberOfSyntacticLinks = -1;
+    protected final ArrayList<Integer> dependencyDistances;
+
+    public SentenceDataPoint() {
+        this.dependencyDistances = new ArrayList<>();
+    }
+
+    public void add(int distance) {
+        this.dependencyDistances.add(distance);
+    }
+
+    public double mdd() {
+        double mDD = (double) this.dependencyDistances.stream().reduce(0, Integer::sum);
+        return mDD / (double) this.dependencyDistances.size();
+    }
+
+    public int getRootDistance() {
+        return rootDistance;
+    }
+
+    public int getNumberOfSyntacticLinks() {
+        return numberOfSyntacticLinks;
+    }
+
+    public List<Integer> getDependencyDistances() {
+        return dependencyDistances;
+    }
+}
+

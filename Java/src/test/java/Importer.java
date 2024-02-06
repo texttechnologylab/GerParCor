@@ -116,7 +116,7 @@ public class Importer {
                 MongoDBImporter.PARAM_Historical, sHistorical,
                 MongoDBImporter.PARAM_Subpath, sSubpath,
                 MongoDBImporter.PARAM_Comment, sComment
-        )).build().withScale(iWorkers));
+        )).build());
 
         composer.run(importer, "import");
 
