@@ -7,10 +7,7 @@ import org.texttechnologylab.DockerUnifiedUIMAInterface.io.DUUIAsynchronousProce
 import org.texttechnologylab.DockerUnifiedUIMAInterface.lua.DUUILuaContext;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategy;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategyByDelemiter;
-import org.texttechnologylab.parliament.duui.CountAnnotations;
-import org.texttechnologylab.parliament.duui.DUUIGerParCorReader;
-import org.texttechnologylab.parliament.duui.GerParCorWriter;
-import org.texttechnologylab.parliament.duui.SetLanguage;
+import org.texttechnologylab.parliament.duui.*;
 import org.texttechnologylab.uima.type.CategorizedSentiment;
 
 import java.io.File;
@@ -113,6 +110,36 @@ public class Processor {
         composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
 
         composer.run(processor, "spacy");
+
+        //composer.shutdown();
+
+    }
+
+    @Test
+    public void executeDouble() throws Exception {
+
+        int iScale = 5;
+
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
+
+        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+        String sFilter = "{\"meta.parliament\": \"Reichstag\"}";
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+
+        DUUIComposer composer = new DUUIComposer()
+                .withSkipVerification(true)
+                .withWorkers(iScale)
+                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+
+        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+        composer.addDriver(uimaDriver);
+
+        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
+
+        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.run(processor, "checking");
 
         //composer.shutdown();
 

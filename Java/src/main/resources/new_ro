@@ -1,0 +1,7 @@
+remote_host = isengart.hucompute.org
+remote_database = GerParCor
+remote_user = ro
+remote_password = 9&PHHK@e6G
+remote_port = 27025
+remote_collection = Protocols
+remote_collection_grid = Data
