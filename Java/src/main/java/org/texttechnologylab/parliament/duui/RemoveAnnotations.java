@@ -1,5 +1,6 @@
 package org.texttechnologylab.parliament.duui;
 
+import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -17,21 +18,15 @@ public class RemoveAnnotations extends JCasAnnotator_ImplBase {
     public void process(JCas jCas) throws AnalysisEngineProcessException {
 
         Set<Annotation> tAnnotation = new HashSet<>();
-        Set<AnnotatorMetaData> metadata = new HashSet<>();
 
         JCasUtil.select(jCas, Annotation.class).forEach(a->{
-           tAnnotation.add(a);
+           if(!(a instanceof DocumentMetaData)) {
+               tAnnotation.add(a);
+           }
         });
 
-        JCasUtil.select(jCas, AnnotatorMetaData.class).forEach(a->{
-           metadata.add(a);
-        });
 
         tAnnotation.stream().forEach(a->{
-            a.removeFromIndexes();
-        });
-
-        metadata.stream().forEach(a->{
             a.removeFromIndexes();
         });
 

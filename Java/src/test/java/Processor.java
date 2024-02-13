@@ -208,6 +208,50 @@ public class Processor {
         //composer.shutdown();
 
     }
+
+    @Test
+    public void exporter() throws Exception {
+
+        int iScale = 1;
+
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
+
+        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
+
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
+//        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+        String sFilter = "{\"grid\": \"24cd7c2f555a862876cfb2ad7cd62309\"}";
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+
+        DUUIComposer composer = new DUUIComposer()
+                .withSkipVerification(true)
+                .withWorkers(iScale)
+                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+
+        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+        composer.addDriver(uimaDriver);
+
+        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
+
+        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/xmiExample/",
+                XmiWriter.PARAM_PRETTY_PRINT, true,
+                XmiWriter.PARAM_OVERWRITE, true,
+                XmiWriter.PARAM_VERSION, "1.1",
+                XmiWriter.PARAM_COMPRESSION, "GZIP"
+        );
+
+//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
+
+        composer.run(processor, "checking");
+
+        //composer.shutdown();
+
+    }
     public void example() throws Exception {
 
         int iScale = 2;

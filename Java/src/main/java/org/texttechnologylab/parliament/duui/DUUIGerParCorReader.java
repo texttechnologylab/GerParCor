@@ -6,6 +6,8 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
 import de.tudarmstadt.ukp.dkpro.core.api.io.ProgressMeter;
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
+import org.apache.uima.UIMAException;
+import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.util.CasIOUtils;
@@ -158,6 +160,16 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
             throw new RuntimeException(e);
         }
         docNumber.addAndGet(1);
+
+
+        if(JCasUtil.select(pCas, DocumentMetaData.class).size()==0){
+            DocumentMetaData newMetaData = new DocumentMetaData(pCas);
+            newMetaData.setDocumentUri(pDocument.getString("documentURI"));
+            newMetaData.setDocumentBaseUri(pDocument.getString("documentBaseURI"));
+            newMetaData.setDocumentId(pDocument.getString("documentId"));
+            newMetaData.setDocumentTitle(pDocument.getString("documentId"));
+            newMetaData.addToIndexes();
+        }
 
 
         if (getOverrideMeta()) {
