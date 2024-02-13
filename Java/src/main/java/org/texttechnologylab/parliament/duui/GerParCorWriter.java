@@ -180,31 +180,36 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
 
         Document rDocument = new Document();
 
-        if (classNames.size() > 0) {
-            for (String className : classNames) {
-                try {
-                    Class pClass = Class.forName(className);
-                    rDocument.put(pClass.getSimpleName(), JCasUtil.select(pCas, pClass).size());
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } else {
+        try {
 
-            for (Annotation annotation : JCasUtil.select(pCas, Annotation.class)) {
-                if (!classNames.contains(annotation.getType().getName())) {
-                    rDocument.put(annotation.getType().getShortName(), JCasUtil.select(pCas, annotation.getClass()).size());
-                    classNames.add(annotation.getType().getName());
-
-                    if(annotation.getType().getClass().equals(Sentiment.class)){
-                        Double dSentiment = JCasUtil.select(pCas, Sentiment.class).stream().flatMapToDouble(s-> DoubleStream.of(s.getSentiment())).sum();
-                        rDocument.put(Sentiment.class.getSimpleName(), dSentiment);
+            if (classNames.size() > 0) {
+                for (String className : classNames) {
+                    try {
+                        Class pClass = Class.forName(className);
+                        rDocument.put(pClass.getSimpleName(), JCasUtil.select(pCas, pClass).size());
+                    } catch (ClassNotFoundException e) {
+                        System.out.println(e.getMessage());
                     }
+                }
+            } else {
 
+                for (Annotation annotation : JCasUtil.select(pCas, Annotation.class)) {
+                    if (!classNames.contains(annotation.getType().getName())) {
+                        rDocument.put(annotation.getType().getShortName(), JCasUtil.select(pCas, annotation.getClass()).size());
+                        classNames.add(annotation.getType().getName());
+
+                        if (annotation.getType().getClass().equals(Sentiment.class)) {
+                            Double dSentiment = JCasUtil.select(pCas, Sentiment.class).stream().flatMapToDouble(s -> DoubleStream.of(s.getSentiment())).sum();
+                            rDocument.put(Sentiment.class.getSimpleName(), dSentiment);
+                        }
+
+                    }
                 }
             }
         }
-
+        catch (Exception e){
+            System.out.println(e.getMessage());
+        }
         return rDocument;
 
     }

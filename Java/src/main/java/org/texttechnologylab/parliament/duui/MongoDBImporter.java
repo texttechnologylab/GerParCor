@@ -1,5 +1,6 @@
 package org.texttechnologylab.parliament.duui;
 
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSUploadStream;
@@ -104,111 +105,119 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
 
     public void importJCas(JCas pCas) throws IOException, NoSuchAlgorithmException {
 
-        boolean bCompress = true;
+        DocumentMetaData tDmd = DocumentMetaData.get(pCas);
 
-        String sGridId = "";
+        String sURI = tDmd.getDocumentUri();
 
-        try {
-            AnnotationComment pGridID = JCasUtil.select(pCas, AnnotationComment.class).stream().filter(ac -> {
-                return ac.getKey().equals(GRIDID);
-            }).findFirst().get();
-            if(pGridID!=null){
-                sGridId = pGridID.getValue();
-            }
-        }
-        catch (Exception e){
+        long lCount = dbConnectionHandler.count("{\"documentURI\": \""+sURI+"\"}", "Protocols");
+
+        if(lCount==0) {
+            boolean bCompress = true;
+
+            String sGridId = "";
+
+            try {
+                AnnotationComment pGridID = JCasUtil.select(pCas, AnnotationComment.class).stream().filter(ac -> {
+                    return ac.getKey().equals(GRIDID);
+                }).findFirst().get();
+                if (pGridID != null) {
+                    sGridId = pGridID.getValue();
+                }
+            } catch (Exception e) {
 //            System.out.println(e.getMessage());
-            String sHash = StringUtils.toMD5(pCas.getDocumentText());
-            sGridId = sHash;
-            AnnotationComment pGridID = new AnnotationComment(pCas);
-            pGridID.setKey(GRIDID);
-            pGridID.setValue(sGridId);
-            pGridID.addToIndexes();
-        }
+                String sHash = StringUtils.toMD5(pCas.getDocumentText());
+                sGridId = sHash;
+                AnnotationComment pGridID = new AnnotationComment(pCas);
+                pGridID.setKey(GRIDID);
+                pGridID.setValue(sGridId);
+                pGridID.addToIndexes();
+            }
 
 
+            GridFSUploadOptions options = new GridFSUploadOptions()
+                    .chunkSizeBytes(358400)
+                    .metadata(new Document("type", "uima"))
+                    .metadata(new Document("compressed", bCompress))
+                    .metadata(new Document(GRIDID, sGridId));
 
-        GridFSUploadOptions options = new GridFSUploadOptions()
-                .chunkSizeBytes(358400)
-                .metadata(new Document("type", "uima"))
-                .metadata(new Document("compressed", bCompress))
-                .metadata(new Document(GRIDID, sGridId));
+            GridFSUploadStream uploadStream = gridFS.openUploadStream(sGridId, options);
+            try {
 
-        GridFSUploadStream uploadStream = gridFS.openUploadStream(sGridId, options);
-        try {
-
-            if (bCompress) {
-                File pTempFile = TempFileHandler.getTempFile("aaa", ".xmi");
-                CasIOUtils.save(pCas.getCas(), new FileOutputStream(pTempFile), SerialFormat.XMI_1_1);
-                File compressedFile = ArchiveUtils.compressGZ(pTempFile);
-                byte[] data = Files.readAllBytes(compressedFile.toPath());
-                uploadStream.write(data);
+                if (bCompress) {
+                    File pTempFile = TempFileHandler.getTempFile("aaa", ".xmi");
+                    CasIOUtils.save(pCas.getCas(), new FileOutputStream(pTempFile), SerialFormat.XMI_1_1);
+                    File compressedFile = ArchiveUtils.compressGZ(pTempFile);
+                    byte[] data = Files.readAllBytes(compressedFile.toPath());
+                    uploadStream.write(data);
+                    uploadStream.flush();
+                    pTempFile.delete();
+                    compressedFile.delete();
+                } else {
+                    CasIOUtils.save(pCas.getCas(), uploadStream, SerialFormat.XMI_1_1);
+                }
                 uploadStream.flush();
-                pTempFile.delete();
-                compressedFile.delete();
-            } else {
-                CasIOUtils.save(pCas.getCas(), uploadStream, SerialFormat.XMI_1_1);
-            }
-            uploadStream.flush();
-            uploadStream.close();
+                uploadStream.close();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String finalSGridId = sGridId;
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String finalSGridId = sGridId;
 
-        Set<Class> whiteList = new HashSet<>();
-        whiteList.add(Sentence.class);
-        whiteList.add(Token.class);
-        whiteList.add(NamedEntity.class);
-        whiteList.add(Dependency.class);
-        whiteList.add(Lemma.class);
+                Set<Class> whiteList = new HashSet<>();
+                whiteList.add(Sentence.class);
+                whiteList.add(Token.class);
+                whiteList.add(NamedEntity.class);
+                whiteList.add(Dependency.class);
+                whiteList.add(Lemma.class);
 
-        JCasUtil.select(pCas, DocumentAnnotation.class).stream().forEach(a->{
-            DocumentMetaData dmd = DocumentMetaData.get(pCas);
+                JCasUtil.select(pCas, DocumentAnnotation.class).stream().forEach(a -> {
+                    DocumentMetaData dmd = DocumentMetaData.get(pCas);
 
-            Document nDocument = new Document();
-            nDocument.put("id", dmd.getDocumentId());
-            nDocument.put("documentURI", dmd.getDocumentUri());
-            nDocument.put("documentId", dmd.getDocumentId());
-            nDocument.put("documentBaseURI", dmd.getDocumentBaseUri());
-            nDocument.put("hash", finalSGridId);
-            nDocument.put("name", sdf.format(a.getTimestamp()));
+                    Document nDocument = new Document();
+                    nDocument.put("id", dmd.getDocumentId());
+                    nDocument.put("documentURI", dmd.getDocumentUri());
+                    nDocument.put("documentId", dmd.getDocumentId());
+                    nDocument.put("documentBaseURI", dmd.getDocumentBaseUri());
+                    nDocument.put("hash", finalSGridId);
+                    nDocument.put("name", sdf.format(a.getTimestamp()));
 
-            Document pMeta = new Document();
-            pMeta.put("country", country);
-            pMeta.put("parliament", parliament);
-            if(subpath.length()>0) { pMeta.put("subpath", subpath); }
-            if(comment.length()>0) { pMeta.put("comment", comment); }
-            pMeta.put("historical", historical.equalsIgnoreCase("true") ? true : false);
-            pMeta.put("devision", devision);
+                    Document pMeta = new Document();
+                    pMeta.put("country", country);
+                    pMeta.put("parliament", parliament);
+                    if (subpath.length() > 0) {
+                        pMeta.put("subpath", subpath);
+                    }
+                    if (comment.length() > 0) {
+                        pMeta.put("comment", comment);
+                    }
+                    pMeta.put("historical", historical.equalsIgnoreCase("true") ? true : false);
+                    pMeta.put("devision", devision);
 
-            nDocument.put("meta", pMeta);
+                    nDocument.put("meta", pMeta);
 
-            Document pAnnotations = new Document();
-            for (Class aClass : whiteList) {
-                pAnnotations.put(aClass.getSimpleName(), countAnnotations(pCas, aClass));
-            }
-            nDocument.put("annotations", pAnnotations);
+                    Document pAnnotations = new Document();
+                    for (Class aClass : whiteList) {
+                        pAnnotations.put(aClass.getSimpleName(), countAnnotations(pCas, aClass));
+                    }
+                    nDocument.put("annotations", pAnnotations);
 
-            try{
-                nDocument.put("nameBackup", dmd.getDocumentTitle());
-            }
-            catch (Exception e){
+                    try {
+                        nDocument.put("nameBackup", dmd.getDocumentTitle());
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    nDocument.put("timestamp", a.getTimestamp());
+                    nDocument.put("year", a.getDateYear());
+                    nDocument.put("month", a.getDateMonth());
+                    nDocument.put("day", a.getDateDay());
+                    nDocument.put("grid", finalSGridId);
+
+                    dbConnectionHandler.getCollection().insertOne(nDocument);
+
+                });
+
+
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
             }
-            nDocument.put("timestamp", a.getTimestamp());
-            nDocument.put("year", a.getDateYear());
-            nDocument.put("month", a.getDateMonth());
-            nDocument.put("day", a.getDateDay());
-            nDocument.put("grid", finalSGridId);
-
-            dbConnectionHandler.getCollection().insertOne(nDocument);
-
-        });
-
-
-        }
-        catch (Exception e){
-            System.out.println(e.getMessage());
         }
     }
 

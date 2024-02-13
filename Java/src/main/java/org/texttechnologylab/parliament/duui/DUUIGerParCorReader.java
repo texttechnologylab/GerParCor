@@ -50,6 +50,8 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     private MongoCursor<Document> results = null;
 
+    private boolean bFinish = false;
+
     private String sQuery = "{}";
 
     private boolean bOverrideMeta = false;
@@ -75,7 +77,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     @Override
     public ProgressMeter getProgress() {
-        return null;
+        return this.progress;
     }
 
     public DUUIGerParCorReader withOverrideMeta() {
@@ -92,39 +94,44 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         this.mongoDBConnectionHandler = new MongoDBConnectionHandler(dbConfig);
 
         this.gridFS = GridFSBuckets.create(mongoDBConnectionHandler.getDatabase(), "grid");
-        results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).cursor();
+        results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
         _maxItems = mongoDBConnectionHandler.getCollection().countDocuments(BsonDocument.parse(sQuery));
         progress = new ProgressMeter(_maxItems);
 
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                while (docNumber.get() < _maxItems) {
-                    while (results.hasNext()) {
-                        if (loadedItems.size() < iLimit) {
-                            loadedItems.add(results.next());
-//                            System.out.println("Size: "+loadedItems.size());
-                        }
-                    }
-                    try {
-                        Thread.sleep(1000l);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                    getMoreItems();
-                }
-            }
-        };
-        Thread popThread = new Thread(r);
-        popThread.start();
+//        Runnable r = new Runnable() {
+//            @Override
+//            public void run() {
+//                while (docNumber.get() < _maxItems) {
+//                    while (results.hasNext()) {
+//                        if (loadedItems.size() < iLimit) {
+//                            loadedItems.add(results.next());
+////                            System.out.println("Size: "+loadedItems.size());
+//                        }
+//                    }
+//                    try {
+//                        Thread.sleep(1000l);
+//                    } catch (InterruptedException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//
+//                    getMoreItems();
+//                }
+//            }
+//        };
+//        Thread popThread = new Thread(r);
+//        popThread.start();
 
     }
 
     private void getMoreItems() {
-        System.out.println("Loaded-Items: "+loadedItems.size());
-        System.out.println("Skip: "+iSkip.incrementAndGet());
-        results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit*(iSkip.get())).cursor();
+        if(!bFinish) {
+            System.out.println("Loaded-Items: " + loadedItems.size());
+            System.out.println("Skip: " + iSkip.incrementAndGet());
+            results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
+            if(!results.hasNext()){
+                bFinish=true;
+            }
+        }
     }
 
     @Override
@@ -132,11 +139,18 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
         pCas.reset();
 
-        Document pDocument = loadedItems.poll();
+//        Document pDocument = loadedItems.poll();
+
+        if(!results.hasNext()){
+            getMoreItems();
+        }
+        Document pDocument = results.next();
+
 
         if (pDocument == null) {
-            pDocument = results.next();
+            return;
         }
+
 
         try {
             getCas(pCas, pDocument);
