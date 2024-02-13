@@ -124,7 +124,7 @@ public class Processor {
     @Test
     public void executeDouble() throws Exception {
 
-        int iScale = 1;
+        int iScale = 5;
 
         File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
 

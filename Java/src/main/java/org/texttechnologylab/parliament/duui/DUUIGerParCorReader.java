@@ -58,7 +58,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     private boolean bOverrideMeta = false;
 
-    private int iLimit = 1000;
+    private int iLimit = 10;
     private AtomicInteger iSkip = new AtomicInteger(0);
 
     public DUUIGerParCorReader(MongoDBConfig dbConfig) {
@@ -144,6 +144,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 //        Document pDocument = loadedItems.poll();
 
         if(!results.hasNext()){
+            System.out.println("get more items!");
             getMoreItems();
         }
         Document pDocument = results.next();
