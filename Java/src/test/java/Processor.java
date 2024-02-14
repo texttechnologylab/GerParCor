@@ -1,4 +1,8 @@
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
+import org.apache.uima.fit.factory.AggregateBuilder;
+import org.bson.conversions.Bson;
 import org.dkpro.core.io.xmi.XmiWriter;
 import org.junit.jupiter.api.Test;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.DUUIComposer;
@@ -9,9 +13,13 @@ import org.texttechnologylab.DockerUnifiedUIMAInterface.lua.DUUILuaContext;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategy;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategyByDelemiter;
 import org.texttechnologylab.parliament.duui.*;
-import org.texttechnologylab.uima.type.CategorizedSentiment;
+import scala.reflect.internal.util.BatchSourceFile;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDescription;
 
@@ -72,14 +80,20 @@ public class Processor {
     @Test
     public void executeSpaCy() throws Exception {
 
-        int iScale = 5;
+        int iScale = 3;
 
         File pFile = new File(Processor.class.getClassLoader().getResource("new_rw").getFile());
 
         MongoDBConfig pConfig = new MongoDBConfig(pFile);
-        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+        String sFilter = "{\"documentURI\": { $regex: \"older\"}, \"annotations.DocumentMetaData\": 0}";
 
-        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+        List<Bson> pQuery = new ArrayList<>();
+        Date pDate = new SimpleDateFormat("yyyy-MM-dd").parse("2024-02-14");
+        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
+        pQuery.add(Aggregates.match(Filters.and(Filters.lt("file.uploadDate", pDate), Filters.regex("documentURI", "older"))));
+
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery));
 
         DUUIComposer composer = new DUUIComposer()
                 .withSkipVerification(true)
@@ -96,14 +110,15 @@ public class Processor {
         DUUIPipelineComponent removeComponent = new DUUIUIMADriver.Component(createEngineDescription(RemoveAnnotations.class)).withScale(iScale)
                 .build();
 
-        DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
+        DUUIPipelineComponent component = new DUUIDockerDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withImageFetching().withScale(iScale)
                 .build();
 
         //DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
 //                .build();
 
-        DUUISegmentationStrategy pStrategy = new DUUISegmentationStrategyByDelemiter()
+        DUUISegmentationStrategy pStrategy = new DUUISegmentationStrategyByDelemiterModified()
                 .withDelemiter(".")
+                .withDebug()
                 .withLength(500000);
 
         composer.add(removeComponent);
@@ -124,15 +139,15 @@ public class Processor {
     @Test
     public void executeDouble() throws Exception {
 
-        int iScale = 5;
+        int iScale = 1;
 
         File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
 
         MongoDBConfig pConfig = new MongoDBConfig(pFile);
-        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
 
 //        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
-//        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+        String sFilter = "{\"documentURI\": { $regex: \"older\"}, \"annotations.DocumentMetaData\": 1}";
 //        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
 
         DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
@@ -148,7 +163,7 @@ public class Processor {
         AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
 
         AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
-                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/xmiExample/",
+                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/example/",
                 XmiWriter.PARAM_PRETTY_PRINT, true,
                 XmiWriter.PARAM_OVERWRITE, true,
                 XmiWriter.PARAM_VERSION, "1.1",

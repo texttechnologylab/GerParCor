@@ -4,15 +4,17 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
+import com.mongodb.client.gridfs.model.GridFSFile;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import de.tudarmstadt.ukp.dkpro.core.api.io.ProgressMeter;
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
-import org.apache.uima.UIMAException;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.util.CasIOUtils;
 import org.bson.BsonDocument;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConfig;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConnectionHandler;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.io.DUUICollectionReader;
@@ -24,6 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -33,7 +37,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Giuseppe Abrami
  */
 public class DUUIGerParCorReader implements DUUICollectionReader {
-
 
     private ProgressMeter progress;
     private ConcurrentLinkedQueue<Document> loadedItems = new ConcurrentLinkedQueue();
@@ -50,6 +53,8 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
     private AtomicInteger docNumber = new AtomicInteger();
     private long _maxItems = 0;
 
+    private List<Bson> pAggregateQuery = new ArrayList<>();
+
     private MongoCursor<Document> results = null;
 
     private boolean bFinish = false;
@@ -58,7 +63,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     private boolean bOverrideMeta = false;
 
-    private int iLimit = 10;
+    private int iLimit = 1000;
     private AtomicInteger iSkip = new AtomicInteger(0);
 
     public DUUIGerParCorReader(MongoDBConfig dbConfig) {
@@ -73,6 +78,20 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         this.dbConfig = dbConfig;
         this.sQuery = sFilter;
         this.iLimit = iLimit;
+        init();
+    }
+
+    public DUUIGerParCorReader(MongoDBConfig dbConfig, List<Bson> pAggregateQuery) {
+        this.dbConfig = dbConfig;
+        this.pAggregateQuery = pAggregateQuery;
+        System.out.println("Init connection to " + dbConfig.getMongoDatabase() + "\t" + dbConfig.getMongoCollection());
+        init();
+    }
+
+    public DUUIGerParCorReader(MongoDBConfig dbConfig, List<Bson> pAggregateQuery, int iLimit) {
+        this.dbConfig = dbConfig;
+        this.iLimit = iLimit;
+        this.pAggregateQuery = pAggregateQuery;
         System.out.println("Init connection to " + dbConfig.getMongoDatabase() + "\t" + dbConfig.getMongoCollection());
         init();
     }
@@ -91,45 +110,74 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         return this.bOverrideMeta;
     }
 
+    private void performQuery(){
+        if(pAggregateQuery.size()>0){
+            List<Bson> tList = new ArrayList<>();
+            for (Bson bson : pAggregateQuery) {
+                tList.add(bson);
+            }
+            tList.add(Aggregates.limit(iLimit));
+            tList.add(Aggregates.skip(iLimit*(iSkip.get())));
+            results = mongoDBConnectionHandler.getCollection().aggregate(tList).allowDiskUse(true).cursor();
+        }
+        else{
+            this.results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
+        }
+    }
+
     private void init() {
 
         this.mongoDBConnectionHandler = new MongoDBConnectionHandler(dbConfig);
 
         this.gridFS = GridFSBuckets.create(mongoDBConnectionHandler.getDatabase(), "grid");
-        results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
-        _maxItems = mongoDBConnectionHandler.getCollection().countDocuments(BsonDocument.parse(sQuery));
+        performQuery();
+        if(pAggregateQuery.size()==0) {
+            _maxItems = mongoDBConnectionHandler.getCollection().countDocuments(BsonDocument.parse(sQuery));
+        }
+        else{
+            List<Bson> tList = new ArrayList<>();
+            for (Bson bson : pAggregateQuery) {
+                tList.add(bson);
+            }
+            tList.add(Aggregates.count("sum"));
+            MongoCursor<Document> pResultMax = mongoDBConnectionHandler.getCollection().aggregate(tList).allowDiskUse(true).cursor();
+            _maxItems = pResultMax.next().getInteger("sum");
+        }
         progress = new ProgressMeter(_maxItems);
 
-//        Runnable r = new Runnable() {
-//            @Override
-//            public void run() {
-//                while (docNumber.get() < _maxItems) {
-//                    while (results.hasNext()) {
-//                        if (loadedItems.size() < iLimit) {
-//                            loadedItems.add(results.next());
-////                            System.out.println("Size: "+loadedItems.size());
-//                        }
-//                    }
-//                    try {
-//                        Thread.sleep(1000l);
-//                    } catch (InterruptedException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//
-//                    getMoreItems();
-//                }
-//            }
-//        };
-//        Thread popThread = new Thread(r);
-//        popThread.start();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                while (docNumber.get() < _maxItems || bFinish) {
+                    while (results.hasNext()) {
+                        if (loadedItems.size() < iLimit) {
+                            loadedItems.add(results.next());
+//                            System.out.println("Size: "+loadedItems.size());
+                        }
+                        else{
+                            try {
+                                Thread.sleep(1000l);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }
+                    getMoreItems();
+
+                }
+            }
+        };
+        Thread popThread = new Thread(r);
+        popThread.start();
 
     }
 
     private void getMoreItems() {
-        if(!bFinish) {
+        if(!bFinish && pAggregateQuery.size()==0) {
             System.out.println("Loaded-Items: " + loadedItems.size());
             System.out.println("Skip: " + iSkip.incrementAndGet());
-            results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
+//            results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
+            performQuery();
             if(!results.hasNext()){
                 bFinish=true;
             }
@@ -140,15 +188,23 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
     public void getNextCas(JCas pCas) {
 
         pCas.reset();
+        System.out.println("Loaded Items: "+loadedItems.size());
+        Document pDocument = loadedItems.poll();
 
-//        Document pDocument = loadedItems.poll();
-
-        if(!results.hasNext()){
+        if(pDocument==null){
             System.out.println("get more items!");
             getMoreItems();
-        }
-        Document pDocument = results.next();
 
+            try {
+                Thread.sleep(2000l);
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+            }
+
+            if(results.hasNext()){
+                pDocument = results.next();
+            }
+        }
 
         if (pDocument == null) {
             return;
@@ -187,7 +243,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         progress.setDone(docNumber.get());
         progress.setLeft(_maxItems - docNumber.get());
 
-        if(docNumber.get()%25==0) {
+        if(docNumber.get()%2==0) {
             System.out.printf("%s: \t %s \t %s\n", progress, formatSize(pCas.size()), pDocument.getObjectId("_id").toString());
         }
 
@@ -195,7 +251,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     @Override
     public boolean hasNext() {
-        return results.hasNext();
+        return loadedItems.size()>0;
     }
 
     @Override
@@ -207,36 +263,59 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
         String gridID = pDocument.getString(GRIDID);
 
+        Bson bQuery= BsonDocument.parse("{\"filename\": \""+gridID+"\"}" );
 
-        try (GridFSDownloadStream downloadStream = gridFS.openDownloadStream(gridID)) {
-            Document pMeta = downloadStream.getGridFSFile().getMetadata();
-            boolean bCompressed = true;
-            if (pMeta.containsKey("compressed")) {
-                bCompressed = pMeta.getBoolean("compressed");
-            } else {
-                bCompressed = false;
-            }
+        MongoCursor<GridFSFile> mongoGrid = gridFS.find(bQuery).cursor();
 
-            boolean bError = false;
-
-            if (!bCompressed) {
-                try {
-                    CasIOUtils.load(downloadStream, pEmpty.getCas());
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                    bError = true;
-                }
-            }
-
-            if (bError || bCompressed) {
-                File tempFile = TempFileHandler.getTempFile("t"+gridID, ".xmi.gz");
-                gridFS.downloadToStream(gridID, new FileOutputStream(tempFile));
-                File nFile = ArchiveUtils.decompressGZ(tempFile);
+        if(!mongoGrid.hasNext()){
+            String sBackupValue = pDocument.getString("documentURI")+".xmi.gz";
+            File checkFile = new File(sBackupValue);
+            if(checkFile.exists()){
+                File tempFile = TempFileHandler.getTempFile("t" + gridID, ".xmi.gz");
+                File nFile = ArchiveUtils.decompressGZ(checkFile);
                 CasIOUtils.load(new FileInputStream(nFile), pEmpty.getCas());
                 tempFile.delete();
                 nFile.delete();
             }
+            else{
+                System.out.println("No data can be loaded!\t"+pDocument.getObjectId("_id").toString());
+            }
+        }
+        else {
 
+            try (GridFSDownloadStream downloadStream = gridFS.openDownloadStream(gridID)) {
+                Document pMeta = downloadStream.getGridFSFile().getMetadata();
+                boolean bCompressed = true;
+                if (pMeta.containsKey("compressed")) {
+                    bCompressed = pMeta.getBoolean("compressed");
+                } else {
+                    bCompressed = false;
+                }
+
+                boolean bError = false;
+
+                if (!bCompressed) {
+                    try {
+                        CasIOUtils.load(downloadStream, pEmpty.getCas());
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        bError = true;
+                    }
+                }
+
+                if (bError || bCompressed) {
+                    File tempFile = TempFileHandler.getTempFile("t" + gridID, ".xmi.gz");
+                    gridFS.downloadToStream(gridID, new FileOutputStream(tempFile));
+                    File nFile = ArchiveUtils.decompressGZ(tempFile);
+                    CasIOUtils.load(new FileInputStream(nFile), pEmpty.getCas());
+                    tempFile.delete();
+                    nFile.delete();
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             try {
                 AnnotationComment id = JCasUtil.select(pEmpty, AnnotationComment.class).stream().filter(ac -> ac.getKey().equals(DOCUMENTID)).findFirst().get();
@@ -267,9 +346,6 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
                 id.setValue(pDocument.getString(GRIDID));
                 id.addToIndexes();
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
     }
