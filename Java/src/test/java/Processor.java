@@ -1,7 +1,7 @@
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
-import org.apache.uima.fit.factory.AggregateBuilder;
 import org.bson.conversions.Bson;
 import org.dkpro.core.io.xmi.XmiWriter;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,6 @@ import org.texttechnologylab.DockerUnifiedUIMAInterface.lua.DUUILuaContext;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategy;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategyByDelemiter;
 import org.texttechnologylab.parliament.duui.*;
-import scala.reflect.internal.util.BatchSourceFile;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -91,6 +90,7 @@ public class Processor {
         Date pDate = new SimpleDateFormat("yyyy-MM-dd").parse("2024-02-14");
         pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
         pQuery.add(Aggregates.match(Filters.and(Filters.lt("file.uploadDate", pDate), Filters.regex("documentURI", "older"))));
+        pQuery.add(Aggregates.sort(Sorts.ascending("file.length")));
 
 
         DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery));
@@ -110,7 +110,64 @@ public class Processor {
         DUUIPipelineComponent removeComponent = new DUUIUIMADriver.Component(createEngineDescription(RemoveAnnotations.class)).withScale(iScale)
                 .build();
 
-        DUUIPipelineComponent component = new DUUIDockerDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withImageFetching().withScale(iScale)
+        DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
+                .build();
+
+        //DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
+//                .build();
+
+        DUUISegmentationStrategy pStrategy = new DUUISegmentationStrategyByDelemiterModified()
+                .withDelemiter(".")
+                .withDebug()
+                .withLength(500000);
+
+        composer.add(removeComponent);
+        composer.add(component.withSegmentationStrategy(pStrategy));
+
+        AnalysisEngineDescription writerEngine = createEngineDescription(GerParCorWriter.class,
+                GerParCorWriter.PARAM_DBConnection, pFile.getAbsolutePath()
+        );
+
+        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.run(processor, "spacy");
+
+        //composer.shutdown();
+
+    }
+
+    @Test
+    public void executeSpaCyThueringen() throws Exception {
+
+        int iScale = 10;
+
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_rw").getFile());
+
+        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+
+        List<Bson> pQuery = new ArrayList<>();
+        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
+        pQuery.add(Aggregates.match(Filters.eq("meta.parliament", "Thueringen")));
+        pQuery.add(Aggregates.sort(Sorts.descending("file.length")));
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery));
+
+        DUUIComposer composer = new DUUIComposer()
+                .withSkipVerification(true)
+                .withWorkers(iScale)
+                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+
+        DUUIDockerDriver dockerDriver = new DUUIDockerDriver();
+        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+        DUUIRemoteDriver remoteDriver = new DUUIRemoteDriver();
+        DUUISwarmDriver swarmDriver = new DUUISwarmDriver();
+        composer.addDriver(dockerDriver, remoteDriver, uimaDriver, swarmDriver);
+
+
+        DUUIPipelineComponent removeComponent = new DUUIUIMADriver.Component(createEngineDescription(RemoveAnnotations.class)).withScale(iScale)
+                .build();
+
+        DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
                 .build();
 
         //DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
