@@ -6,7 +6,6 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
 import de.tudarmstadt.ukp.dkpro.core.api.io.ProgressMeter;
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
 import org.apache.uima.fit.util.JCasUtil;
@@ -111,17 +110,23 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
     }
 
     private void performQuery(){
-        if(pAggregateQuery.size()>0){
-            List<Bson> tList = new ArrayList<>();
-            for (Bson bson : pAggregateQuery) {
-                tList.add(bson);
+        if(!bFinish) {
+            if (pAggregateQuery.size() > 0) {
+                List<Bson> tList = new ArrayList<>();
+                for (Bson bson : pAggregateQuery) {
+                    tList.add(bson);
+                }
+                tList.add(Aggregates.limit(iLimit));
+                tList.add(Aggregates.skip(iLimit * (iSkip.get())));
+                results = mongoDBConnectionHandler.getCollection().aggregate(tList).allowDiskUse(true).cursor();
+            } else {
+                this.results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
             }
-            tList.add(Aggregates.limit(iLimit));
-            tList.add(Aggregates.skip(iLimit*(iSkip.get())));
-            results = mongoDBConnectionHandler.getCollection().aggregate(tList).allowDiskUse(true).cursor();
-        }
-        else{
-            this.results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
+            System.out.println("Performing Query\t" + results.hasNext());
+            if (!results.hasNext()) {
+                bFinish = true;
+            }
+            iSkip.incrementAndGet();
         }
     }
 
@@ -130,7 +135,6 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         this.mongoDBConnectionHandler = new MongoDBConnectionHandler(dbConfig);
 
         this.gridFS = GridFSBuckets.create(mongoDBConnectionHandler.getDatabase(), "grid");
-        performQuery();
         if(pAggregateQuery.size()==0) {
             _maxItems = mongoDBConnectionHandler.getCollection().countDocuments(BsonDocument.parse(sQuery));
         }
@@ -148,22 +152,24 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                while (docNumber.get() < _maxItems || bFinish) {
+
+                if(results==null){
+                    performQuery();
+                }
+
+                while (docNumber.get() < _maxItems) {
                     while (results.hasNext()) {
                         if (loadedItems.size() < iLimit) {
                             loadedItems.add(results.next());
 //                            System.out.println("Size: "+loadedItems.size());
                         }
-                        else{
-                            try {
-                                Thread.sleep(1000l);
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
                     }
-                    getMoreItems();
-
+                    performQuery();
+                    try {
+                        Thread.sleep(1000l);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
         };
@@ -172,28 +178,27 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     }
 
-    private void getMoreItems() {
-        if(!bFinish && pAggregateQuery.size()==0) {
-            System.out.println("Loaded-Items: " + loadedItems.size());
-            System.out.println("Skip: " + iSkip.incrementAndGet());
-//            results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
-            performQuery();
-            if(!results.hasNext()){
-                bFinish=true;
-            }
-        }
-    }
+//    private void getMoreItems() {
+//        if(pAggregateQuery.size()==0) {
+//            System.out.println("Loaded-Items: " + loadedItems.size());
+//            System.out.println("Skip: " + iSkip.incrementAndGet());
+////            results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
+//            performQuery();
+//            if(!results.hasNext()){
+//                bFinish=true;
+//            }
+//        }
+//    }
 
     @Override
     public void getNextCas(JCas pCas) {
 
         pCas.reset();
-        System.out.println("Loaded Items: "+loadedItems.size());
         Document pDocument = loadedItems.poll();
 
         if(pDocument==null){
             System.out.println("get more items!");
-            getMoreItems();
+            performQuery();
 
             try {
                 Thread.sleep(2000l);
@@ -251,7 +256,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
     @Override
     public boolean hasNext() {
-        return loadedItems.size()>0;
+        return !loadedItems.isEmpty();
     }
 
     @Override
