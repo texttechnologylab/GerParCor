@@ -1,4 +1,9 @@
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
+import org.bson.conversions.Bson;
+import org.dkpro.core.io.xmi.XmiWriter;
 import org.junit.jupiter.api.Test;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.DUUIComposer;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConfig;
@@ -8,9 +13,12 @@ import org.texttechnologylab.DockerUnifiedUIMAInterface.lua.DUUILuaContext;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategy;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategyByDelemiter;
 import org.texttechnologylab.parliament.duui.*;
-import org.texttechnologylab.uima.type.CategorizedSentiment;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDescription;
 
@@ -71,14 +79,21 @@ public class Processor {
     @Test
     public void executeSpaCy() throws Exception {
 
-        int iScale = 5;
+        int iScale = 3;
 
-        File pFile = new File(Processor.class.getClassLoader().getResource("new").getFile());
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_rw").getFile());
 
         MongoDBConfig pConfig = new MongoDBConfig(pFile);
-        String sFilter = "{\"annotations.Token\":0}";
+        String sFilter = "{\"documentURI\": { $regex: \"older\"}, \"annotations.DocumentMetaData\": 0}";
 
-        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+        List<Bson> pQuery = new ArrayList<>();
+        Date pDate = new SimpleDateFormat("yyyy-MM-dd").parse("2024-02-14");
+        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
+        pQuery.add(Aggregates.match(Filters.and(Filters.lt("file.uploadDate", pDate), Filters.regex("documentURI", "older"))));
+        pQuery.add(Aggregates.sort(Sorts.ascending("file.length")));
+
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery));
 
         DUUIComposer composer = new DUUIComposer()
                 .withSkipVerification(true)
@@ -91,16 +106,79 @@ public class Processor {
         DUUISwarmDriver swarmDriver = new DUUISwarmDriver();
         composer.addDriver(dockerDriver, remoteDriver, uimaDriver, swarmDriver);
 
-        DUUIPipelineComponent component = new DUUIDockerDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withImageFetching().withScale(iScale)
+
+        DUUIPipelineComponent removeComponent = new DUUIUIMADriver.Component(createEngineDescription(RemoveAnnotations.class)).withScale(iScale)
+                .build();
+
+        DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
                 .build();
 
         //DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
 //                .build();
 
-        DUUISegmentationStrategy pStrategy = new DUUISegmentationStrategyByDelemiter()
+        DUUISegmentationStrategy pStrategy = new DUUISegmentationStrategyByDelemiterModified()
                 .withDelemiter(".")
-                .withLength(300000);
+                .withDebug()
+                .withLength(500000);
 
+        composer.add(removeComponent);
+        composer.add(component.withSegmentationStrategy(pStrategy));
+
+        AnalysisEngineDescription writerEngine = createEngineDescription(GerParCorWriter.class,
+                GerParCorWriter.PARAM_DBConnection, pFile.getAbsolutePath()
+        );
+
+        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.run(processor, "spacy");
+
+        //composer.shutdown();
+
+    }
+
+    @Test
+    public void executeSpaCyThueringen() throws Exception {
+
+        int iScale = 10;
+
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_rw").getFile());
+
+        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+
+        List<Bson> pQuery = new ArrayList<>();
+        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
+        pQuery.add(Aggregates.match(Filters.eq("meta.parliament", "Thueringen")));
+        pQuery.add(Aggregates.sort(Sorts.descending("file.length")));
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery));
+
+        DUUIComposer composer = new DUUIComposer()
+                .withSkipVerification(true)
+                .withWorkers(iScale)
+                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+
+        DUUIDockerDriver dockerDriver = new DUUIDockerDriver();
+        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+        DUUIRemoteDriver remoteDriver = new DUUIRemoteDriver();
+        DUUISwarmDriver swarmDriver = new DUUISwarmDriver();
+        composer.addDriver(dockerDriver, remoteDriver, uimaDriver, swarmDriver);
+
+
+        DUUIPipelineComponent removeComponent = new DUUIUIMADriver.Component(createEngineDescription(RemoveAnnotations.class)).withScale(iScale)
+                .build();
+
+        DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
+                .build();
+
+        //DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
+//                .build();
+
+        DUUISegmentationStrategy pStrategy = new DUUISegmentationStrategyByDelemiterModified()
+                .withDelemiter(".")
+                .withDebug()
+                .withLength(500000);
+
+        composer.add(removeComponent);
         composer.add(component.withSegmentationStrategy(pStrategy));
 
         AnalysisEngineDescription writerEngine = createEngineDescription(GerParCorWriter.class,
@@ -118,12 +196,16 @@ public class Processor {
     @Test
     public void executeDouble() throws Exception {
 
-        int iScale = 5;
+        int iScale = 1;
 
         File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
 
         MongoDBConfig pConfig = new MongoDBConfig(pFile);
-        String sFilter = "{\"meta.parliament\": \"Reichstag\"}";
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
+
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
+        String sFilter = "{\"documentURI\": { $regex: \"older\"}, \"annotations.DocumentMetaData\": 1}";
+//        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
 
         DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
 
@@ -137,7 +219,105 @@ public class Processor {
 
         AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
 
-        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/example/",
+                XmiWriter.PARAM_PRETTY_PRINT, true,
+                XmiWriter.PARAM_OVERWRITE, true,
+                XmiWriter.PARAM_VERSION, "1.1",
+                XmiWriter.PARAM_COMPRESSION, "GZIP"
+        );
+
+//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
+
+        composer.run(processor, "checking");
+
+        //composer.shutdown();
+
+    }
+
+    @Test
+    public void executeBaWue() throws Exception {
+
+        int iScale = 3;
+
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
+
+        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
+
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
+//        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+
+        DUUIComposer composer = new DUUIComposer()
+                .withSkipVerification(true)
+                .withWorkers(iScale)
+                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+
+        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+        composer.addDriver(uimaDriver);
+
+        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
+
+        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/xmiExample/",
+                XmiWriter.PARAM_PRETTY_PRINT, true,
+                XmiWriter.PARAM_OVERWRITE, true,
+                XmiWriter.PARAM_VERSION, "1.1",
+                XmiWriter.PARAM_COMPRESSION, "GZIP"
+        );
+
+//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
+
+        composer.run(processor, "checking");
+
+        //composer.shutdown();
+
+    }
+
+    @Test
+    public void exporter() throws Exception {
+
+        int iScale = 1;
+
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
+
+        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
+
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
+//        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+        String sFilter = "{\"grid\": \"24cd7c2f555a862876cfb2ad7cd62309\"}";
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+
+        DUUIComposer composer = new DUUIComposer()
+                .withSkipVerification(true)
+                .withWorkers(iScale)
+                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+
+        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+        composer.addDriver(uimaDriver);
+
+        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
+
+        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/xmiExample/",
+                XmiWriter.PARAM_PRETTY_PRINT, true,
+                XmiWriter.PARAM_OVERWRITE, true,
+                XmiWriter.PARAM_VERSION, "1.1",
+                XmiWriter.PARAM_COMPRESSION, "GZIP"
+        );
+
+//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
 
         composer.run(processor, "checking");
 

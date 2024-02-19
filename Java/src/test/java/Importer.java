@@ -19,14 +19,14 @@ public class Importer {
 
 //        importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundestag", "xmi.gz", "Germany", "Bundestag", "National", "false", "");
 
-        importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundesrat/xmi", "xmi.gz", "Germany", "Bundesrat", "National", "false", "");
+//        importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundesrat/xmi", "xmi.gz", "Germany", "Bundesrat", "National", "false", "");
 //
-        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Weimar_Republic", "xmi.gz", "Germany", "Reichstag", "National", "true", "Weimar_Republic");
-        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/ThirdReich", "xmi.gz", "Germany", "Reichstag", "National", "true", "Third_Reich");
+        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Weimar_Republic", ".xmi.gz", "Germany", "Reichstag", "National", "true", "Weimar_Republic");
+//        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/ThirdReich", "xmi.gz", "Germany", "Reichstag", "National", "true", "Third_Reich");
 //
-        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Reichstag", "xmi.gz", "Germany", "Reichstag", "National", "true", "German Empire");
+//        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Reichstag", "xmi.gz", "Germany", "Reichstag", "National", "true", "German Empire");
 //
-        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Reichstag_Empire", "xmi.gz", "Germany", "Reichstag", "National", "true", "North German Union / Zollparlamente");
+//        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Reichstag_Empire", "xmi.gz", "Germany", "Reichstag", "National", "true", "North German Union / Zollparlamente");
 
 //        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Alter Landtag Württemberg (1797-1799)", "xmi.gz", "Germany", "Alter Landtag Württemberg", "Regional", "true", "", "1797-1799");
 //        importMethod("/storage/xmi/GerParCorDownload/Germany/Historical/Regional/Landtag Baden-Württemberg (1953-1996)", "xmi.gz", "Germany", "Landtag Baden-Württemberg", "Regional", "true", "", "1953-1996");
@@ -84,7 +84,8 @@ public class Importer {
         File[] dirs = new File(sInput).listFiles(File::isDirectory);
 
         for (File dir : dirs) {
-//            importMethod(sInput+"/"+dir.getName(), sEnding, sCountry, sParliament, sDevision, sHistorical, dir.getName(), sComment);
+
+            importMethod(sInput+"/"+dir.getName(), sEnding, sCountry, sParliament, sDevision, sHistorical, dir.getName(), sComment);
         }
     }
 
@@ -109,7 +110,7 @@ public class Importer {
         composer.addDriver(uima_driver);
 
         composer.add(new DUUIUIMADriver.Component(createEngineDescription(MongoDBImporter.class,
-                MongoDBImporter.PARAM_DBConnection, "/home/staff_homes/abrami/Projects/GitHub/GerParCor/Java/src/main/resources/rw",
+                MongoDBImporter.PARAM_DBConnection, "/home/staff_homes/abrami/Projects/GitHub/GerParCor/Java/src/main/resources/new_rw",
                 MongoDBImporter.PARAM_Country, sCountry,
                 MongoDBImporter.PARAM_Parliament, sParliament,
                 MongoDBImporter.PARAM_Devision, sDevision,

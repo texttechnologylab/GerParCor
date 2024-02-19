@@ -16,6 +16,7 @@ import org.texttechnologylab.utilities.helper.TempFileHandler;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashSet;
@@ -32,18 +33,7 @@ public class CheckingDouble extends JCasFileWriter_ImplBase {
     protected void finalize() throws Throwable {
         super.finalize();
 
-        StringBuilder sb = new StringBuilder();
 
-        doubleSet.entrySet().stream().sorted((e1, e2)->{
-            return e1.getValue().compareTo(e2.getValue());
-        }).forEach(e->{
-            if(sb.length()>0){
-                sb.append("\n");
-            }
-            sb.append(e.getValue()+"\t"+e.getKey());
-        });
-
-        FileUtils.write(new File("/tmp/problems"), sb.toString());
 
     }
 
@@ -66,10 +56,31 @@ public class CheckingDouble extends JCasFileWriter_ImplBase {
                 }
                 iValue++;
                 doubleSet.put(dmd.getDocumentUri(), iValue);
+                try {
+                    FileUtils.write(new File("/tmp/problems"), dmd.getDocumentUri()+"\n", true);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
         });
 
+        StringBuilder sb = new StringBuilder();
+
+        doubleSet.entrySet().stream().sorted((e1, e2)->{
+            return e1.getValue().compareTo(e2.getValue());
+        }).forEach(e->{
+            if(sb.length()>0){
+                sb.append("\n");
+            }
+            sb.append(e.getValue()+"\t"+e.getKey());
+        });
+
+        try {
+            FileUtils.write(new File("/tmp/problemsFinal"), sb.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 }
