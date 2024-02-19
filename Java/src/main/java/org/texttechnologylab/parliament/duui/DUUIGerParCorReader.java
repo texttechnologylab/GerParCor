@@ -8,6 +8,7 @@ import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.model.Aggregates;
 import de.tudarmstadt.ukp.dkpro.core.api.io.ProgressMeter;
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
+import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.util.CasIOUtils;
@@ -18,6 +19,7 @@ import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.Mongo
 import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConnectionHandler;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.io.DUUICollectionReader;
 import org.texttechnologylab.annotation.AnnotationComment;
+import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.utilities.helper.ArchiveUtils;
 import org.texttechnologylab.utilities.helper.TempFileHandler;
 
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -110,17 +113,25 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
     }
 
     private void performQuery(){
+        System.out.println("Skip: "+iSkip.get());
         if(!bFinish) {
             if (pAggregateQuery.size() > 0) {
                 List<Bson> tList = new ArrayList<>();
                 for (Bson bson : pAggregateQuery) {
                     tList.add(bson);
                 }
+                tList.add(Aggregates.skip(iLimit * iSkip.get()));
                 tList.add(Aggregates.limit(iLimit));
-                tList.add(Aggregates.skip(iLimit * (iSkip.get())));
-                results = mongoDBConnectionHandler.getCollection().aggregate(tList).allowDiskUse(true).cursor();
+                tList.stream().forEach(b-> System.out.println(b));
+
+                this.results = mongoDBConnectionHandler.getCollection().aggregate(tList).maxTime(100, TimeUnit.SECONDS).cursor();
             } else {
                 this.results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
+            }
+            try {
+                Thread.sleep(1000l);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
             System.out.println("Performing Query\t" + results.hasNext());
             if (!results.hasNext()) {
@@ -231,6 +242,42 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
             newMetaData.setDocumentId(pDocument.getString("documentId"));
             newMetaData.setDocumentTitle(pDocument.getString("documentId"));
             newMetaData.addToIndexes();
+        }
+
+        try {
+            if (JCasUtil.select(pCas, DocumentAnnotation.class).size() == 0) {
+
+                String sBackupValue = pDocument.getString("documentURI") + ".xmi.gz";
+                File checkFile = new File(sBackupValue);
+                if (checkFile.exists()) {
+                    JCas tCas = JCasFactory.createJCas();
+                    File tempFile = TempFileHandler.getTempFile("t", ".xmi.gz");
+                    File nFile = ArchiveUtils.decompressGZ(checkFile);
+                    CasIOUtils.load(new FileInputStream(nFile), tCas.getCas());
+                    tempFile.delete();
+                    nFile.delete();
+
+                    JCasUtil.select(pCas, DocumentAnnotation.class).forEach(da->{
+                        DocumentAnnotation daNew = new DocumentAnnotation(pCas);
+                        daNew.setDateYear(da.getDateYear());
+                        daNew.setDateDay(da.getDateDay());
+                        daNew.setDateMonth(da.getDateMonth());
+                        daNew.setTimestamp(da.getTimestamp());
+                        daNew.setSubtitle(da.getSubtitle());
+                        daNew.setAuthor(da.getAuthor());
+                        daNew.setPlace(da.getPlace());
+                        daNew.setPublisher(da.getPublisher());
+                        daNew.addToIndexes();
+                    });
+
+                } else {
+                    System.out.println("No data can be loaded!\t" + pDocument.getObjectId("_id").toString());
+                }
+
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
 
 
