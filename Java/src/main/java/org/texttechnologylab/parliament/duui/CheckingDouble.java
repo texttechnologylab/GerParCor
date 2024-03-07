@@ -1,29 +1,20 @@
 package org.texttechnologylab.parliament.duui;
 
-import de.tudarmstadt.ukp.dkpro.core.api.io.JCasFileWriter_ImplBase;
+
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import org.apache.commons.io.FileUtils;
-import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
-import org.apache.uima.util.CasIOUtils;
-import org.texttechnologylab.annotation.AnnotationComment;
-import org.texttechnologylab.utilities.helper.ArchiveUtils;
-import org.texttechnologylab.utilities.helper.TempFileHandler;
+import org.dkpro.core.api.io.JCasFileWriter_ImplBase;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 public class CheckingDouble extends JCasFileWriter_ImplBase {
 

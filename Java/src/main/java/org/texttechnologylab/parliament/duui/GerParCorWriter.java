@@ -31,7 +31,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.DoubleStream;
 
@@ -147,6 +149,10 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
                 Document pDocument = this.dbConnectionHandler.getObject(sDocumentId);
                 pDocument.put("annotations", countAnnotations(aJCas));
 
+                if(JCasUtil.select(aJCas, Sentiment.class).size()>0){
+                    pDocument.put("annotations.values", valueSentiment(aJCas));
+                }
+
                 Document pMeta = pDocument.get("meta", Document.class);
                 if (pMeta == null) {
                     pMeta = new Document();
@@ -212,6 +218,19 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
         }
         return rDocument;
 
+    }
+    private List<Document> valueSentiment(JCas pCas) {
+
+        List<Document> documentList = new ArrayList<>();
+        JCasUtil.select(pCas, Sentiment.class).stream().forEach(s->{
+            Document nDocument = new Document();
+            nDocument.put("begin", s.getBegin());
+            nDocument.put("end", s.getEnd());
+            nDocument.put("value", s.getSentiment());
+            documentList.add(nDocument);
+        });
+
+        return documentList;
     }
 
     /**

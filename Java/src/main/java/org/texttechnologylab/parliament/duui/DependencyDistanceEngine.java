@@ -1,7 +1,6 @@
 package org.texttechnologylab.parliament.duui;
 
 import com.google.gson.Gson;
-import de.tudarmstadt.ukp.dkpro.core.api.io.JCasFileWriter_ImplBase;
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
@@ -18,8 +17,8 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.AnnotationBase;
 import org.apache.uima.jcas.tcas.Annotation;
+import org.dkpro.core.api.io.JCasFileWriter_ImplBase;
 import org.texttechnologylab.annotation.DocumentAnnotation;
-import org.texttechnologylab.utilities.helper.StringUtils;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

@@ -11,7 +11,6 @@ import org.jsoup.select.Elements;
 import org.junit.Test;
 import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.annotation.DocumentModification;
-import org.texttechnologylab.parliament.crawler.helper.TextImagerProcessing;
 import org.texttechnologylab.utilities.helper.FileUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;

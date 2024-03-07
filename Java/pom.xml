@@ -6,15 +6,16 @@
 
     <groupId>org.texttechnologylab</groupId>
     <artifactId>GerParCor</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <ttlab.textimager.version>2740010ef66a43710cc2f067a22505627eed0c1a</ttlab.textimager.version>
-<!--        <ttlab.textimager.version>a1a0b0e94fdb448eb23327c760cb06f80f75c436</ttlab.textimager.version>-->
-        <ttlab.typesystem.version>1.9.5</ttlab.typesystem.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <utilities.version>8bfa54cbe4</utilities.version>
+        <ttlab.typesystem.version>bd6e684b12</ttlab.typesystem.version>
+        <duui.version>7cef2433b5</duui.version>
+        <dkpro.core.version>2.4.0</dkpro.core.version>
     </properties>
 
     <build>
@@ -24,42 +25,19 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.5.1</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <filters>
-                        <filter>
-                            <artifact>*:*</artifact>
-                            <excludes>
-                                <exclude>META-INF/*.SF</exclude>
-                                <exclude>META-INF/*.DSA</exclude>
-                                <exclude>META-INF/*.RSA</exclude>
-                            </excludes>
-                        </filter>
-                    </filters>
+                    <source>17</source>
+                    <target>17</target>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>2.22.0</version>
                 <configuration>
                     <argLine>
                         --illegal-access=permit
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                        <!--                        add-opens for use in JUnit-Tests...-->
                     </argLine>
                 </configuration>
             </plugin>
@@ -88,35 +66,16 @@
             <name>Maven Plugin Repository</name>
             <url>https://repo1.maven.org/maven2</url>
         </repository>
-        <repository>
-            <id>ukp-oss-model-releases</id>
-            <url>http://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-model-releases-local</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+<!--        <repository>-->
+<!--            <id>ukp-oss-model-releases</id>-->
+<!--            <url>http://zoidberg.ukp.informatik.tu-darmstadt.de/artifactory/public-model-releases-local</url>-->
+<!--            <snapshots>-->
+<!--                <enabled>false</enabled>-->
+<!--            </snapshots>-->
+<!--        </repository>-->
     </repositories>
 
     <dependencies>
-
-        <dependency>
-            <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-            <artifactId>de.tudarmstadt.ukp.dkpro.core.opennlp-asl</artifactId>
-            <version>1.10.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/de.tudarmstadt.ukp.dkpro.core/de.tudarmstadt.ukp.dkpro.core.io.text-asl -->
-        <dependency>
-            <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-            <artifactId>de.tudarmstadt.ukp.dkpro.core.io.text-asl</artifactId>
-            <version>1.10.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/de.tudarmstadt.ukp.dkpro.core/de.tudarmstadt.ukp.dkpro.core.tokit-asl -->
-        <dependency>
-            <groupId>de.tudarmstadt.ukp.dkpro.core</groupId>
-            <artifactId>de.tudarmstadt.ukp.dkpro.core.tokit-asl</artifactId>
-            <version>1.10.0</version>
-        </dependency>
-
 
 
         <dependency>
@@ -150,26 +109,16 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.texttechnologylab.textimager-uima</groupId>
-            <artifactId>textimager-uima-io</artifactId>
-            <version>b10db8275163d19d63b9512cc20ca5872e52499b</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.github.texttechnologylab</groupId>
-                    <artifactId>UIMATypeSystem</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.github.texttechnologylab</groupId>
             <artifactId>DockerUnifiedUIMAInterface</artifactId>
-            <version>1.0</version>
+            <version>${duui.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.github.texttechnologylab</groupId>
-            <artifactId>UIMADatabaseInterface</artifactId>
-            <version>3634ac3be3</version>
-        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>com.github.texttechnologylab</groupId>-->
+<!--            <artifactId>UIMADatabaseInterface</artifactId>-->
+<!--            <version>3634ac3be3</version>-->
+<!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
@@ -177,13 +126,6 @@
             <artifactId>commons-io</artifactId>
             <version>2.11.0</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.9.8</version>
-        </dependency>
-
 
 
         <dependency>
@@ -199,69 +141,16 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.uima</groupId>
-            <artifactId>uimaj-core</artifactId>
-            <version>2.11.0</version>
+            <groupId>com.github.texttechnologylab</groupId>
+            <artifactId>Utilities</artifactId>
+            <version>${utilities.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.uima</groupId>
-            <artifactId>uimafit-core</artifactId>
-            <version>2.5.0</version>
-        </dependency>
-    <dependency>
-        <groupId>com.github.texttechnologylab</groupId>
-        <artifactId>Utilities</artifactId>
-        <version>d4bbe7ba52</version>
-    </dependency>
-
 
         <dependency>
             <groupId>com.github.texttechnologylab</groupId>
             <artifactId>UIMATypeSystem</artifactId>
-            <version>1.9.5</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.github.texttechnologylab.textimager-uima</groupId>
-                    <artifactId>textimager-uima-types</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+            <version>${ttlab.typesystem.version}</version>
 
-        <dependency>
-        <groupId>com.github.texttechnologylab.textimager-uima</groupId>
-        <artifactId>textimager-uima-types</artifactId>
-        <version>${ttlab.textimager.version}</version>
-<!--        <version>0.3.0.2</version>-->
-        <exclusions>
-            <exclusion>
-                <groupId>com.github.texttechnologylab</groupId>
-                <artifactId>UIMATypeSystem</artifactId>
-            </exclusion>
-        </exclusions>
-    </dependency>
-
-        <dependency>
-            <groupId>com.github.texttechnologylab</groupId>
-            <artifactId>textimager-client</artifactId>
-            <version>dirty-tei-dcd9b4979e-1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.github.texttechnologylab.textimager-uima</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.texttechnologylab.textimager-uima</groupId>
-            <artifactId>textimager-uima-spacy</artifactId>
-            <version>${ttlab.textimager.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.github.texttechnologylab</groupId>
-                    <artifactId>UIMATypeSystem</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -288,6 +177,68 @@
             <version>1.0.4</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-tokit-asl -->
+        <dependency>
+            <groupId>org.dkpro.core</groupId>
+            <artifactId>dkpro-core-tokit-asl</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-api-segmentation-asl -->
+        <dependency>
+            <groupId>org.dkpro.core</groupId>
+            <artifactId>dkpro-core-api-segmentation-asl</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-opennlp-asl -->
+        <dependency>
+            <groupId>org.dkpro.core</groupId>
+            <artifactId>dkpro-core-opennlp-asl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-api-io-asl -->
+        <dependency>
+            <groupId>org.dkpro.core</groupId>
+            <artifactId>dkpro-core-api-io-asl</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-io-xmi-asl -->
+        <dependency>
+            <groupId>org.dkpro.core</groupId>
+            <artifactId>dkpro-core-io-xmi-asl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-io-text-asl -->
+        <dependency>
+            <groupId>org.dkpro.core</groupId>
+            <artifactId>dkpro-core-io-text-asl</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-api-resources-asl -->
+        <dependency>
+            <groupId>org.dkpro.core</groupId>
+            <artifactId>dkpro-core-api-resources-asl</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.dkpro.core/dkpro-core-tokit-asl -->
+        <dependency>
+            <groupId>org.dkpro.core</groupId>
+            <artifactId>dkpro-core-tokit-asl</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
 
+    <dependencyManagement>
+    <dependencies>
+    <dependency>
+        <groupId>org.dkpro.core</groupId>
+        <artifactId>dkpro-core-asl</artifactId>
+        <version>${dkpro.core.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+    </dependency>
+    </dependencies>
+    </dependencyManagement>
 </project>

@@ -25,6 +25,7 @@ import org.texttechnologylab.annotation.AnnotationComment;
 import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.parliament.database.MongoDBConfig;
 import org.texttechnologylab.parliament.database.MongoDBConnectionHandler;
+import org.texttechnologylab.uima.type.Sentiment;
 import org.texttechnologylab.utilities.helper.ArchiveUtils;
 import org.texttechnologylab.utilities.helper.StringUtils;
 import org.texttechnologylab.utilities.helper.TempFileHandler;
@@ -167,6 +168,7 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
                 whiteList.add(NamedEntity.class);
                 whiteList.add(Dependency.class);
                 whiteList.add(Lemma.class);
+                whiteList.add(Sentiment.class);
 
                 JCasUtil.select(pCas, DocumentAnnotation.class).stream().forEach(a -> {
                     DocumentMetaData dmd = DocumentMetaData.get(pCas);

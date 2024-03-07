@@ -8,8 +8,8 @@ import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.dkpro.core.io.xmi.XmiWriter;
 import org.json.JSONObject;
+import org.texttechnologylab.DockerUnifiedUIMAInterface.io.writer.TTLabXmiWriter;
 import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.annotation.DocumentModification;
 import org.texttechnologylab.utilities.helper.FileUtils;
@@ -17,7 +17,6 @@ import org.texttechnologylab.utilities.helper.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -80,12 +79,12 @@ public class Merger {
 
         AnalysisEngine pAE = null;
         AggregateBuilder pipeline = new AggregateBuilder();
-        pipeline.add(createEngineDescription(XmiWriter.class,
-                XmiWriter.PARAM_TARGET_LOCATION, sOutput,
-                XmiWriter.PARAM_PRETTY_PRINT, true,
-                XmiWriter.PARAM_OVERWRITE, true,
-                XmiWriter.PARAM_VERSION, "1.1",
-                XmiWriter.PARAM_COMPRESSION, "GZIP"
+        pipeline.add(createEngineDescription(TTLabXmiWriter.class,
+                TTLabXmiWriter.PARAM_TARGET_LOCATION, sOutput,
+                TTLabXmiWriter.PARAM_PRETTY_PRINT, true,
+                TTLabXmiWriter.PARAM_OVERWRITE, true,
+                TTLabXmiWriter.PARAM_VERSION, "1.1",
+                TTLabXmiWriter.PARAM_COMPRESSION, "GZIP"
         ));
 
         // create an AnalysisEngine for running the Pipeline.

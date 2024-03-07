@@ -3,7 +3,6 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.bson.conversions.Bson;
-import org.dkpro.core.io.xmi.XmiWriter;
 import org.junit.jupiter.api.Test;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.DUUIComposer;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConfig;
@@ -27,14 +26,18 @@ public class Processor {
     @Test
     public void executeSentiment() throws Exception {
 
-        int iScale = 60;
+        int iScale = 1;
 
-        File pFile = new File(Processor.class.getClassLoader().getResource("rw").getFile());
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_rw").getFile());
 
         MongoDBConfig pConfig = new MongoDBConfig(pFile);
-        String sFilter = "{}";
+        List<Bson> pQuery = new ArrayList<>();
 
-        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
+        pQuery.add(Aggregates.match(Filters.exists("annotations.Sentiment", false)));
+        pQuery.add(Aggregates.sort(Sorts.ascending("file.length")));
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery));
 
         DUUIComposer composer = new DUUIComposer()
                 .withSkipVerification(true)
@@ -50,7 +53,8 @@ public class Processor {
         DUUIPipelineComponent language = new DUUIUIMADriver.Component(createEngineDescription(SetLanguage.class,
                 SetLanguage.PARAM_LANGUAGE, "de")).withScale(iScale).build();
 
-        DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/textimager-duui-transformers-sentiment:latest").withScale(iScale)
+        DUUIPipelineComponent component = new DUUIDockerDriver.Component("docker.texttechnologylab.org/textimager-duui-transformers-sentiment:latest").withScale(iScale)
+                .withImageFetching()
                 .withParameter("model_name", "oliverguhr/german-sentiment-bert")
                 .withParameter("selection", "text")
                 .build();
@@ -60,15 +64,15 @@ public class Processor {
                 .withLength(300000);
 
         composer.add(language);
-        composer.add(component);
+        composer.add(component.withSegmentationStrategy(pStrategy));
 //
-//        AnalysisEngineDescription writerEngine = createEngineDescription(GerParCorWriter.class,
-//                GerParCorWriter.PARAM_DBConnection, pFile.getAbsolutePath()
-//        );
+        AnalysisEngineDescription writerEngine = createEngineDescription(GerParCorWriter.class,
+                GerParCorWriter.PARAM_DBConnection, pFile.getAbsolutePath()
+        );
 
-        AnalysisEngineDescription countAnnos = createEngineDescription(CountAnnotations.class);
+//        AnalysisEngineDescription countAnnos = createEngineDescription(CountAnnotations.class);
 
-        composer.add(new DUUIUIMADriver.Component(countAnnos).withScale(iScale).build());
+        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
 
         composer.run(processor, "reloaded");
 
@@ -193,137 +197,137 @@ public class Processor {
 
     }
 
-    @Test
-    public void executeDouble() throws Exception {
-
-        int iScale = 1;
-
-        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
-
-        MongoDBConfig pConfig = new MongoDBConfig(pFile);
-//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
-
-//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
-        String sFilter = "{\"documentURI\": { $regex: \"older\"}, \"annotations.DocumentMetaData\": 1}";
+//    @Test
+//    public void executeDouble() throws Exception {
+//
+//        int iScale = 1;
+//
+//        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
+//
+//        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+////        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
+//
+////        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
+//        String sFilter = "{\"documentURI\": { $regex: \"older\"}, \"annotations.DocumentMetaData\": 1}";
+////        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+//
+//        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+//
+//        DUUIComposer composer = new DUUIComposer()
+//                .withSkipVerification(true)
+//                .withWorkers(iScale)
+//                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+//
+//        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+//        composer.addDriver(uimaDriver);
+//
+//        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
+//
+//        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+//                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/example/",
+//                XmiWriter.PARAM_PRETTY_PRINT, true,
+//                XmiWriter.PARAM_OVERWRITE, true,
+//                XmiWriter.PARAM_VERSION, "1.1",
+//                XmiWriter.PARAM_COMPRESSION, "GZIP"
+//        );
+//
+////        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+//
+//        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
+//
+//        composer.run(processor, "checking");
+//
+//        //composer.shutdown();
+//
+//    }
+//
+//    @Test
+//    public void executeBaWue() throws Exception {
+//
+//        int iScale = 3;
+//
+//        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
+//
+//        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+////        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
+//
+////        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
+////        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
 //        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+//
+//        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+//
+//        DUUIComposer composer = new DUUIComposer()
+//                .withSkipVerification(true)
+//                .withWorkers(iScale)
+//                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+//
+//        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+//        composer.addDriver(uimaDriver);
+//
+//        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
+//
+//        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+//                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/xmiExample/",
+//                XmiWriter.PARAM_PRETTY_PRINT, true,
+//                XmiWriter.PARAM_OVERWRITE, true,
+//                XmiWriter.PARAM_VERSION, "1.1",
+//                XmiWriter.PARAM_COMPRESSION, "GZIP"
+//        );
+//
+////        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+//
+//        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
+//
+//        composer.run(processor, "checking");
+//
+//        //composer.shutdown();
+//
+//    }
 
-        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
-
-        DUUIComposer composer = new DUUIComposer()
-                .withSkipVerification(true)
-                .withWorkers(iScale)
-                .withLuaContext(new DUUILuaContext().withJsonLibrary());
-
-        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
-        composer.addDriver(uimaDriver);
-
-        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
-
-        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
-                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/example/",
-                XmiWriter.PARAM_PRETTY_PRINT, true,
-                XmiWriter.PARAM_OVERWRITE, true,
-                XmiWriter.PARAM_VERSION, "1.1",
-                XmiWriter.PARAM_COMPRESSION, "GZIP"
-        );
-
-//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
-
-        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
-
-        composer.run(processor, "checking");
-
-        //composer.shutdown();
-
-    }
-
-    @Test
-    public void executeBaWue() throws Exception {
-
-        int iScale = 3;
-
-        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
-
-        MongoDBConfig pConfig = new MongoDBConfig(pFile);
-//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
-
-//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
-//        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
-        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
-
-        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
-
-        DUUIComposer composer = new DUUIComposer()
-                .withSkipVerification(true)
-                .withWorkers(iScale)
-                .withLuaContext(new DUUILuaContext().withJsonLibrary());
-
-        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
-        composer.addDriver(uimaDriver);
-
-        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
-
-        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
-                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/xmiExample/",
-                XmiWriter.PARAM_PRETTY_PRINT, true,
-                XmiWriter.PARAM_OVERWRITE, true,
-                XmiWriter.PARAM_VERSION, "1.1",
-                XmiWriter.PARAM_COMPRESSION, "GZIP"
-        );
-
-//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
-
-        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
-
-        composer.run(processor, "checking");
-
-        //composer.shutdown();
-
-    }
-
-    @Test
-    public void exporter() throws Exception {
-
-        int iScale = 1;
-
-        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
-
-        MongoDBConfig pConfig = new MongoDBConfig(pFile);
-//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
-
-//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
-//        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
-        String sFilter = "{\"grid\": \"24cd7c2f555a862876cfb2ad7cd62309\"}";
-
-        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
-
-        DUUIComposer composer = new DUUIComposer()
-                .withSkipVerification(true)
-                .withWorkers(iScale)
-                .withLuaContext(new DUUILuaContext().withJsonLibrary());
-
-        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
-        composer.addDriver(uimaDriver);
-
-        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
-
-        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
-                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/xmiExample/",
-                XmiWriter.PARAM_PRETTY_PRINT, true,
-                XmiWriter.PARAM_OVERWRITE, true,
-                XmiWriter.PARAM_VERSION, "1.1",
-                XmiWriter.PARAM_COMPRESSION, "GZIP"
-        );
-
-//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
-
-        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
-
-        composer.run(processor, "checking");
-
-        //composer.shutdown();
-
-    }
+//    @Test
+//    public void exporter() throws Exception {
+//
+//        int iScale = 1;
+//
+//        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
+//
+//        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+////        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
+//
+////        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
+////        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+//        String sFilter = "{\"grid\": \"24cd7c2f555a862876cfb2ad7cd62309\"}";
+//
+//        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
+//
+//        DUUIComposer composer = new DUUIComposer()
+//                .withSkipVerification(true)
+//                .withWorkers(iScale)
+//                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+//
+//        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+//        composer.addDriver(uimaDriver);
+//
+//        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
+//
+//        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+//                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/xmiExample/",
+//                XmiWriter.PARAM_PRETTY_PRINT, true,
+//                XmiWriter.PARAM_OVERWRITE, true,
+//                XmiWriter.PARAM_VERSION, "1.1",
+//                XmiWriter.PARAM_COMPRESSION, "GZIP"
+//        );
+//
+////        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+//
+//        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
+//
+//        composer.run(processor, "checking");
+//
+//        //composer.shutdown();
+//
+//    }
     public void example() throws Exception {
 
         int iScale = 2;
@@ -365,9 +369,9 @@ public class Processor {
 //                GerParCorWriter.PARAM_DBConnection, pFile.getAbsolutePath()
 //        );
 
-        AnalysisEngineDescription countAnnos = createEngineDescription(CountAnnotations.class);
+//        AnalysisEngineDescription countAnnos = createEngineDescription(CountAnnotations.class);
 
-        composer.add(new DUUIUIMADriver.Component(countAnnos).withScale(iScale).build());
+//        composer.add(new DUUIUIMADriver.Component(countAnnos).withScale(iScale).build());
 
         composer.run(processor, "reloaded");
 

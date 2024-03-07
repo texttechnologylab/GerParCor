@@ -6,8 +6,6 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSDownloadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import de.tudarmstadt.ukp.dkpro.core.api.io.ProgressMeter;
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
@@ -18,6 +16,7 @@ import org.bson.conversions.Bson;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConfig;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConnectionHandler;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.io.DUUICollectionReader;
+import org.texttechnologylab.DockerUnifiedUIMAInterface.monitoring.AdvancedProgressMeter;
 import org.texttechnologylab.annotation.AnnotationComment;
 import org.texttechnologylab.utilities.helper.ArchiveUtils;
 import org.texttechnologylab.utilities.helper.TempFileHandler;
@@ -38,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class DUUIGerParCorReader implements DUUICollectionReader {
 
-    private ProgressMeter progress;
+    private AdvancedProgressMeter progress;
     private ConcurrentLinkedQueue<Document> loadedItems = new ConcurrentLinkedQueue();
     private ConcurrentLinkedQueue<Document> items = new ConcurrentLinkedQueue();
 
@@ -97,7 +96,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
     }
 
     @Override
-    public ProgressMeter getProgress() {
+    public AdvancedProgressMeter getProgress() {
         return this.progress;
     }
 
@@ -143,7 +142,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
             MongoCursor<Document> pResultMax = mongoDBConnectionHandler.getCollection().aggregate(tList).allowDiskUse(true).cursor();
             _maxItems = pResultMax.next().getInteger("sum");
         }
-        progress = new ProgressMeter(_maxItems);
+        progress = new AdvancedProgressMeter(_maxItems);
 
         Runnable r = new Runnable() {
             @Override
