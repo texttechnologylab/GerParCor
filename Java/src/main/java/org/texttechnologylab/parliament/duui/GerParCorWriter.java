@@ -6,6 +6,11 @@ import com.mongodb.client.gridfs.GridFSBuckets;
 import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import de.tudarmstadt.ukp.dkpro.core.api.ner.type.NamedEntity;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Lemma;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
+import de.tudarmstadt.ukp.dkpro.core.api.syntax.type.dependency.Dependency;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.SerialFormat;
@@ -20,6 +25,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.dkpro.core.api.io.JCasFileWriter_ImplBase;
+import org.hucompute.textimager.uima.type.GerVaderSentiment;
 import org.hucompute.textimager.uima.type.Sentiment;
 import org.texttechnologylab.annotation.AnnotationComment;
 import org.texttechnologylab.parliament.database.MongoDBConfig;
@@ -48,6 +54,7 @@ import static org.texttechnologylab.parliament.duui.MongoDBStatics.iChunkSizeByt
 public class GerParCorWriter extends JCasFileWriter_ImplBase {
 
     private static Set<String> classNames = new HashSet<>(0);
+    private static Set<Class> classList = new HashSet<>(0);
 
     public static final String PARAM_DBConnection = "dbconnection";
     private final String GRIDID = "grid";
@@ -81,6 +88,13 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
             bCompress = false;
         }
 
+        classList.add(Sentence.class);
+        classList.add(Token.class);
+        classList.add(NamedEntity.class);
+        classList.add(Dependency.class);
+        classList.add(Lemma.class);
+        classList.add(GerVaderSentiment.class);
+
     }
 
     @Override
@@ -112,6 +126,7 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
 
         if (sGridId.length() > 0) {
 
@@ -147,11 +162,23 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
                 uploadStream.close();
 
                 Document pDocument = this.dbConnectionHandler.getObject(sDocumentId);
-                pDocument.put("annotations", countAnnotations(aJCas));
+//                pDocument.put("annotations", countAnnotations(aJCas));
+
+                Document pAnnotations = new Document();
+                for (Class aClass : classList) {
+                    pAnnotations.put(aClass.getSimpleName(), countAnnotations(aJCas, aClass));
+                }
+                pDocument.put("annotations", pAnnotations);
 
                 if(JCasUtil.select(aJCas, Sentiment.class).size()>0){
-                    pDocument.put("annotations.values", valueSentiment(aJCas));
+                    try {
+                        pDocument.put("sentiment_value", valueSentiment(aJCas).stream().findFirst().get());
+                    }
+                    catch (Exception e){
+
+                    }
                 }
+
 
                 Document pMeta = pDocument.get("meta", Document.class);
                 if (pMeta == null) {
@@ -177,12 +204,21 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
 
     }
 
+    private int countAnnotations(JCas pCas, Class pType){
+
+        int iResult = 0;
+        iResult = JCasUtil.select(pCas, pType).size();
+        return iResult;
+
+    }
+
     /**
      * Count Annotations in JCas
      * @param pCas
      * @return
      */
     private Document countAnnotations(JCas pCas) {
+
 
         Document rDocument = new Document();
 
@@ -241,8 +277,6 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
     private Document getMetaInformation(JCas pCas) {
 
         Document rDocument = new Document();
-
-        rDocument.put("size", pCas.size());
 
         return rDocument;
 

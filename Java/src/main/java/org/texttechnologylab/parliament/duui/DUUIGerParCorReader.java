@@ -147,7 +147,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                while (docNumber.get() < _maxItems || bFinish) {
+                while (docNumber.get() < _maxItems) {
                     while (results.hasNext()) {
                         if (loadedItems.size() < iLimit) {
                             loadedItems.add(results.next());
@@ -177,9 +177,9 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
             System.out.println("Skip: " + iSkip.incrementAndGet());
 //            results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
             performQuery();
-            if(!results.hasNext()){
-                bFinish=true;
-            }
+//            if(!results.hasNext()){
+//                bFinish=true;
+//            }
         }
     }
 
@@ -212,6 +212,10 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
 
         try {
             getCas(pCas, pDocument);
+            if(pCas.getDocumentText()==null){
+                docNumber.addAndGet(1);
+                return;
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -243,7 +247,14 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         progress.setLeft(_maxItems - docNumber.get());
 
         if(docNumber.get()%2==0) {
-            System.out.printf("%s: \t %s \t %s\n", progress, formatSize(pCas.size()), pDocument.getObjectId("_id").toString());
+            try {
+                long lLength = pDocument.getList("file", Document.class).get(0).getLong("length");
+                System.out.printf("%s: \t %s \t %s\n", progress, formatSize(lLength), pDocument.getObjectId("_id").toString());
+            }
+            catch (Exception e){
+                System.out.println(e.getMessage());
+            }
+//            System.out.printf("%s: \t %s \t %s\n", progress, formatSize(pCas.size()), pDocument.getObjectId("_id").toString());
         }
 
     }
@@ -315,6 +326,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
 
             try {
                 AnnotationComment id = JCasUtil.select(pEmpty, AnnotationComment.class).stream().filter(ac -> ac.getKey().equals(DOCUMENTID)).findFirst().get();
