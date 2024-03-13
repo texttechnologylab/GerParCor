@@ -164,6 +164,10 @@ public class GerParCorWriter extends JCasFileWriter_ImplBase {
                 Document pDocument = this.dbConnectionHandler.getObject(sDocumentId);
 //                pDocument.put("annotations", countAnnotations(aJCas));
 
+                if(pDocument.containsKey("annotations")){
+                    pDocument.put("annotationsBackup", pDocument.get("annotations"));
+                }
+
                 Document pAnnotations = new Document();
                 for (Class aClass : classList) {
                     pAnnotations.put(aClass.getSimpleName(), countAnnotations(aJCas, aClass));
