@@ -36,9 +36,9 @@ public class Processor {
     @Test
     public void executeSentiment() throws Exception {
 
-        int iScale = 1;
+        int iScale = 10;
 
-        File pFile = new File(Processor.class.getClassLoader().getResource("new").getFile());
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_rw").getFile());
 
         MongoDBConfig pConfig = new MongoDBConfig(pFile);
         List<Bson> pQuery = new ArrayList<>();
@@ -48,7 +48,7 @@ public class Processor {
         pQuery.add(Aggregates.sort(Sorts.ascending("file.length")));
 //        pQuery.add(Aggregates.sample(5));
 
-        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery));
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery, 1000));
 
         DUUIComposer composer = new DUUIComposer()
                 .withSkipVerification(true)
@@ -73,7 +73,7 @@ public class Processor {
                 .withDelemiter(".")
                 .withLength(300000);
 
-        composer.add(language);
+//        composer.add(language);
 //        composer.add(component.withSegmentationStrategy(pStrategy));
         composer.add(component);
 //

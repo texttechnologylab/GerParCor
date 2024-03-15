@@ -109,19 +109,20 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         return this.bOverrideMeta;
     }
 
-    private void performQuery(){
+    private boolean performQuery(){
         if(pAggregateQuery.size()>0){
             List<Bson> tList = new ArrayList<>();
             for (Bson bson : pAggregateQuery) {
                 tList.add(bson);
             }
+            tList.add(Aggregates.skip(iLimit*iSkip.get()));
             tList.add(Aggregates.limit(iLimit));
-            tList.add(Aggregates.skip(iLimit*(iSkip.get())));
-            results = mongoDBConnectionHandler.getCollection().aggregate(tList).allowDiskUse(true).cursor();
+            this.results = mongoDBConnectionHandler.getCollection().aggregate(tList).allowDiskUse(true).cursor();
         }
         else{
             this.results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
         }
+        return this.results.hasNext();
     }
 
     private void init() {
@@ -129,7 +130,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         this.mongoDBConnectionHandler = new MongoDBConnectionHandler(dbConfig);
 
         this.gridFS = GridFSBuckets.create(mongoDBConnectionHandler.getDatabase(), "grid");
-        performQuery();
+        bFinish = !performQuery();
         if(pAggregateQuery.size()==0) {
             _maxItems = mongoDBConnectionHandler.getCollection().countDocuments(BsonDocument.parse(sQuery));
         }
@@ -172,14 +173,10 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
     }
 
     private void getMoreItems() {
-        if(!bFinish && pAggregateQuery.size()==0) {
+        if(!bFinish) {
             System.out.println("Loaded-Items: " + loadedItems.size());
             System.out.println("Skip: " + iSkip.incrementAndGet());
-//            results = mongoDBConnectionHandler.getCollection().find(BsonDocument.parse(sQuery)).limit(iLimit).skip(iLimit * (iSkip.get())).cursor();
-            performQuery();
-//            if(!results.hasNext()){
-//                bFinish=true;
-//            }
+            bFinish = !performQuery();
         }
     }
 
@@ -187,7 +184,7 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
     public void getNextCas(JCas pCas) {
 
         pCas.reset();
-        System.out.println("Loaded Items: "+loadedItems.size());
+//        System.out.println("Loaded Items: "+loadedItems.size());
         Document pDocument = loadedItems.poll();
 
         if(pDocument==null){
@@ -377,4 +374,5 @@ public class DUUIGerParCorReader implements DUUICollectionReader {
         return String.format("%.1f %cB", lSize / 1024f, " kMGTPE".charAt(u));
 
     }
+
 }
