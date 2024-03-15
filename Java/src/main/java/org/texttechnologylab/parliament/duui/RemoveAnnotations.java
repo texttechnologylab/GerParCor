@@ -51,5 +51,6 @@ public class RemoveAnnotations extends JCasAnnotator_ImplBase {
         });
 
 
+
     }
 }

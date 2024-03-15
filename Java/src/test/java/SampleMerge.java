@@ -1,43 +1,136 @@
+import com.google.api.client.util.ArrayMap;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Paragraph;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
+import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
+import de.tudarmstadt.ukp.dkpro.core.api.syntax.type.dependency.Dependency;
+import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
+import org.apache.uima.cas.SerialFormat;
+import org.apache.uima.fit.factory.JCasFactory;
+import org.apache.uima.fit.util.JCasUtil;
+import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.TOP;
+import org.apache.uima.jcas.tcas.Annotation;
+import org.apache.uima.util.CasIOUtils;
 import org.bson.conversions.Bson;
+import org.dkpro.core.io.xmi.XmiWriter;
 import org.junit.jupiter.api.Test;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.DUUIComposer;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConfig;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.driver.*;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.io.DUUIAsynchronousProcessor;
-import org.texttechnologylab.DockerUnifiedUIMAInterface.io.writer.TTLabXmiWriter;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.lua.DUUILuaContext;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategy;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategyByDelemiter;
+import org.texttechnologylab.annotation.SpacyAnnotatorMetaData;
 import org.texttechnologylab.parliament.duui.*;
+import org.texttechnologylab.utilities.helper.FileUtils;
+import org.xml.sax.SAXException;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDescription;
 
 public class SampleMerge {
 
     @Test
-    public void sample() throws Exception {
+    public void merge() throws Exception {
+        ConcurrentLinkedQueue<String> sampleList = new ConcurrentLinkedQueue<>();
+
+        Set<File> tFiles = new HashSet<>();
+        tFiles = FileUtils.getFiles("/home/gabrami/Downloads/dott", "xmi");
+
+        Map<Integer, String> mapSentence = new ArrayMap<>();
+        Map<String, Integer> mapResult = new ArrayMap<>();
+
+        String sMerge = "0_11,11_16,11_20,20_25,25_38,38_100";
+
+        for (String s : sMerge.split(",")) {
+
+            for(int a=0; a<4; a++){
+                sampleList.add(s);
+            }
+
+        }
+
+        JCas pCas = JCasFactory.createJCas();
+        tFiles.stream().forEach(f->{
+            pCas.reset();
+
+            try {
+                CasIOUtils.load(new FileInputStream(f), pCas.getCas());
+
+                JCasUtil.select(pCas, Sentence.class).stream().forEach(s->{
+                    int iSize = JCasUtil.selectCovered(pCas, Token.class, s).size();
+
+                    mapSentence.put(iSize, s.getCoveredText());
+
+                });
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+
+
+
+        });
+
+        do {
+            AtomicReference<String> sValue = new AtomicReference<>(sampleList.poll());
+
+            mapSentence.keySet().stream().sorted().forEach(ks -> {
+
+                if(sValue.get()!=null) {
+
+                    String[] sSplit = sValue.get().split("_");
+                    int iMin = Integer.valueOf(sSplit[0]);
+                    int iMax = Integer.valueOf(sSplit[1]);
+
+                    if (ks > iMin && ks <= iMax) {
+                        mapResult.put(mapSentence.get(ks), ks);
+                        sValue.set(sampleList.poll());
+                    }
+                }
+            });
+        }
+        while(!sampleList.isEmpty());
+
+        System.out.println("stop");
+
+        StringBuilder sb = new StringBuilder();
+        for (String s : mapResult.keySet()) {
+            if(sb.length()>0){
+                sb.append(" ");
+            }
+            sb.append(s);
+        }
+
+        JCas tCas = JCasFactory.createText(sb.toString(), "de");
+
+        for (String s : mapResult.keySet()) {
+            int iStart = tCas.getDocumentText().indexOf(s);
+            int iEnd = iStart+s.length();
+//            Paragraph p = new Paragraph(tCas, iStart, iEnd);
+//            p.addToIndexes();
+            Sentence pSentence = new Sentence(tCas, iStart, iEnd);
+            pSentence.addToIndexes();
+        }
+
 
         int iScale = 1;
-
-        File pFile = new File(SampleMerge.class.getClassLoader().getResource("new_ro").getFile());
-
-        MongoDBConfig pConfig = new MongoDBConfig(pFile);
-        List<Bson> pQuery = new ArrayList<>();
-
-        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
-        pQuery.add(Aggregates.sample(100));
-
-        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery));
 
         DUUIComposer composer = new DUUIComposer()
                 .withSkipVerification(true)
@@ -50,22 +143,62 @@ public class SampleMerge {
         DUUISwarmDriver swarmDriver = new DUUISwarmDriver();
         composer.addDriver(dockerDriver, remoteDriver, uimaDriver, swarmDriver);
 
-        AnalysisEngineDescription pSampleWriter = createEngineDescription(SampleWriter.class,
-                SampleWriter.PRAM_sample, "0_11,11_16,11_20,20_25,25_38,38_100",
-                SampleWriter.PRAM_amount, "4"
+
+        DUUIPipelineComponent component = new DUUIDockerDriver.Component("docker.texttechnologylab.org/textimager-duui-spacy-single-de_core_news_sm:0.1.4").withScale(iScale)
+                .build();
+
+        composer.add(component);
+
+
+        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/example/",
+                XmiWriter.PARAM_PRETTY_PRINT, true,
+                XmiWriter.PARAM_OVERWRITE, true,
+                XmiWriter.PARAM_VERSION, "1.1"
         );
+//        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
 
-//        AnalysisEngineDescription countAnnos = createEngineDescription(CountAnnotations.class);
+        composer.add(new DUUIUIMADriver.Component(createEngineDescription(RemoveAnnotations.class, RemoveAnnotations.PARAM_Classes, Dependency.class.getName())).build());
 
-//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
-        composer.add(new DUUIUIMADriver.Component(pSampleWriter).withScale(iScale).build());
-
-        composer.run(processor, "sample");
+        composer.run(tCas, "spacy");
 
         composer.shutdown();
 
-    }
+        Set<TOP> dAnnotation = new HashSet<>();
+        JCasUtil.select(tCas, SpacyAnnotatorMetaData.class).stream().forEach(a->{
+            dAnnotation.add(a);
+            if(a.getReference() instanceof Sentence){
+                a.getReference().removeFromIndexes();
+            }
+        });
+        dAnnotation.stream().forEach(a->{
+            a.removeFromIndexes();
+        });
 
+//        Map<String, Sentence> delSentence = new HashMap<>(0);
+//        JCasUtil.select(tCas, Sentence.class).stream().forEach(s->{
+//
+//            if(!delSentence.containsKey(s.getBegin()+"_"+s.getEnd())){
+//                delSentence.put(s.getBegin()+"_"+s.getEnd(), s);
+//            }
+//            else{
+//                Sentence sTest = delSentence.get(s.getBegin()+"_"+s.getEnd());
+//                if(Integer.valueOf(sTest._id())<Integer.valueOf(s._id())){
+//                    delSentence.put(s.getBegin()+"_"+s.getEnd(), s);
+//                }
+//            }
+//
+//        });
+//
+//        delSentence.values().stream().forEach(s->{
+//            s.removeFromIndexes();
+//        });
+
+
+
+        CasIOUtils.save(tCas.getCas(), new FileOutputStream(new File("/tmp/EvalExtended.xmi")), SerialFormat.XMI_1_1_PRETTY);
+
+    }
     @Test
     public void executeSpaCy() throws Exception {
 
