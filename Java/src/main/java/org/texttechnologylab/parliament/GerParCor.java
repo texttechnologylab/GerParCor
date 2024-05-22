@@ -25,7 +25,7 @@ public class GerParCor implements SparkApplication {
         Spark.port(8081);
         Spark.staticFileLocation("html");
 
-        String sDBConfig = GerParCor.class.getClassLoader().getResource("rw").getPath();
+        String sDBConfig = GerParCor.class.getClassLoader().getResource("new_ro").getPath();
 
         try {
             MongoDBConfig dbConfig = new MongoDBConfig(sDBConfig);
@@ -38,8 +38,6 @@ public class GerParCor implements SparkApplication {
 
             RestHandler m = new RestHandler(pFactory);
             m.init();
-
-
 
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -54,4 +54,10 @@ public interface Protocol extends Comparable<Protocol> {
     JCas getDocumentAsJCas() throws UIMAException;
 
     JSONObject toJSON();
+
+    Double getSentiment();
+    Integer getToken();
+    Integer getSentence();
+    Integer getLemma();
+    Integer getDependency();
 }

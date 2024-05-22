@@ -16,6 +16,10 @@ public interface ParliamentFactory {
     Set<Protocol> listProtocols();
     Set<Protocol> listProtocols(String sParliament);
     Set<Protocol> listProtocols(String sParliament, String sDevision);
+    Set<Protocol> listProtocols(String sParliament, String sDevision, String sCountry);
+
+    Set<Protocol> listProtocols(String sParliament, String sDevision, String sCountry, int iSkip, int iLimit);
+
     Set<Protocol> listProtocols(String sParliament, Date pStartDate, Date pEndDate);
 
     Set<Protocol> listProtocols(Date pStartDate, Date pEndDate);

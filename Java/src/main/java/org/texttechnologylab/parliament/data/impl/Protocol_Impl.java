@@ -73,7 +73,7 @@ public class Protocol_Impl implements Protocol {
 
     @Override
     public String getSubtitle() {
-        return null;
+        return pDocument.getString("nameBackup");
     }
 
     @Override
@@ -230,6 +230,35 @@ public class Protocol_Impl implements Protocol {
             rObject.put("country", getCountry());
 
         return rObject;
+    }
+
+    @Override
+    public Double getSentiment() {
+        return pDocument.get("sentiment_value", Document.class).getDouble("value");
+    }
+
+    public Document getInformation(String sValue){
+        return pDocument.get(sValue, Document.class);
+    }
+
+    @Override
+    public Integer getToken() {
+        return getInformation("annotations").getInteger("Token");
+    }
+
+    @Override
+    public Integer getSentence() {
+        return getInformation("annotations").getInteger("Sentence");
+    }
+
+    @Override
+    public Integer getLemma() {
+        return getInformation("annotations").getInteger("Lemma");
+    }
+
+    @Override
+    public Integer getDependency() {
+        return getInformation("annotations").getInteger("Dependency");
     }
 
     @Override

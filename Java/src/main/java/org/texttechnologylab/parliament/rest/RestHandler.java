@@ -16,6 +16,7 @@ import org.texttechnologylab.parliament.database.MongoDBConnectionHandler;
 import org.texttechnologylab.utilities.helper.RESTUtils;
 import org.texttechnologylab.utilities.helper.SparkUtils;
 import spark.ModelAndView;
+import spark.Spark;
 import spark.template.freemarker.FreeMarkerEngine;
 
 import java.io.File;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import static spark.Spark.get;
+import static spark.Spark.post;
 
 public class RestHandler {
 
@@ -43,8 +45,9 @@ public class RestHandler {
 
     public void init() throws IOException {
 
-        String templatesPath = "/home/staff_homes/abrami/Projects/GitHub/GerParCor/template";
-//        String templatesPath = "/home/gabrami/Projects/GitHub/GerParCor/template";
+//        String templatesPath = "/home/staff_homes/abrami/Projects/GitHub/GerParCor/template";
+        String templatesPath = "/home/gabrami/Projects/GitHub/GerParCor/template";
+        Spark.externalStaticFileLocation(templatesPath);
         cf.setDirectoryForTemplateLoading(new File(templatesPath));
 
         get("/", "text/html", (request, response)->{
@@ -52,12 +55,38 @@ public class RestHandler {
             Map<String, Object> attributes = new HashMap<>();
 
             attributes.put("factory", this.pFactory);
-//            attributes.put("protocols", this.pFactory.listProtocols());
+            attributes.put("country", "all");
+            attributes.put("devision", "all");
+            attributes.put("parliament", "all");
 
             return new ModelAndView(attributes, "index.ftl");
 
         }, new FreeMarkerEngine(cf));
 
+        post("/", "text/html", (request, response)->{
+
+            String sCountry = request.queryParams().contains("country") ? request.queryParams("country") : "all";
+            String sDevision = request.queryParams().contains("devision") ? request.queryParams("devision") : "all";
+            String sParliament = request.queryParams().contains("parliament") ? request.queryParams("parliament") : "all";
+
+            Map<String, Object> attributes = new HashMap<>();
+
+            attributes.put("factory", this.pFactory);
+            attributes.put("country", sCountry);
+            attributes.put("devision", sDevision);
+            attributes.put("parliament", sParliament);
+
+
+            return new ModelAndView(attributes, "index.ftl");
+
+        }, new FreeMarkerEngine(cf));
+
+        get("/download/:id", "application/json", ((request, response) -> {
+            String sDownloadID = request.params("id");
+            File rFile = this.pFactory.getProtocol(sDownloadID).getDocumentAsFile();
+
+            return RESTUtils.returnFile(response, rFile);
+        }));
 
         get("/rest", "application/json", ((request, response) -> {
 

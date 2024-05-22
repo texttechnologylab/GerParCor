@@ -40,8 +40,9 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     @Override
     public Set<Protocol> listProtocols() {
         Set<Protocol> rSet = new HashSet<>(0);
+        Bson sort = BsonDocument.parse("{timestamp: 1}");
 
-        MongoCursor<Document> pCursor = this.getDatabaseHandler().getCollection().find().cursor();
+        MongoCursor<Document> pCursor = this.getDatabaseHandler().getCollection().find().sort(sort).cursor();
         pCursor.forEachRemaining(d->{
             rSet.add(new Protocol_Impl(this, d));
         });
@@ -52,9 +53,14 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     @Override
     public Set<Protocol> listProtocols(String sParliament) {
 
-        Set<Protocol> rSet = new HashSet<>(0);
+        if(sParliament.equalsIgnoreCase("all")){
+            return listProtocols();
+        }
 
-            MongoCursor<Document> pCursor = this.getDatabaseHandler().getCollection().find(BsonDocument.parse("{\"meta.parliament\": "+sParliament+"}")).cursor();
+        Set<Protocol> rSet = new HashSet<>(0);
+        Bson sort = BsonDocument.parse("{timestamp: 1}");
+
+            MongoCursor<Document> pCursor = this.getDatabaseHandler().getCollection().find(BsonDocument.parse("{\"meta.parliament\": "+sParliament+"}")).sort(sort).cursor();
             pCursor.forEachRemaining(d->{
                 rSet.add(new Protocol_Impl(this, d));
             });
@@ -68,9 +74,32 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
         Set<Protocol> rSet = new HashSet<>(0);
 
         List<Bson> filters = new ArrayList<>();
-        filters.add(Filters.eq("meta.country", sCountry));
-        filters.add(Filters.eq("meta.devision", sDevision));
+        if(sCountry.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.country", sCountry));
+        if(sDevision.equalsIgnoreCase("all"))filters.add(Filters.eq("meta.devision", sDevision));
         MongoCursor<Document> pCursor = this.getDatabaseHandler().getCollection().find(Filters.and(filters)).cursor();
+        pCursor.forEachRemaining(d->{
+            rSet.add(new Protocol_Impl(this, d));
+        });
+
+        return rSet;
+    }
+
+    @Override
+    public Set<Protocol> listProtocols(String sParliament, String sDevision, String sCountry) {
+        return listProtocols(sParliament, sDevision, sCountry, 0, 30);
+    }
+
+    @Override
+    public Set<Protocol> listProtocols(String sParliament, String sDevision, String sCountry, int iSkip, int iLimit) {
+        Set<Protocol> rSet = new HashSet<>(0);
+
+        List<Bson> filters = new ArrayList<>();
+        if(!sCountry.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.country", sCountry));
+        if(!sDevision.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.devision", sDevision));
+        if(!sParliament.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.parliament", sParliament));
+        Bson sort = BsonDocument.parse("{timestamp: 1}");
+
+        MongoCursor<Document> pCursor = this.getDatabaseHandler().getCollection().find(filters.size()>0 ? Filters.and(filters) : BsonDocument.parse("{}")).sort(sort).skip(iSkip*iLimit).limit(iLimit).cursor();
         pCursor.forEachRemaining(d->{
             rSet.add(new Protocol_Impl(this, d));
         });
