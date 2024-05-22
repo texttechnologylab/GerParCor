@@ -5,7 +5,7 @@
     <meta name='author' content='Giuseppe Abrami'>
     <meta name='author' content='TTLab'>
 
-    <title>GerParCor</title>
+    <title>GerParCor Reloaded</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js'></script>
@@ -97,8 +97,11 @@
         }
 
         th, td {
-            padding: 15px;
+            padding: 10px;
         }
+
+        tr.content:hover {background-color: #48a9da;}
+
 
         span{
             color:black;
@@ -118,6 +121,10 @@
             background: #cde;
         }
 
+        .small{
+            font-size: 14pt;
+        }
+
     </style>
 
 </head>
@@ -127,9 +134,23 @@
 <div class="grid-container">
     <img src="gerparcor.png" style="height:14vh;">
     <a href="https://www.texttechnologylab.org" target="_blank"><img src="LogoTTLab.png" style="height:14vh;"></a>
-    <a href="#cite"><i class="fa-solid fa-quote-right" style="font-size:24pt;"> Cite</i></a>
-    <a href="#license"><i class="fa-solid fa-scale-balanced" style="font-size:24pt;"> License</i></a>
+    <a href="#cite"><i class="fa-solid fa-quote-right" style="font-size:24pt; padding-top: 3vw;"> Cite</i></a>
+    <a href="#license"><i class="fa-solid fa-scale-balanced" style="font-size:24pt; padding-top: 3vw;"> License</i></a>
 </div>
+
+<h2>Welcome @ GerParCor. If you are looking for GerParCor of 2022, please click <a href="http://gerparcor2022.texttechnologylab.org/" target="_blank">here</a>.</h2>
+<div class="textContent small" style="padding: 1vw; margin-bottom: 3vh;">
+    In 2022, the largest German-speaking corpus of parliamentary protocols from three different centuries, on a national and federal level
+    from the countries of Germany, Austria, Switzerland and Liechtenstein, was collected and published - GerParCor. Through GerParCor, it
+    became possible to provide for the first time various parliamentary protocols which were not available digitally and, moreover, could
+    not be retrieved and processed in a uniform manner. Furthermore, GerParCor was additionally preprocessed using NLP methods and
+    made available in XMI format. In this paper, GerParCor is significantly updated by including all new parliamentary protocols in the corpus,
+    as well as adding and preprocessing further parliamentary protocols previously not covered, so that a period up to 1797 is now covered.
+    Besides the integration of a new, state-of-the-art and appropriate NLP preprocessing for the handling of large text corpora, this
+    update also provides an overview of the further reuse of GerParCor by presenting various provisioning capabilities such as APIs,
+    among others.
+</div>
+
 
 <#--Definition of the individual containers for the respective contents.-->
 <#--Is self-explanatory as far as it shows.-->
@@ -145,26 +166,26 @@
     <label for="parliament">Parliament</label>
 
     <select name="country" onchange="this.form.submit()">
-        <option value="all" selected>all</option>
+        <option value="all" <#if country=="all">selected</#if> >all</option>
         <#list factory.listCountries() as c>
-            <option value="${c}">${c}</option>
+            <option value="${c}" <#if country==c>selected</#if> >${c}</option>
         </#list>
     </select>
 
 
-    <select name="devision">
-        <option value="all" selected>all</option>
+    <select name="devision"  onchange="this.form.submit()">
+        <option value="all" <#if devision=="all">selected</#if> >all</option>
 
         <#list factory.listDevisions() as c>
-            <option value="${c}">${c}</option>
+            <option value="${c}" <#if devision==c>selected</#if> >${c}</option>
         </#list>
     </select>
 
-    <select name="parliament">
-        <option value="all" selected>all</option>
+    <select name="parliament" onchange="this.form.submit()">
+        <option value="all" <#if parliament=="all">selected</#if> >all</option>
 
-        <#list factory.listParliaments() as c>
-            <option value="${c}">${c}</option>
+        <#list factory.listParliaments(country) as c>
+            <option value="${c}" <#if parliament==c>selected</#if> >${c}</option>
         </#list>
     </select>
 
@@ -184,7 +205,7 @@
             <td>Options</td>
         </tr>
     <#list factory.listProtocols(parliament, devision, country) as p>
-        <tr>
+        <tr class="content">
             <td>
                 ${p.getCountry()}
             </td>
@@ -201,12 +222,10 @@
                 ${p.getParliament()}
             </td>
             <td>
-                <span class="token">${p.getToken()}</span>
-                <span class="sentence">${p.getSentence()}</span>
-                <span class="lemma">${p.getLemma()}</span>
-                <span class="dependency">${p.getDependency()}</span>
-
-
+                <span class="token" title="Tokens">${p.getToken()}</span>
+                <span class="sentence" title="Sentences">${p.getSentence()}</span>
+                <span class="lemma"  title="Lemmas">${p.getLemma()}</span>
+                <span class="dependency" title="Dependencies">${p.getDependency()}</span>
             </td>
             <td>
                 ${p.getSentiment()}

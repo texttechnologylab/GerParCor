@@ -166,7 +166,7 @@ public class Protocol_Impl implements Protocol {
 
     @Override
     public File getDocumentAsFile() throws UIMAException, IOException {
-        File pFile = TempFileHandler.getTempFile("aaa", ".xmi");
+        File pFile = TempFileHandler.getTempFile(this.getID(), ".xmi.gz");
             getDocumentAsFile(new FileOutputStream(pFile));
         return pFile;
     }
@@ -181,16 +181,14 @@ public class Protocol_Impl implements Protocol {
         try (GridFSDownloadStream downloadStream = gridFS.openDownloadStream(gridID)) {
             CasIOUtils.load(downloadStream, pCas.getCas());
             CasIOUtils.save(pCas.getCas(), pOutputStream, SerialFormat.XMI_1_1);
-        } catch (IOException e) {
-            File tFile = TempFileHandler.getTempFile("aaa", ".xmi.gz");
+        } catch (Exception e) {
+            e.printStackTrace();
+            File tFile = TempFileHandler.getTempFile("gerparcor_", ".xmi.gz");
             tFile.deleteOnExit();
             gridFS.downloadToStream(gridID, new FileOutputStream(tFile));
             File nFile = ArchiveUtils.decompressGZ(tFile);
             nFile.deleteOnExit();
             Files.copy(nFile.toPath(), pOutputStream);
-
-
-
         }
 
     }

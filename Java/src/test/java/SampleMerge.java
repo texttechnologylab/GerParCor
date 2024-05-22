@@ -9,12 +9,14 @@ import de.tudarmstadt.ukp.dkpro.core.api.syntax.type.dependency.Dependency;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
+import org.apache.uima.cas.CASException;
 import org.apache.uima.cas.SerialFormat;
 import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.TOP;
 import org.apache.uima.jcas.tcas.Annotation;
+import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.CasIOUtils;
 import org.bson.conversions.Bson;
 import org.dkpro.core.io.xmi.XmiWriter;
@@ -29,16 +31,19 @@ import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegment
 import org.texttechnologylab.annotation.SpacyAnnotatorMetaData;
 import org.texttechnologylab.parliament.duui.*;
 import org.texttechnologylab.utilities.helper.FileUtils;
+import org.texttechnologylab.utilities.uima.jcas.JCasTTLabUtils;
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDescription;
@@ -50,10 +55,10 @@ public class SampleMerge {
         ConcurrentLinkedQueue<String> sampleList = new ConcurrentLinkedQueue<>();
 
         Set<File> tFiles = new HashSet<>();
-        tFiles = FileUtils.getFiles("/home/gabrami/Downloads/dott", "xmi");
+        tFiles = FileUtils.getFiles("/home/staff_homes/abrami/Downloads/dott/", "xmi");
 
-        Map<Integer, String> mapSentence = new ArrayMap<>();
-        Map<String, Integer> mapResult = new ArrayMap<>();
+        Map<Integer, Sentence> mapSentence = new ArrayMap<>();
+        Map<Sentence, Integer> mapResult = new ArrayMap<>();
 
         String sMerge = "0_11,11_16,11_20,20_25,25_38,38_100";
 
@@ -65,28 +70,31 @@ public class SampleMerge {
 
         }
 
-        JCas pCas = JCasFactory.createJCas();
+
         tFiles.stream().forEach(f->{
-            pCas.reset();
 
             try {
+                JCas pCas = JCasFactory.createJCas();
                 CasIOUtils.load(new FileInputStream(f), pCas.getCas());
 
-                JCasUtil.select(pCas, Sentence.class).stream().forEach(s->{
+                JCasUtil.select(pCas.getView("GoldStandard"), Sentence.class).stream().forEach(s->{
                     int iSize = JCasUtil.selectCovered(pCas, Token.class, s).size();
-
-                    mapSentence.put(iSize, s.getCoveredText());
-
+                    mapSentence.put(iSize, s);
                 });
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            } catch (CASException e) {
+                throw new RuntimeException(e);
+            } catch (ResourceInitializationException e) {
+                throw new RuntimeException(e);
             }
 
 
-
-
         });
+        JCas tCas = JCasFactory.createJCas();
+        JCas gold = tCas.createView("GoldStandard");
+        JCas init = tCas.getView("_InitialView");
 
         do {
             AtomicReference<String> sValue = new AtomicReference<>(sampleList.poll());
@@ -111,22 +119,59 @@ public class SampleMerge {
         System.out.println("stop");
 
         StringBuilder sb = new StringBuilder();
-        for (String s : mapResult.keySet()) {
+        for (Sentence s : mapResult.keySet()) {
             if(sb.length()>0){
                 sb.append(" ");
             }
-            sb.append(s);
+            sb.append(s.getCoveredText());
         }
 
-        JCas tCas = JCasFactory.createText(sb.toString(), "de");
+        gold.setDocumentText(sb.toString());
+        gold.setDocumentLanguage("de");
 
-        for (String s : mapResult.keySet()) {
-            int iStart = tCas.getDocumentText().indexOf(s);
-            int iEnd = iStart+s.length();
-//            Paragraph p = new Paragraph(tCas, iStart, iEnd);
-//            p.addToIndexes();
-            Sentence pSentence = new Sentence(tCas, iStart, iEnd);
-            pSentence.addToIndexes();
+        init.setDocumentText(sb.toString());
+        init.setDocumentLanguage("de");
+
+        AtomicBoolean bFirst = new AtomicBoolean();
+        bFirst.set(true);
+
+        for (Sentence s : mapResult.keySet()) {
+            int iStart = gold.getDocumentText().indexOf(s.getCoveredText());
+
+            Sentence nSentence = new Sentence(init, iStart, iStart+s.getCoveredText().length());
+            nSentence.addToIndexes();
+
+            new Sentence(gold, iStart, iStart+s.getCoveredText().length()).addToIndexes();
+
+            List<Annotation> tAnnotations = new ArrayList<>();
+            JCasUtil.selectCovered(Annotation.class, s).stream().forEach(a->{
+                tAnnotations.add(a);
+            });
+
+            tAnnotations.stream().forEach(a->{
+                try {
+                    JCasTTLabUtils.createAnnotation(gold, a, iStart-s.getBegin(), bFirst.get());
+                    bFirst.set(false);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                } catch (InstantiationException e) {
+                    throw new RuntimeException(e);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            for (Paragraph paragraph : JCasUtil.select(gold, Paragraph.class)) {
+                paragraph.removeFromIndexes();
+            }
+
+            for (Sentence sentence : JCasUtil.select(gold, Sentence.class)) {
+                new Paragraph(gold, sentence.getBegin(), sentence.getEnd()).addToIndexes();
+            }
+
         }
 
 

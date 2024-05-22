@@ -97,7 +97,7 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
         if(!sCountry.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.country", sCountry));
         if(!sDevision.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.devision", sDevision));
         if(!sParliament.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.parliament", sParliament));
-        Bson sort = BsonDocument.parse("{timestamp: 1}");
+        Bson sort = Sorts.ascending("timestamp");
 
         MongoCursor<Document> pCursor = this.getDatabaseHandler().getCollection().find(filters.size()>0 ? Filters.and(filters) : BsonDocument.parse("{}")).sort(sort).skip(iSkip*iLimit).limit(iLimit).cursor();
         pCursor.forEachRemaining(d->{
@@ -156,10 +156,15 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
 
     @Override
     public Set<String> listParliaments() {
+        return listParliaments("all");
+    }
+
+    @Override
+    public Set<String> listParliaments(String sCountry) {
         Set<String> rSet = new HashSet<>(0);
 
         List<Bson> query = new ArrayList<>();
-
+        if(!sCountry.equalsIgnoreCase("all")) query.add(Aggregates.match(Filters.eq("meta.country", sCountry)));
         query.add(Aggregates.group("$meta.parliament", new BsonField("count", BsonDocument.parse("{ $sum: 1 }"))));
 
         MongoCursor<Document> pResult = this.getDatabaseHandler().getCollection().aggregate(query).cursor();

@@ -34,8 +34,6 @@ public class GerParCor implements SparkApplication {
 
             ParliamentFactory pFactory = new ParliamentFactory_Impl(pHandler);
 
-            //pFactory.getTimeRanges();
-
             RestHandler m = new RestHandler(pFactory);
             m.init();
 

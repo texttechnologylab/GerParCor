@@ -1,11 +1,7 @@
 package org.texttechnologylab.parliament.rest;
 
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.BsonField;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Sorts;
 import freemarker.template.Configuration;
-import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.json.JSONArray;
@@ -21,7 +17,6 @@ import spark.template.freemarker.FreeMarkerEngine;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,8 +40,8 @@ public class RestHandler {
 
     public void init() throws IOException {
 
-//        String templatesPath = "/home/staff_homes/abrami/Projects/GitHub/GerParCor/template";
-        String templatesPath = "/home/gabrami/Projects/GitHub/GerParCor/template";
+        String templatesPath = "/home/staff_homes/abrami/Projects/GitHub/GerParCor/template";
+//        String templatesPath = "/home/gabrami/Projects/GitHub/GerParCor/template";
         Spark.externalStaticFileLocation(templatesPath);
         cf.setDirectoryForTemplateLoading(new File(templatesPath));
 

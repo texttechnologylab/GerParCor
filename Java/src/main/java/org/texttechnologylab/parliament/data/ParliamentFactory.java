@@ -32,6 +32,8 @@ public interface ParliamentFactory {
     Set<String> listParliaments();
 
 
+    Set<String> listParliaments(String sCountry);
+
     void getTimeRanges();
 
     Set<Protocol> doQuery(Bson query);
