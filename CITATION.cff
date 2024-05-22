@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: "If you use this corpus, please cite it as below."
+authors:
+- family-names: "Abrami"
+  given-names: "Giuseppe"
+  orcid: "https://orcid.org/0000-0002-7084-4909"
+- family-names: "Bagci"
+  given-names: "Mevlüt"
+  orcid: "https://orcid.org/0009-0007-6160-5571"
+- family-names: "Mehler"
+  given-names: "Alexander"
+  orcid: "https://orcid.org/0000-0003-2567-7539"
+title: "German Parliamentary Corpus (GerParCor)"
+version: 1.0
+date-released: 2024-05-22
+license: AGPLv3
+preferred-citation:
+  authors:
+  - family-names: "Abrami"
+    given-names: "Giuseppe"
+    orcid: "https://orcid.org/0000-0002-7084-4909"
+  - family-names: "Bagci"
+    given-names: "Mevlüt"
+    orcid: "https://orcid.org/0009-0007-6160-5571"
+  - family-names: "Mehler"
+    given-names: "Alexander"
+    orcid: "https://orcid.org/0000-0003-2567-7539"
+  title: "{G}erman Parliamentary Corpus ({G}er{P}ar{C}or) Reloaded"
+  year: 2024
+  collection-title: "Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING 2024)"
+  publisher:
+    name: "ELRA and ICCL"
+  pages: "7707--7716"
+  url: "https://aclanthology.org/2024.lrec-main.681"
+  collection-type: proceedings
+  conference:
+      date-end: "2024-05-22"
+      name: "Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING 2024)"
+  type: conference-paper
+url: "https://github.com/texttechnologylab/GerParCor"
