@@ -2,15 +2,22 @@
 [![Conference](http://img.shields.io/badge/conference-LREC--2022-4b44ce.svg)](https://lrec2022.lrec-conf.org/)
 [![version](https://img.shields.io/github/license/texttechnologylab/GerParCor)]()
 
+[![Paper](http://img.shields.io/badge/paper-ACL--anthology-B31B1B.svg)](https://aclanthology.org/2024.lrec-main.681.pdf)
+[![Conference](http://img.shields.io/badge/conference-LREC--COLING--2024-4b44ce.svg)](https://lrec-coling-2024.org/)
+[![version](https://img.shields.io/github/license/texttechnologylab/GerParCor)]()
+
 ![GerParCor](https://user-images.githubusercontent.com/32450159/149387119-6d300f31-f743-436b-b1e1-baf2181ff961.png)
 # GerParCor
 German Parliamentary Corpus (GerParCor)
 
 
 # Abstract
-Parliamentary debates represent a large and partly unexploited treasure trove of publicly accessible texts. In the German-speaking area, there is a certain deficit of uniformly accessible and annotated corpora covering all German-speaking parliaments at the national and federal level. To address this gap, we introduce the German Parliament Corpus (GerParCor). GerParCor is a genre-specific corpus of (predominantly historical) German-language parliamentary protocols from three centuries and four countries, including state and federal level data. In addition, GerParCor contains conversions of scanned protocols and, in particular, of protocols in Fraktur converted via an OCR process based on Tesseract. All protocols were preprocessed by means of the NLP pipeline of spaCy3 and automatically annotated with metadata regarding their session date. GerParCor is made available in the XMI format of the UIMA project. In this way, GerParCor can be used as a large corpus of historical texts in the field of political communication for various tasks in NLP.
+In 2022, the largest German-speaking corpus of parliamentary protocols from three different centuries, on a national and federal level from the countries of Germany, Austria, Switzerland and Liechtenstein, was collected and published - GerParCor. Through GerParCor, it became possible to provide for the first time various parliamentary protocols which were not available digitally and, moreover, could not be retrieved and processed in a uniform manner. Furthermore, GerParCor was additionally preprocessed using NLP methods and made available in XMI format. In this paper, GerParCor is significantly updated by including all new parliamentary protocols in the corpus, as well as adding and preprocessing further parliamentary protocols previously not covered, so that a period up to 1797 is now covered. Besides the integration of a new, state-of-the-art and appropriate NLP preprocessing for the handling of large text corpora, this update also provides an overview of the further reuse of GerParCor by presenting various provisioning capabilities such as API’s, among others.
 
-GerParCor is available via http://gerparcor.texttechnologylab.org
+GerParCor is available via https://gerparcor.texttechnologylab.org
+
+## GerParCor 2022
+GerParCor 2022 is available via http://lrec2022.gerparcor.texttechnologylab.org
  
 | # | Parliament | Sessions | From | Until | Status / Download |
 --- | --- | --- | --- | --- | --- |
@@ -43,7 +50,9 @@ GerParCor is available via http://gerparcor.texttechnologylab.org
 # Cite
 If you want to use the project or the corpus, please quote this as follows:
 
-G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, “German Parliamentary Corpus (GerParCor),” in Proceedings of the Language Resources and Evaluation Conference, Marseille, France, 2022, pp. 1900-1906. ![[Link]](https://aclanthology.org/2022.lrec-1.202) ![[PDF]](http://www.lrec-conf.org/proceedings/lrec2022/pdf/2022.lrec-1.202.pdf)
+- G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, “German Parliamentary Corpus (GerParCor),” in Proceedings of the Language Resources and Evaluation Conference, Marseille, France, 2022, pp. 1900-1906. ![[Link]](https://aclanthology.org/2022.lrec-1.202) ![[PDF]](http://www.lrec-conf.org/proceedings/lrec2022/pdf/2022.lrec-1.202.pdf)
+
+- G. Abrami, M. Bagci and A. Mehler, “German Parliamentary Corpus (GerParCor) Reloaded,” in Proceedings of the 2024 Joint International Conference on Computational Linguistics, (LREC-COLING 2024), Torino, Italy, 2024, pp. 7707-7716. ![[Link]](https://aclanthology.org/2024.lrec-main.681) ![[PDF]](https://aclanthology.org/2024.lrec-main.681.pdf)
 
 # BibTeX
 ```
@@ -57,6 +66,19 @@ G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, “German Parliamentary Corpus 
   publisher      = {European Language Resources Association},
   pages          = {1900--1906},
   url            = {https://aclanthology.org/2022.lrec-1.202}
+}
+
+@inproceedings{Abrami:et:al:2024,
+    address   = {Torino, Italy},
+    author    = {Abrami, Giuseppe and Bagci, Mevl{\"u}t and Mehler, Alexander},
+    booktitle = {Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation (LREC-COLING 2024)},
+    editor    = {Calzolari, Nicoletta and Kan, Min-Yen and Hoste, Veronique and Lenci, Alessandro and Sakti, Sakriani and Xue, Nianwen},
+    month     = {may},
+    pages     = {7707--7716},
+    publisher = {ELRA and ICCL},
+    title     = {{G}erman Parliamentary Corpus ({G}er{P}ar{C}or) Reloaded},
+    url       = {https://aclanthology.org/2024.lrec-main.681},
+    year      = {2024}
 }
 
 ```
