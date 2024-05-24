@@ -50,9 +50,9 @@ GerParCor 2022 is available via http://lrec2022.gerparcor.texttechnologylab.org
 # Cite
 If you want to use the project or the corpus, please quote this as follows:
 
-- G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, “German Parliamentary Corpus (GerParCor),” in Proceedings of the Language Resources and Evaluation Conference, Marseille, France, 2022, pp. 1900-1906. ![[Link]](https://aclanthology.org/2022.lrec-1.202) ![[PDF]](http://www.lrec-conf.org/proceedings/lrec2022/pdf/2022.lrec-1.202.pdf)
+- G. Abrami, M. Bagci, L. Hammerla, and A. Mehler, “German Parliamentary Corpus (GerParCor),” in Proceedings of the Language Resources and Evaluation Conference, Marseille, France, 2022, pp. 1900-1906. [[Link]](https://aclanthology.org/2022.lrec-1.202) [[PDF]](http://www.lrec-conf.org/proceedings/lrec2022/pdf/2022.lrec-1.202.pdf)
 
-- G. Abrami, M. Bagci and A. Mehler, “German Parliamentary Corpus (GerParCor) Reloaded,” in Proceedings of the 2024 Joint International Conference on Computational Linguistics, (LREC-COLING 2024), Torino, Italy, 2024, pp. 7707-7716. ![[Link]](https://aclanthology.org/2024.lrec-main.681) ![[PDF]](https://aclanthology.org/2024.lrec-main.681.pdf)
+- G. Abrami, M. Bagci and A. Mehler, “German Parliamentary Corpus (GerParCor) Reloaded,” in Proceedings of the 2024 Joint International Conference on Computational Linguistics, (LREC-COLING 2024), Torino, Italy, 2024, pp. 7707-7716. [[Link]](https://aclanthology.org/2024.lrec-main.681) [[PDF]](https://aclanthology.org/2024.lrec-main.681.pdf)
 
 # BibTeX
 ```
