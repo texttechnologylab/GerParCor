@@ -40,7 +40,7 @@ public class RestHandler {
 
     public void init() throws IOException {
 
-        String templatesPath = "/home/staff_homes/abrami/Projects/GitHub/GerParCor/template";
+        String templatesPath = "/home/staff_homes/abrami/Projects/GitHub/GerParCorDemo/template";
 //        String templatesPath = "/home/gabrami/Projects/GitHub/GerParCor/template";
         Spark.externalStaticFileLocation(templatesPath);
         cf.setDirectoryForTemplateLoading(new File(templatesPath));
@@ -53,6 +53,7 @@ public class RestHandler {
             attributes.put("country", "all");
             attributes.put("devision", "all");
             attributes.put("parliament", "all");
+            attributes.put("max", pFactory.countProtocols());
 
             return new ModelAndView(attributes, "index.ftl");
 
@@ -70,6 +71,7 @@ public class RestHandler {
             attributes.put("country", sCountry);
             attributes.put("devision", sDevision);
             attributes.put("parliament", sParliament);
+            attributes.put("max", pFactory.countProtocols(sCountry, sDevision, sParliament));
 
 
             return new ModelAndView(attributes, "index.ftl");

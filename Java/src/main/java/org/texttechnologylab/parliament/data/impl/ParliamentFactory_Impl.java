@@ -90,6 +90,27 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     }
 
     @Override
+    public long countProtocols(String sParliament, String sDevision, String sCountry) {
+
+        long lMax = 0;
+
+        List<Bson> filters = new ArrayList<>();
+        if(!sCountry.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.country", sCountry));
+        if(!sDevision.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.devision", sDevision));
+        if(!sParliament.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.parliament", sParliament));
+
+        lMax = this.getDatabaseHandler().getCollection().countDocuments(filters.size()>0 ? Filters.and(filters) : BsonDocument.parse("{}"));
+
+
+        return lMax;
+    }
+
+    @Override
+    public long countProtocols() {
+        return countProtocols("all", "all", "all");
+    }
+
+    @Override
     public Set<Protocol> listProtocols(String sParliament, String sDevision, String sCountry, int iSkip, int iLimit) {
         Set<Protocol> rSet = new HashSet<>(0);
 

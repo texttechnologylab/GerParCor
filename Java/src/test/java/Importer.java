@@ -18,10 +18,11 @@ public class Importer {
     public void importGermany() throws Exception {
 
 //        importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundestag", "xmi.gz", "Germany", "Bundestag", "National", "false", "");
+        importMethod("/storage/xmi/GerParCorDownload/Germany/National/Bundestag/19", "xmi.gz", "Germany", "Bundestag", "National", "false", "19", "");
 
 //        importSubDir("/storage/xmi/GerParCorDownload/Germany/National/Bundesrat/xmi", "xmi.gz", "Germany", "Bundesrat", "National", "false", "");
 //
-        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Weimar_Republic", ".xmi.gz", "Germany", "Reichstag", "National", "true", "Weimar_Republic");
+//        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Weimar_Republic", ".xmi.gz", "Germany", "Reichstag", "National", "true", "Weimar_Republic");
 //        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/ThirdReich", "xmi.gz", "Germany", "Reichstag", "National", "true", "Third_Reich");
 //
 //        importSubDir("/storage/xmi/GerParCorDownload/Germany/Historical/National/Reichstag", "xmi.gz", "Germany", "Reichstag", "National", "true", "German Empire");
@@ -110,7 +111,7 @@ public class Importer {
         composer.addDriver(uima_driver);
 
         composer.add(new DUUIUIMADriver.Component(createEngineDescription(MongoDBImporter.class,
-                MongoDBImporter.PARAM_DBConnection, "/home/staff_homes/abrami/Projects/GitHub/GerParCor/Java/src/main/resources/new_rw",
+                MongoDBImporter.PARAM_DBConnection, "/home/staff_homes/abrami/Projects/GitHub/GerParCorDemo/Java/src/main/resources/new_rw",
                 MongoDBImporter.PARAM_Country, sCountry,
                 MongoDBImporter.PARAM_Parliament, sParliament,
                 MongoDBImporter.PARAM_Devision, sDevision,

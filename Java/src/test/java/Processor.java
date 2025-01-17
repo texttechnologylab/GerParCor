@@ -10,7 +10,6 @@ import org.bson.conversions.Bson;
 import org.dkpro.core.io.xmi.XmiWriter;
 import org.junit.jupiter.api.Test;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.DUUIComposer;
-import org.texttechnologylab.DockerUnifiedUIMAInterface.connection.mongodb.MongoDBConfig;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.driver.*;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.io.DUUIAsynchronousProcessor;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.io.reader.DUUIFileReader;
@@ -20,6 +19,7 @@ import org.texttechnologylab.DockerUnifiedUIMAInterface.lua.DUUILuaContext;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategy;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.segmentation.DUUISegmentationStrategyByDelemiter;
 import org.texttechnologylab.annotation.SpacyAnnotatorMetaData;
+import org.texttechnologylab.parliament.database.MongoDBConfig;
 import org.texttechnologylab.parliament.duui.*;
 
 import java.io.File;
@@ -42,10 +42,13 @@ public class Processor {
 
         MongoDBConfig pConfig = new MongoDBConfig(pFile);
         List<Bson> pQuery = new ArrayList<>();
-
-        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
-        pQuery.add(Aggregates.match(Filters.exists("sentiment_value", false)));
-        pQuery.add(Aggregates.sort(Sorts.ascending("file.length")));
+        Date pDate = new SimpleDateFormat("yyyy-MM-dd").parse("2024-10-08");
+//        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
+        pQuery.add(Aggregates.match(Filters.and(Filters.eq("meta.parliament", "Bundestag"), Filters.eq("meta.subpath", "19"), Filters.exists("sentiment_value", false))));
+//        pQuery.add(Aggregates.sort(Sorts.ascending("file.length")));
+//        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
+//        pQuery.add(Aggregates.match(Filters.exists("sentiment_value", false)));
+//        pQuery.add(Aggregates.sort(Sorts.ascending("file.length")));
 //        pQuery.add(Aggregates.sample(5));
 
         DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery, 1000));
@@ -67,7 +70,7 @@ public class Processor {
 //        DUUIPipelineComponent component = new DUUIRemoteDriver.Component("http://localhost:5000").withScale(iScale)
 //                .build();
         DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/gervader_duui:latest").withScale(iScale)
-                .build();
+                .build().withTimeout(3600l);
 
         DUUISegmentationStrategy pStrategy = new DUUISegmentationStrategyByDelemiter()
                 .withDelemiter(".")
@@ -80,17 +83,17 @@ public class Processor {
         AnalysisEngineDescription writerEngine = createEngineDescription(GerParCorWriter.class,
                 GerParCorWriter.PARAM_DBConnection, pFile.getAbsolutePath()
         );
-
-        AnalysisEngineDescription writerEngineXMI = createEngineDescription(TTLabXmiWriter.class,
-                TTLabXmiWriter.PARAM_PRETTY_PRINT, true,
-                TTLabXmiWriter.PARAM_VERSION, "1.1",
-                TTLabXmiWriter.PARAM_TARGET_LOCATION, "/tmp/gerparcor"
-        );
+//
+//        AnalysisEngineDescription writerEngineXMI = createEngineDescription(TTLabXmiWriter.class,
+//                TTLabXmiWriter.PARAM_PRETTY_PRINT, true,
+//                TTLabXmiWriter.PARAM_VERSION, "1.1",
+//                TTLabXmiWriter.PARAM_TARGET_LOCATION, "/tmp/gerparcor"
+//        );
 
 //        AnalysisEngineDescription countAnnos = createEngineDescription(CountAnnotations.class);
 
-//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
-        composer.add(new DUUIUIMADriver.Component(writerEngineXMI).withScale(iScale).build());
+        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+//        composer.add(new DUUIUIMADriver.Component(writerEngineXMI).withScale(iScale).build());
 
         composer.run(processor, "reloaded");
 
@@ -103,15 +106,16 @@ public class Processor {
 
         int iScale = 3;
 
-        File pFile = new File(Processor.class.getClassLoader().getResource("new_rw").getFile());
+        File pFile = new File("/home/staff_homes/abrami/Projects/GitHub/GerParCorDemo/Java/src/main/resources/new_rw");
+//        File pFile = new File(Processor.class.getClassLoader().getResource("new_rw").getFile());
 
         MongoDBConfig pConfig = new MongoDBConfig(pFile);
         String sFilter = "{\"documentURI\": { $regex: \"older\"}, \"annotations.DocumentMetaData\": 0}";
 
         List<Bson> pQuery = new ArrayList<>();
-        Date pDate = new SimpleDateFormat("yyyy-MM-dd").parse("2024-02-14");
+        Date pDate = new SimpleDateFormat("yyyy-MM-dd").parse("2024-10-08");
         pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
-        pQuery.add(Aggregates.match(Filters.and(Filters.lt("file.uploadDate", pDate), Filters.regex("documentURI", "older"))));
+        pQuery.add(Aggregates.match(Filters.and(Filters.lt("file.uploadDate", pDate), Filters.regex("meta.subpath", "19"))));
         pQuery.add(Aggregates.sort(Sorts.ascending("file.length")));
 
 
@@ -357,49 +361,56 @@ public class Processor {
 //
 //    }
 
-//    @Test
-//    public void exporter() throws Exception {
-//
-//        int iScale = 1;
-//
-//        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
-//
-//        MongoDBConfig pConfig = new MongoDBConfig(pFile);
-////        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
-//
-////        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": \"Third_Reich\"}";
-////        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
+    @Test
+    public void exporter() throws Exception {
+
+        int iScale = 5;
+
+        File pFile = new File(Processor.class.getClassLoader().getResource("new_ro").getFile());
+
+        MongoDBConfig pConfig = new MongoDBConfig(pFile);
+//        String sFilter = "{\"meta.parliament\": \"Reichstag\", \"meta.comment\": { $regex: \"Weimar\"}}";
+
+        String sFilter = "{\"meta.parliament\": \"Bundestag\", \"meta.comment\": \"Third_Reich\"}";
+//        String sFilter = "{\"documentURI\": { $regex: \"older\"}}";
 //        String sFilter = "{\"grid\": \"24cd7c2f555a862876cfb2ad7cd62309\"}";
-//
-//        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, sFilter));
-//
-//        DUUIComposer composer = new DUUIComposer()
-//                .withSkipVerification(true)
-//                .withWorkers(iScale)
-//                .withLuaContext(new DUUILuaContext().withJsonLibrary());
-//
-//        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
-//        composer.addDriver(uimaDriver);
-//
-//        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
-//
-//        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
-//                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/xmiExample/",
-//                XmiWriter.PARAM_PRETTY_PRINT, true,
-//                XmiWriter.PARAM_OVERWRITE, true,
-//                XmiWriter.PARAM_VERSION, "1.1",
-//                XmiWriter.PARAM_COMPRESSION, "GZIP"
-//        );
-//
-////        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
-//
-//        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
-//
-//        composer.run(processor, "checking");
-//
-//        //composer.shutdown();
-//
-//    }
+
+        List<Bson> pQuery = new ArrayList<>();
+        Date pDate = new SimpleDateFormat("yyyy-MM-dd").parse("2024-10-08");
+//        pQuery.add(Aggregates.lookup("grid.files", "grid", "filename", "file"));
+        pQuery.add(Aggregates.match(Filters.and(Filters.eq("meta.parliament", "Bundestag"), Filters.eq("meta.subpath", "18") )));
+
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIGerParCorReader(pConfig, pQuery));
+
+        DUUIComposer composer = new DUUIComposer()
+                .withSkipVerification(true)
+                .withWorkers(iScale)
+                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+
+        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+        composer.addDriver(uimaDriver);
+
+        AnalysisEngineDescription writerEngine = createEngineDescription(CheckingDouble.class);
+
+        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+                XmiWriter.PARAM_TARGET_LOCATION, "/tmp/GerParCor__Bundestag__18_19/",
+                XmiWriter.PARAM_PRETTY_PRINT, true,
+                XmiWriter.PARAM_OVERWRITE, true,
+                XmiWriter.PARAM_VERSION, "1.1",
+                XmiWriter.PARAM_COMPRESSION, "GZIP"
+        );
+
+//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
+
+        composer.run(processor, "checking");
+
+        //composer.shutdown();
+
+    }
+
     public void example() throws Exception {
 
         int iScale = 2;
@@ -452,4 +463,48 @@ public class Processor {
     }
 
 
+    @Test
+    public void SRL() throws Exception {
+
+        int iScale = 10;
+
+
+        DUUIAsynchronousProcessor processor = new DUUIAsynchronousProcessor(new DUUIFileReader("/resources/public/boenisch/GerParCor__Bundestag__18_19/input", "xmi.gz"));
+
+        DUUIComposer composer = new DUUIComposer()
+                .withSkipVerification(true)
+                .withWorkers(iScale)
+                .withLuaContext(new DUUILuaContext().withJsonLibrary());
+
+        DUUIUIMADriver uimaDriver = new DUUIUIMADriver();
+        DUUISwarmDriver swarmDriver = new DUUISwarmDriver();
+        DUUIRemoteDriver remoteDriver = new DUUIRemoteDriver();
+        composer.addDriver(uimaDriver, swarmDriver, remoteDriver);
+
+//        DUUIPipelineComponent component = new DUUISwarmDriver.Component("docker.texttechnologylab.org/srl_cuda_1024:latest").withScale(iScale)
+//                .build().withTimeout(3600l);
+        DUUIPipelineComponent component = new DUUIRemoteDriver.Component("http://gondor.hucompute.org:9001", "http://gondor.hucompute.org:9002", "http://gondor.hucompute.org:9003", "http://gondor.hucompute.org:9004", "http://gondor.hucompute.org:9005")
+                .withScale(iScale)
+                .build().withTimeout(3600l);
+
+        AnalysisEngineDescription xmiEngine = createEngineDescription(XmiWriter.class,
+                XmiWriter.PARAM_TARGET_LOCATION, "/resources/public/boenisch/GerParCor__Bundestag__18_19/output/srl",
+                XmiWriter.PARAM_PRETTY_PRINT, true,
+                XmiWriter.PARAM_OVERWRITE, true,
+                XmiWriter.PARAM_VERSION, "1.1",
+                XmiWriter.PARAM_COMPRESSION, "GZIP"
+        );
+
+//        composer.add(new DUUIUIMADriver.Component(writerEngine).withScale(iScale).build());
+
+        composer.add(component);
+        composer.add(new DUUIUIMADriver.Component(xmiEngine).withScale(iScale).build());
+
+        composer.run(processor, "srl");
+
+        //composer.shutdown();
+
+    }
+
 }
+

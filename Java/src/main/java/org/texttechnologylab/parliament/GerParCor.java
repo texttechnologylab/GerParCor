@@ -22,7 +22,7 @@ public class GerParCor implements SparkApplication {
 
     @Override
     public void init() {
-        Spark.port(8081);
+        Spark.port(8083);
         Spark.staticFileLocation("html");
 
         String sDBConfig = GerParCor.class.getClassLoader().getResource("new_ro").getPath();
@@ -30,7 +30,6 @@ public class GerParCor implements SparkApplication {
         try {
             MongoDBConfig dbConfig = new MongoDBConfig(sDBConfig);
             MongoDBConnectionHandler pHandler = new MongoDBConnectionHandler(dbConfig);
-
 
             ParliamentFactory pFactory = new ParliamentFactory_Impl(pHandler);
 

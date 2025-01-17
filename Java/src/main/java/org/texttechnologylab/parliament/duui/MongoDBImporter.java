@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -111,6 +112,29 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
 
         long lCount = dbConnectionHandler.count("{\"documentURI\": \""+sURI+"\"}", "Protocols");
 
+        if(JCasUtil.select(pCas, DocumentAnnotation.class).size()==0){
+            DocumentMetaData dmd = DocumentMetaData.get(pCas);
+            String sTitle = dmd.getDocumentTitle();
+            int iStart = sTitle.indexOf("vom ");
+            String sDatum = sTitle.substring(iStart+4);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
+            try {
+                Date pDate = sdf.parse(sDatum);
+
+                System.out.println(sDatum);
+                DocumentAnnotation dma = new DocumentAnnotation(pCas);
+                dma.setDateDay(pDate.getDay());
+                dma.setDateMonth(pDate.getMonth());
+                dma.setDateYear(pDate.getYear());
+                dma.setTimestamp(pDate.getTime());
+                dma.addToIndexes();
+            }catch (Exception e){
+
+            }
+
+
+        }
+
         if(lCount==0) {
             boolean bCompress = true;
 
@@ -168,6 +192,7 @@ public class MongoDBImporter extends JCasFileWriter_ImplBase {
                 whiteList.add(Dependency.class);
                 whiteList.add(Lemma.class);
                 whiteList.add(Sentiment.class);
+
 
                 JCasUtil.select(pCas, DocumentAnnotation.class).stream().forEach(a -> {
                     DocumentMetaData dmd = DocumentMetaData.get(pCas);
