@@ -13,19 +13,19 @@ public interface ParliamentFactory {
 
     Protocol getProtocol(String sID);
 
-    Set<Protocol> listProtocols();
-    Set<Protocol> listProtocols(String sParliament);
-    Set<Protocol> listProtocols(String sParliament, String sDevision);
-    Set<Protocol> listProtocols(String sParliament, String sDevision, String sCountry);
+    List<Protocol> listProtocols();
+    List<Protocol> listProtocols(String sParliament);
+    List<Protocol> listProtocols(String sParliament, String sDevision);
+    List<Protocol> listProtocols(String sParliament, String sDevision, String sCountry);
 
     long countProtocols(String sParliament, String sDevision, String sCountry);
     long countProtocols();
 
-    Set<Protocol> listProtocols(String sParliament, String sDevision, String sCountry, int iSkip, int iLimit);
+    List<Protocol> listProtocols(String sParliament, String sDevision, String sCountry, int iSkip, int iLimit);
 
-    Set<Protocol> listProtocols(String sParliament, Date pStartDate, Date pEndDate);
+    List<Protocol> listProtocols(String sParliament, Date pStartDate, Date pEndDate);
 
-    Set<Protocol> listProtocols(Date pStartDate, Date pEndDate);
+    List<Protocol> listProtocols(Date pStartDate, Date pEndDate);
 
     Set<String> listCountries();
 

@@ -38,8 +38,8 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     }
 
     @Override
-    public Set<Protocol> listProtocols() {
-        Set<Protocol> rSet = new HashSet<>(0);
+    public List<Protocol> listProtocols() {
+        List<Protocol> rSet = new ArrayList<>(0);
         Bson sort = BsonDocument.parse("{timestamp: 1}");
 
         MongoCursor<Document> pCursor = this.getDatabaseHandler().getCollection().find().sort(sort).cursor();
@@ -51,13 +51,13 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     }
 
     @Override
-    public Set<Protocol> listProtocols(String sParliament) {
+    public List<Protocol> listProtocols(String sParliament) {
 
         if(sParliament.equalsIgnoreCase("all")){
             return listProtocols();
         }
 
-        Set<Protocol> rSet = new HashSet<>(0);
+        List<Protocol> rSet = new ArrayList<>(0);
         Bson sort = BsonDocument.parse("{timestamp: 1}");
 
             MongoCursor<Document> pCursor = this.getDatabaseHandler().getCollection().find(BsonDocument.parse("{\"meta.parliament\": "+sParliament+"}")).sort(sort).cursor();
@@ -70,8 +70,8 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     }
 
     @Override
-    public Set<Protocol> listProtocols(String sCountry, String sDevision) {
-        Set<Protocol> rSet = new HashSet<>(0);
+    public List<Protocol> listProtocols(String sCountry, String sDevision) {
+        List<Protocol> rSet = new ArrayList<>(0);
 
         List<Bson> filters = new ArrayList<>();
         if(sCountry.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.country", sCountry));
@@ -85,7 +85,7 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     }
 
     @Override
-    public Set<Protocol> listProtocols(String sParliament, String sDevision, String sCountry) {
+    public List<Protocol> listProtocols(String sParliament, String sDevision, String sCountry) {
         return listProtocols(sParliament, sDevision, sCountry, 0, 30);
     }
 
@@ -111,8 +111,8 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     }
 
     @Override
-    public Set<Protocol> listProtocols(String sParliament, String sDevision, String sCountry, int iSkip, int iLimit) {
-        Set<Protocol> rSet = new HashSet<>(0);
+    public List<Protocol> listProtocols(String sParliament, String sDevision, String sCountry, int iSkip, int iLimit) {
+        List<Protocol> rSet = new ArrayList<>(0);
 
         List<Bson> filters = new ArrayList<>();
         if(!sCountry.equalsIgnoreCase("all")) filters.add(Filters.eq("meta.country", sCountry));
@@ -129,12 +129,12 @@ public class ParliamentFactory_Impl implements ParliamentFactory {
     }
 
     @Override
-    public Set<Protocol> listProtocols(String sParliament, Date pStartDate, Date pEndDate) {
+    public List<Protocol> listProtocols(String sParliament, Date pStartDate, Date pEndDate) {
         return null;
     }
 
     @Override
-    public Set<Protocol> listProtocols(Date pStartDate, Date pEndDate) {
+    public List<Protocol> listProtocols(Date pStartDate, Date pEndDate) {
         return null;
     }
 

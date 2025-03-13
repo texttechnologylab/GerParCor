@@ -54,6 +54,9 @@ public class RestHandler {
             attributes.put("devision", "all");
             attributes.put("parliament", "all");
             attributes.put("max", pFactory.countProtocols());
+            attributes.put("page", 1);
+            attributes.put("limit", 30);
+
 
             return new ModelAndView(attributes, "index.ftl");
 
@@ -64,6 +67,7 @@ public class RestHandler {
             String sCountry = request.queryParams().contains("country") ? request.queryParams("country") : "all";
             String sDevision = request.queryParams().contains("devision") ? request.queryParams("devision") : "all";
             String sParliament = request.queryParams().contains("parliament") ? request.queryParams("parliament") : "all";
+            int iPage = request.queryParams().contains("page") ? Integer.parseInt(request.queryParams("page")) : 1;
 
             Map<String, Object> attributes = new HashMap<>();
 
@@ -72,6 +76,8 @@ public class RestHandler {
             attributes.put("devision", sDevision);
             attributes.put("parliament", sParliament);
             attributes.put("max", pFactory.countProtocols(sCountry, sDevision, sParliament));
+            attributes.put("page", iPage);
+            attributes.put("limit", 30);
 
 
             return new ModelAndView(attributes, "index.ftl");

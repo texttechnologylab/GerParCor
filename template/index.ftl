@@ -138,7 +138,7 @@
     <a href="#license"><i class="fa-solid fa-scale-balanced" style="font-size:24pt; padding-top: 3vw;"> License</i></a>
 </div>
 
-<h2>Welcome @ GerParCor. If you are looking for GerParCor of 2022, please click <a href="http://gerparcor2022.texttechnologylab.org/" target="_blank">here</a>.</h2>
+<h2>Welcome @ GerParCor. If you are looking for GerParCor of 2022, please click <a href="http://lrec2022.gerparcor.texttechnologylab.org/" target="_blank">here</a>.</h2>
 <div class="textContent small" style="padding: 1vw; margin-bottom: 3vh;">
     In 2022, the largest German-speaking corpus of parliamentary protocols from three different centuries, on a national and federal level
     from the countries of Germany, Austria, Switzerland and Liechtenstein, was collected and published - GerParCor. Through GerParCor, it
@@ -165,6 +165,7 @@
     <label for="division">National / Regional</label>
     <label for="parliament">Parliament</label>
 
+
     <select name="country" onchange="this.form.submit()">
         <option value="all" <#if country=="all">selected</#if> >all</option>
         <#list factory.listCountries() as c>
@@ -188,7 +189,27 @@
             <option value="${c}" <#if parliament==c>selected</#if> >${c}</option>
         </#list>
     </select>
+    
 
+    
+
+</div>
+<div class="grid-container-menu"> 
+    <span></span>
+    <label for="page">Page</label>
+    <span></span>
+
+    <#assign documents=factory.countProtocols(parliament, devision, country)>
+    <b>Total documents: ${documents?c}</b>
+    
+    <#assign x=(documents/limit)?floor>
+	
+    <select name="page" onchange="this.form.submit()">
+	<#list 1..x as i>
+	  <option value="${i?c}" <#if page==i>selected</#if> >${i?c} / ${x?c}</option>
+	</#list>
+    
+    </select>
 </div>
 </form>
 
@@ -204,7 +225,7 @@
             <td>Sentiment</td>
             <td>Options</td>
         </tr>
-    <#list factory.listProtocols(parliament, devision, country) as p>
+    <#list factory.listProtocols(parliament, devision, country, page, limit) as p>
         <tr class="content">
             <td>
                 ${p.getCountry()}
@@ -231,12 +252,15 @@
                 ${p.getSentiment()}
             </td>
             <td>
-                <a href="/download/${p.getID()}" target="_blank"><i class="fa-solid fa-download"></i></a>
+                <a href="/download/${p.getID()}" target="_blank" title="Download as XMI"><i class="fa-solid fa-download"></i></a>
             </td>
         </tr>
 
     </#list>
+   
+ 
     </table>
+
 </div>
 
 <div id="cite" class="textBlock">
