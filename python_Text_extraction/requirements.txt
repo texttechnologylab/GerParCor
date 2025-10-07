@@ -31,6 +31,6 @@ dkpro-cassis
 
 certifi==2021.10.8
 pdf2image==1.16.0
-Pillow==8.4.0
+Pillow==10.3.0
 pytesseract==0.3.8
 
