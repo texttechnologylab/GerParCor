@@ -11,6 +11,8 @@ import org.jsoup.select.Elements;
 import org.junit.Test;
 import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.annotation.DocumentModification;
+import org.texttechnologylab.parliament.crawler.multimodal.BundestagDownloader;
+import org.texttechnologylab.parliament.crawler.multimodal.ProtocolElement;
 import org.texttechnologylab.utilities.helper.FileUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -335,14 +338,50 @@ public class Bundestag {
             });
             offset+=10;
         }
+    }
+
+    public static void downloadWahlperiodeMultimodal(String sessionID, String videoSessionID, int iWahlperiode) throws IOException {
+
+        int offset = 0;
+
+        String baseDownloadPath = "./downloads/bundestagNeu/" + iWahlperiode;
+
+        File baseFolder = new File(baseDownloadPath);
+        if (!baseFolder.exists()) {
+            baseFolder.mkdirs();
+        }
+
+        while(true) {
 
 
+            BundestagDownloader downloader = new BundestagDownloader();
+            List<ProtocolElement> results = downloader.downloadLatestContent(sessionID, videoSessionID, iWahlperiode, "10", Integer.toString(offset));
+
+            if(results.isEmpty())
+                return;
+
+            for(var result : results) {
+
+                String resultDownloadPath = baseDownloadPath + "/" + result.getProtocolId();
+
+                File folder = new File(resultDownloadPath);
+
+                if (!folder.exists()) {
+                    folder.mkdirs();
+                }
+
+                result.downloadEverything(resultDownloadPath);
+            }
+
+            offset+=10;
+        }
     }
 
     @Test
     public void wahlperioden() throws IOException {
-//        downloadWahlperiode("543410-543410", 19);
-        downloadWahlperiode("866354-866354", 20);
+        //downloadWahlperiode("543410-543410", 19);
+        //downloadWahlperiode("866354-866354", 20);
+        downloadWahlperiodeMultimodal("058442-1058442", "442112-442112", 21);
     }
 
     @Test
@@ -427,9 +466,5 @@ public class Bundestag {
             offset+=10;
         }
 
-
-
     }
-
-
 }
