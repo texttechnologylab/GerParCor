@@ -1,4 +1,4 @@
-package org.texttechnologylab.downloader;
+package org.texttechnologylab.parliament.crawler.multimodal;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,24 +11,28 @@ import java.util.List;
 
 public class BundestagDownloader {
 
-    // example: downloadLatestContent("https://www.bundestag.de/ajax/filterlist/de/services/opendata/1058442-1058442", "https://www.bundestag.de/ajax/filterlist/de/dokumente/protokolle/442112-442112", "10", "0");
-    public void downloadLatestContent(String xmlAjax, String videoAjax, String limit, String offset) throws IOException {
-        //?noFilterSet=true&limit=10&offset=0
-        downloadLatestContent(xmlAjax, videoAjax, true, limit, offset);
+    // example: downloadLatestContent("058442-1058442", "442112-442112", 21, "10", "0");
+    public List<ProtocolElement> downloadLatestContent(String sessionID, String videoSessionID, int iWahlperiode, String limit, String offset) throws IOException {
+        return downloadLatestContent(sessionID, videoSessionID, iWahlperiode, true, limit, offset);
     }
 
-    public void downloadLatestContent(String xmlAjax, String videoAjax, boolean noFilterSet, String limit, String offset) throws IOException {
-        //?noFilterSet=true&limit=10&offset=0
-        getData(xmlAjax, videoAjax, true, limit, offset);
+    public List<ProtocolElement> downloadLatestContent(String sessionID, String videoSessionID, int iWahlperiode, boolean noFilterSet, String limit, String offset) throws IOException {
+        String xmlAjax = "https://www.bundestag.de/ajax/filterlist/de/services/opendata/" + sessionID;
+        String videoAjax = "https://www.bundestag.de/ajax/filterlist/de/dokumente/protokolle/442112-442112" + videoSessionID + "?wahlperiode=442108%23" + iWahlperiode;
+
+        return getData(xmlAjax, videoAjax, true, limit, offset);
     }
 
-    public void getData(String xmlAjax, String videoAjax, boolean noFilterSet, String limit, String offset) throws IOException {
+    public List<ProtocolElement> getData(String xmlAjax, String videoAjax, boolean noFilterSet, String limit, String offset) throws IOException {
         List<ProtocolElement> result = getXmls(xmlAjax + "?noFilterSet=" + noFilterSet + "&limit=" + limit + "&offset=" + offset);
-        getVideos(videoAjax + "?noFilterSet=" + noFilterSet + "&limit=" + limit + "&offset=" + offset, result);
+
+        getVideos(videoAjax + "&noFilterSet=" + noFilterSet + "&limit=" + limit + "&offset=" + offset, result);
 
         for(ProtocolElement element : result){
             System.out.println(element.toString());
         }
+
+        return result;
     }
 
     private List<ProtocolElement> getXmls(String url) throws IOException {
@@ -38,10 +42,14 @@ public class BundestagDownloader {
         // Get all <tr> elements in tbody
         Elements trElements = doc.select("tbody tr");
 
+        List<ProtocolElement> protocols = new ArrayList<>();
+
+        if(trElements.isEmpty())
+            return protocols;
+
         System.out.println("Found " + trElements.size() + " protocols\n");
 
         // Extract XML href from each <tr>
-        List<ProtocolElement> protocols = new ArrayList<>();
         for (Element tr : trElements) {
             // Get the protocol name/title
             Element titleElement = tr.selectFirst("strong");
@@ -59,7 +67,7 @@ public class BundestagDownloader {
                 // Get Session ID
                 String sessionNo = title.split("Plenarprotokoll der ")[1].split(". Sitzung")[0];
 
-                protocols.add(new ProtocolElement(Integer.parseInt(xmlId), Integer.parseInt(sessionNo)));
+                protocols.add(new ProtocolElement(Integer.parseInt(xmlId), xmlHref, Integer.parseInt(sessionNo)));
             }
 
             //String videoUrl = "https://www.bundestag.de/ajax/filterlist/de/dokumente/protokolle/442112-442112?" + url.split("\\?")[1];
@@ -111,6 +119,7 @@ public class BundestagDownloader {
                 // Get all "Video des Redebeitrags" for this TOP
                 Elements speechLiElements = topElement.select("ul.bt-redner-liste > li");
                 if (!speechLiElements.isEmpty()) {
+                    int speechId = 0;
                     for (Element speechLi : speechLiElements) {
                         Element speakerNameElement = speechLi.selectFirst("strong");
                         String speakerName = speakerNameElement.text();
@@ -119,7 +128,7 @@ public class BundestagDownloader {
                         String speakerHref = speakerLinkElement.attr("href");
                         int speakerId = Integer.parseInt(speakerHref.split("-")[speakerHref.split("-").length - 1]);
 
-                        TOPSpeaker speaker = new TOPSpeaker(speakerId, speakerName);
+                        TOPSpeaker speaker = new TOPSpeaker(speakerId, speakerName, speechId);
 
                         Element videoLinkElement = speechLi.selectFirst("a:contains(Video des Redebeitrags)");
                         if(videoLinkElement != null){
@@ -127,6 +136,7 @@ public class BundestagDownloader {
                         }
 
                         top.addSpeaker(speaker);
+                        speechId++;
                     }
                 }
                 topId++;
@@ -137,15 +147,15 @@ public class BundestagDownloader {
         }
     }
 
-    private String getVideoWebsiteUrl(String videoId){
+    public static String getVideoWebsiteUrl(String videoId){
         return "https://www.bundestag.de/mediathek/video?videoid=" + videoId;
     }
 
-    private String websiteUrlToMp4Url(String videoId){
+    public static String websiteUrlToMp4Url(String videoId){
         return "https://cldf-od.r53.cdn.tv1.eu/1000153copo/ondemand/app144277506/145293313/" + videoId + "/" + videoId + "_h264_512_288_514kb_baseline_de_514.mp4";
     }
 
-    private String websiteUrlToVttUrl(String videoId){
+    public static String websiteUrlToVttUrl(String videoId){
         return "https://webtv.bundestag.de/pservices/player/vtt/?application=144277506&content=" + videoId;
     }
 }

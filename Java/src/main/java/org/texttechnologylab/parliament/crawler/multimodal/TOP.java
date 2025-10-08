@@ -1,5 +1,9 @@
-package org.texttechnologylab.downloader;
+package org.texttechnologylab.parliament.crawler.multimodal;
 
+import org.texttechnologylab.utilities.helper.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +16,7 @@ public class TOP {
     public TOP(int id, String name){
         this.id = id;
         this.name = name;
+        this.videoId = -1;
         speakerList = new ArrayList<>();
     }
 
@@ -64,5 +69,15 @@ public class TOP {
         }
 
         return r;
+    }
+
+    public void downloadVideos(String path) throws IOException {
+        if(videoId > -1) {
+            FileUtils.downloadFile(new File(path + "/Top_" + getId() + "_" + getVideoId() + ".mp4"), BundestagDownloader.websiteUrlToMp4Url(Integer.toString(getVideoId())));
+        }
+
+        for(var speaker : getSpeakerList()){
+            speaker.downloadVideos(path, getId());
+        }
     }
 }
