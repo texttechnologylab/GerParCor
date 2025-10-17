@@ -85,15 +85,100 @@ public class ProtocolElement {
     public void downloadEverything(String path) throws IOException {
 
         // Download XML
-        FileUtils.downloadFile(new File(path + "/" + getVideoId() + ".xml"), getProtocolUrl());
+        FileUtils.downloadFile(new File(path + "/" + getProtocolId() + ".xml"), getProtocolUrl());
 
         // Download Video
-        if(videoId > -1) {
-            FileUtils.downloadFile(new File(path + "/Session_" + getVideoId() + ".mp4"), BundestagDownloader.websiteUrlToMp4Url(Integer.toString(getVideoId())));
-        }
+        //if(videoId > -1) {
+        //    FileUtils.downloadFile(new File(path + "/Session_" + getVideoId() + ".mp4"), BundestagDownloader.websiteUrlToMp4Url(Integer.toString(getVideoId())));
+        //}
 
         for(var top : getTopList()){
             top.downloadVideos(path);
         }
+    }
+
+    private int currentSpeech = 0;
+    public TOPSpeech getCurrentSpeech(){
+
+        System.out.println(currentSpeech);
+
+        int skipped = 0;
+        for (TOP top : getTopList()){
+            if(top.getSpeakerList().size() + skipped <= currentSpeech){
+                skipped += top.getSpeakerList().size();
+                continue;
+            }else{
+                return top.getSpeakerList().get(currentSpeech - skipped);
+            }
+        }
+
+        System.out.println("No speech found for " + currentSpeech);
+
+        return null;
+    }
+
+    public void currentSpeechMinus(){
+        currentSpeech--;
+    }
+
+    public void currentSpeechPlus(){
+        currentSpeech++;
+    }
+
+    public TOPSpeech findSpeechBy(String firstName, String title, String lastName){
+        int startedAt = currentSpeech;
+        currentSpeechPlus();
+
+        System.out.println("===== SEARCH STARTED =====");
+
+        while(true){
+
+            System.out.println("   == Iter STARTED ==   ");
+
+            System.out.println(currentSpeech + " | " + startedAt);
+
+            TOPSpeech speaker = getCurrentSpeech();
+
+            if(speaker == null){
+                System.out.println("Speaker null");
+                if(currentSpeech == 0) {
+                    System.out.println("Protocol does not have any video speeches.");
+                    return null;  // No videos exist
+                }
+
+                currentSpeech = 0;
+                continue;
+            }
+
+            System.out.println(currentSpeech + " | " + startedAt);
+
+            if(xmlNameMatchesVideoName(firstName, title, lastName, speaker.getName())){
+                System.out.println("Matched.");
+                return speaker;
+            }else{
+                System.out.println("Not Matched.");
+            }
+
+            if(startedAt == currentSpeech) {
+                System.out.println("Nothing found.");
+                return null;  // No video found
+            }
+
+            System.out.println(currentSpeech + " | " + startedAt);
+
+            currentSpeechPlus();
+        }
+    }
+
+    public static boolean xmlNameMatchesVideoName(String firstName, String title, String lastName, String videoName){
+        String xmlName = lastName + ", " + (title.isEmpty() ? "" : title + " ") + firstName;
+
+        String[] videoNameSplit = videoName.split(",");
+
+        videoName = videoNameSplit[0] + (videoNameSplit.length > 1 ?  "," + videoNameSplit[1] : "");
+
+        System.out.println("Wanted: " + xmlName + ", Comparing to: " + videoName);
+
+        return xmlName.equals(videoName);
     }
 }

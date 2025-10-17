@@ -5,13 +5,13 @@ import org.texttechnologylab.utilities.helper.FileUtils;
 import java.io.File;
 import java.io.IOException;
 
-public class TOPSpeaker {
+public class TOPSpeech {
     private int speakerId;
     private String name;
     private int speechId;
     private int videoId;
 
-    public TOPSpeaker(int speakerId, String name, int speechId){
+    public TOPSpeech(int speakerId, String name, int speechId){
         this.speakerId = speakerId;
         this.name = name;
         this.speechId = speechId;

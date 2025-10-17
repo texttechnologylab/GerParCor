@@ -13,6 +13,7 @@ import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.annotation.DocumentModification;
 import org.texttechnologylab.parliament.crawler.multimodal.BundestagDownloader;
 import org.texttechnologylab.parliament.crawler.multimodal.ProtocolElement;
+import org.texttechnologylab.parliament.typeSystem.BundestagToCas;
 import org.texttechnologylab.utilities.helper.FileUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -20,6 +21,7 @@ import org.xml.sax.SAXException;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -340,7 +342,7 @@ public class Bundestag {
         }
     }
 
-    public static void downloadWahlperiodeMultimodal(String sessionID, String videoSessionID, int iWahlperiode) throws IOException {
+    public static void downloadWahlperiodeMultimodal(String sessionID, String videoSessionID, int iWahlperiode) throws IOException, ParserConfigurationException {
 
         int offset = 0;
 
@@ -371,6 +373,8 @@ public class Bundestag {
                 }
 
                 result.downloadEverything(resultDownloadPath);
+
+                new BundestagToCas(new File(resultDownloadPath + "/" + result.getProtocolId() + ".xml"), result);
             }
 
             offset+=10;
@@ -378,10 +382,11 @@ public class Bundestag {
     }
 
     @Test
-    public void wahlperioden() throws IOException {
+    public void wahlperioden() throws IOException, ParserConfigurationException {
         //downloadWahlperiode("543410-543410", 19);
         //downloadWahlperiode("866354-866354", 20);
-        downloadWahlperiodeMultimodal("058442-1058442", "442112-442112", 21);
+        //downloadWahlperiodeMultimodal("058442-1058442", "442112-442112", 21);
+        downloadWahlperiodeMultimodal("866354-866354", "442112-442112", 20);
     }
 
     @Test
