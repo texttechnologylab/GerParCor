@@ -18,7 +18,7 @@ public class BundestagDownloader {
 
     public List<ProtocolElement> downloadLatestContent(String sessionID, String videoSessionID, int iWahlperiode, boolean noFilterSet, String limit, String offset) throws IOException {
         String xmlAjax = "https://www.bundestag.de/ajax/filterlist/de/services/opendata/" + sessionID;
-        String videoAjax = "https://www.bundestag.de/ajax/filterlist/de/dokumente/protokolle/442112-442112" + videoSessionID + "?wahlperiode=442108%23" + iWahlperiode;
+        String videoAjax = "https://www.bundestag.de/ajax/filterlist/de/dokumente/protokolle/" + videoSessionID + "?wahlperiode=442108%23" + iWahlperiode;
 
         return getData(xmlAjax, videoAjax, true, limit, offset);
     }
@@ -128,7 +128,7 @@ public class BundestagDownloader {
                         String speakerHref = speakerLinkElement.attr("href");
                         int speakerId = Integer.parseInt(speakerHref.split("-")[speakerHref.split("-").length - 1]);
 
-                        TOPSpeaker speaker = new TOPSpeaker(speakerId, speakerName, speechId);
+                        TOPSpeech speaker = new TOPSpeech(speakerId, speakerName, speechId);
 
                         Element videoLinkElement = speechLi.selectFirst("a:contains(Video des Redebeitrags)");
                         if(videoLinkElement != null){

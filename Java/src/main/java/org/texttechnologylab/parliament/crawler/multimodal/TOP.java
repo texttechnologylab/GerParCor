@@ -1,8 +1,5 @@
 package org.texttechnologylab.parliament.crawler.multimodal;
 
-import org.texttechnologylab.utilities.helper.FileUtils;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +8,7 @@ public class TOP {
     private int id;
     private String name;
     private int videoId;
-    private List<TOPSpeaker> speakerList;
+    private List<TOPSpeech> speakerList;
 
     public TOP(int id, String name){
         this.id = id;
@@ -44,15 +41,15 @@ public class TOP {
         this.videoId = videoId;
     }
 
-    public List<TOPSpeaker> getSpeakerList() {
+    public List<TOPSpeech> getSpeakerList() {
         return speakerList;
     }
 
-    public void setSpeakerList(List<TOPSpeaker> speakerList) {
+    public void setSpeakerList(List<TOPSpeech> speakerList) {
         this.speakerList = speakerList;
     }
 
-    public void addSpeaker(TOPSpeaker speaker) {
+    public void addSpeaker(TOPSpeech speaker) {
         this.speakerList.add(speaker);
     }
 
@@ -64,7 +61,7 @@ public class TOP {
                 ", videoId=" + videoId +
                 "\nspeakers:";
 
-        for(TOPSpeaker speaker : speakerList){
+        for(TOPSpeech speaker : speakerList){
             r += "\n" + speaker.toString();
         }
 
@@ -72,9 +69,9 @@ public class TOP {
     }
 
     public void downloadVideos(String path) throws IOException {
-        if(videoId > -1) {
-            FileUtils.downloadFile(new File(path + "/Top_" + getId() + "_" + getVideoId() + ".mp4"), BundestagDownloader.websiteUrlToMp4Url(Integer.toString(getVideoId())));
-        }
+        //if(videoId > -1) {
+        //    FileUtils.downloadFile(new File(path + "/Top_" + getId() + "_" + getVideoId() + ".mp4"), BundestagDownloader.websiteUrlToMp4Url(Integer.toString(getVideoId())));
+        //}
 
         for(var speaker : getSpeakerList()){
             speaker.downloadVideos(path, getId());

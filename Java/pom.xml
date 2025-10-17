@@ -14,7 +14,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <uima.version>3.5.0</uima.version>
         <utilities.version>8bfa54cbe4</utilities.version>
-        <ttlab.typesystem.version>3.0.3</ttlab.typesystem.version>
+        <ttlab.typesystem.version>c6acb011e9</ttlab.typesystem.version>
         <duui.version>1.4.1</duui.version>
         <dkpro.core.version>2.4.0</dkpro.core.version>
     </properties>
