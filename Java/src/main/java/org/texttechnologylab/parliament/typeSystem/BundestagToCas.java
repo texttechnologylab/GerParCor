@@ -161,7 +161,9 @@ public class BundestagToCas {
 
                 System.out.println(v.getUrl() + ": ");
                 JCasUtil.selectCovered(SpeechText.class, v).forEach(s -> {
-                    System.out.println("    - " + s.getCoveredText());
+                    Speaker speaker = s.getSpeaker();
+                    String name = speaker != null ? speaker.getFirstName() + " " + speaker.getLastName() : "";
+                    System.out.println("    - (" + name + ")" + s.getCoveredText());
                 });
 
             });
@@ -189,11 +191,29 @@ public class BundestagToCas {
         var textSections = XMLParserHelper.getSpeechAndComments(agendaNode);
         int speechNo = 0;
         int begin = protocolString.length();
+        Video video = new Video(cas);
+
         for(Pair<Integer, String> section : textSections){
 
             if(section.getValue0() == 0){
+
+                TOPSpeech topSpeech = pe.getCurrentSpeech();
+
                 SpeechText tSpeechText = new SpeechText(cas);
-                tSpeechText.setSpeaker(null);
+                if(topSpeech != null){
+                    Speaker speaker = new Speaker(cas);
+
+                    String[] speechNameSplit = topSpeech.getName().split(",");
+                    speaker.setLastName(speechNameSplit[0].trim());
+
+                    if(speechNameSplit.length > 1){
+                        speaker.setFirstName(speechNameSplit[1].trim());
+                    }
+
+                    tSpeechText.setSpeaker(speaker);
+                    speaker.addToIndexes();
+                }
+
                 tSpeechText.setBegin(protocolString.length());
                 protocolString.append(cleanText(section.getValue1()));
                 tSpeechText.setEnd(protocolString.length() - 1);
@@ -210,13 +230,12 @@ public class BundestagToCas {
         }
 
         if(speechNo == 1){
-            TOPSpeech topSpeaker = pe.getCurrentSpeech();
+            TOPSpeech topSpeech = pe.getCurrentSpeech();
 
-            Video video = new Video(cas);
             video.setBegin(begin);
             video.setIndex(speechNo);
-            video.setId(Integer.toString(topSpeaker.getVideoId()));
-            video.setUrl(BundestagDownloader.getVideoWebsiteUrl(Integer.toString(topSpeaker.getVideoId())));
+            video.setId(Integer.toString(topSpeech.getVideoId()));
+            video.setUrl(BundestagDownloader.getVideoWebsiteUrl(Integer.toString(topSpeech.getVideoId())));
             video.setEnd(protocolString.length());
             video.addToIndexes();
             pe.currentSpeechPlus();
@@ -258,6 +277,11 @@ public class BundestagToCas {
             role = XMLParserHelper.getFirstSubNodeByName(speakerNode, "rolle_kurz");
             if(role != null)
                 tSpeaker.setRole(role.getTextContent());
+        }
+
+        Node fraktion = XMLParserHelper.getFirstSubNodeByName(speakerNode, "fraktion");
+        if(fraktion != null){
+            tSpeaker.setGroup(fraktion.getTextContent());
         }
 
         tSpeaker.addToIndexes();
