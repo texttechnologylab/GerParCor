@@ -21,7 +21,7 @@ public class DUUIPipeline {
 
         int iWorkers = 1;
 
-        org.texttechnologylab.parliament.duui.XmiReader multiReader = new org.texttechnologylab.parliament.duui.XmiReader("D:\\UniCode\\Java\\GerParCorGitFork\\Java\\downloads\\bundestagNeu\\20", "xmi");
+        org.texttechnologylab.parliament.duui.XmiReader multiReader = new org.texttechnologylab.parliament.duui.XmiReader("./downloads/", ".xmi");
         Set<DUUICollectionReader> readers = new HashSet<>();
         readers.add(multiReader);
 
@@ -56,14 +56,15 @@ public class DUUIPipeline {
                 .withParameter("type", "de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence")
                 .build().withTimeout(60));*/
 
-        composer.add(new DUUIRemoteDriver.Component("http://localhost:9713/")  // SpaCy
-                .withScale(iWorkers)
-                .build().withTimeout(60));
+//        composer.add(new DUUIRemoteDriver.Component("http://localhost:9713/")  // SpaCy
+//                .withScale(iWorkers)
+//                .build());
+//
 
-        composer.add(new DUUIRemoteDriver.Component("http://localhost:9715/")  // Jina
-                .withScale(iWorkers)
-                .withParameter("type", "org.texttechnologylab.annotation.parliamentary.SpeechText")
-                .build().withTimeout(60));
+//        composer.add(new DUUIRemoteDriver.Component("http://localhost:9715/")  // Jina
+//                .withScale(iWorkers)
+//                .withParameter("type", "org.texttechnologylab.annotation.parliamentary.SpeechText")
+//                .build());
 
         /*composer.add(new DUUIUIMADriver.Component(createEngineDescription(XmiWriter.class,
                 XmiWriter.PARAM_TARGET_LOCATION, "C:/test/temp",
