@@ -60,8 +60,8 @@ public class TOPSpeech {
     }
 
     public void downloadVideos(String path, int topId) throws IOException {
-        if(videoId > -1) {
-            FileUtils.downloadFile(new File(path + "/Speech_" + topId + "_" + getSpeechId() + "_" + getSpeakerId() + "_" + getVideoId() + ".mp4"), BundestagDownloader.websiteUrlToMp4Url(Integer.toString(getVideoId())));
-        }
+        //if(videoId > -1) {
+        //    FileUtils.downloadFile(new File(path + "/Speech_" + topId + "_" + getSpeechId() + "_" + getSpeakerId() + "_" + getVideoId() + ".mp4"), BundestagDownloader.websiteUrlToMp4Url(Integer.toString(getVideoId())));
+        //}
     }
 }
