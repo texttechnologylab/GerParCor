@@ -158,6 +158,14 @@ public class BundestagToCas {
             dm.setComment("Converting");
             dm.addToIndexes();
 
+            JCasUtil.select(cas, Speech.class).forEach(speech -> {
+                JCasUtil.selectCovered(SpeechSection.class, speech).stream().forEach(speechSection -> {
+
+                    System.out.println(((speechSection instanceof Comment) ? "C" : "T:") +speechSection.getCoveredText());
+
+                });
+            });
+
             CasIOUtils.save(cas.getCas(), new FileOutputStream(new File(dmd.getDocumentUri()+".xmi")), SerialFormat.XMI_1_1);
 
             System.out.println("ok");
