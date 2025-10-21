@@ -5,15 +5,20 @@ import org.apache.uima.cas.SerialFormat;
 import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.TOP;
 import org.apache.uima.util.CasIOUtils;
 import org.javatuples.Pair;
+import org.texttechnologylab.annotation.AnnotationComment;
 import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.annotation.DocumentModification;
+import org.texttechnologylab.annotation.link.Link;
 import org.texttechnologylab.annotation.parliamentary.*;
+import org.texttechnologylab.annotation.type.AudioToken;
 import org.texttechnologylab.parliament.crawler.multimodal.BundestagDownloader;
 import org.texttechnologylab.parliament.crawler.multimodal.ProtocolElement;
 import org.texttechnologylab.parliament.crawler.multimodal.TOPSpeech;
 import org.texttechnologylab.parliament.helper.XMLParserHelper;
+import org.texttechnologylab.uima.type.Embedding;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -202,7 +207,6 @@ public class BundestagToCas {
                 SpeechText tSpeechText = new SpeechText(cas);
                 if(topSpeech != null){
                     Speaker speaker = new Speaker(cas);
-
                     String[] speechNameSplit = topSpeech.getName().split(",");
                     speaker.setLastName(speechNameSplit[0].trim());
 

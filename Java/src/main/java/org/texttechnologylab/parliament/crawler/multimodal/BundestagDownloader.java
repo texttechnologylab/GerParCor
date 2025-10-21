@@ -65,7 +65,7 @@ public class BundestagDownloader {
                 xmlId = xmlId.substring(0, xmlId.length() - 4); // remove ".xml"
 
                 // Get Session ID
-                String sessionNo = title.split("der ")[1].split(".")[0];  // "Plenarprotokoll der XXX. Sitzung von TAG, dem DD. MMMM YYYY
+                String sessionNo = title.split("der ")[1].split("\\.")[0];  // "Plenarprotokoll der XXX. Sitzung von TAG, dem DD. MMMM YYYY
 
                 protocols.add(new ProtocolElement(Integer.parseInt(xmlId), xmlHref, Integer.parseInt(sessionNo)));
             }
