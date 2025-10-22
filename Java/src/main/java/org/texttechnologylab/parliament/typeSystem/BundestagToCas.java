@@ -1,6 +1,8 @@
 package org.texttechnologylab.parliament.typeSystem;
 
 import de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData;
+import de.tudarmstadt.ukp.dkpro.core.api.syntax.type.constituent.S;
+import org.apache.uima.cas.CASException;
 import org.apache.uima.cas.SerialFormat;
 import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.util.JCasUtil;
@@ -13,7 +15,9 @@ import org.texttechnologylab.annotation.DocumentAnnotation;
 import org.texttechnologylab.annotation.DocumentModification;
 import org.texttechnologylab.annotation.link.Link;
 import org.texttechnologylab.annotation.parliamentary.*;
+import org.texttechnologylab.annotation.schema.Relation;
 import org.texttechnologylab.annotation.type.AudioToken;
+import org.texttechnologylab.annotation.type.RelationSet;
 import org.texttechnologylab.parliament.crawler.multimodal.BundestagDownloader;
 import org.texttechnologylab.parliament.crawler.multimodal.ProtocolElement;
 import org.texttechnologylab.parliament.crawler.multimodal.TOPSpeech;
@@ -31,10 +35,9 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -86,8 +89,6 @@ public class BundestagToCas {
             String sNR = doc.getElementsByTagName("sitzungsnr").item(0).getTextContent();
             String sText = doc.getElementsByTagName("inhaltsverzeichnis").item(0).getTextContent();
 
-            System.out.println("Proccesing " + sPeriode + " " + sNR);
-
             NodeList sessionNodes = doc.getElementsByTagName("sitzungsverlauf");
 
             if(sessionNodes.getLength() != 1){
@@ -95,7 +96,9 @@ public class BundestagToCas {
             }
 
             StringBuilder protocolString = new StringBuilder();
+            StringBuilder vttString = new StringBuilder();
             JCas cas = JCasFactory.createJCas();
+            cas.createView("vtt");
 
             Protocol tProtocol = new Protocol(cas);
             //tProtocol.setDate();  TODO
@@ -103,25 +106,27 @@ public class BundestagToCas {
             tProtocol.setSessionNumber(Integer.parseInt(sNR));
             tProtocol.addToIndexes();
 
-
-
             if(sessionNodes.getLength() > 0){
 
                 int agendaNo = 0;
 
                 if(XMLParserHelper.getFirstSubNodeByName(sessionNodes.item(0), "sitzungsbeginn") != null){
-                    processAgenda(protocolString, agendaNo, XMLParserHelper.getFirstSubNodeByName(sessionNodes.item(0), "sitzungsbeginn"), tProtocol, cas, protocolInfo);
+                    processAgenda(protocolString, vttString, agendaNo, XMLParserHelper.getFirstSubNodeByName(sessionNodes.item(0), "sitzungsbeginn"), tProtocol, cas, protocolInfo);
                     agendaNo++;
                 }
 
                 for(Node agenda : XMLParserHelper.getAllSubNodesByName(sessionNodes.item(0), "tagesordnungspunkt")) {
-                    processAgenda(protocolString, agendaNo, agenda, tProtocol, cas, protocolInfo);
+                    processAgenda(protocolString, vttString, agendaNo, agenda, tProtocol, cas, protocolInfo);
                     agendaNo++;
                 }
             }
 
-            cas.setDocumentText(protocolString.toString());
+            cas.setSofaDataString(protocolString.toString(), "text/plain");
             cas.setDocumentLanguage("de");
+
+            cas.getView("vtt").setSofaDataString(vttString.toString(), "text/plain");
+            cas.getView("vtt").setDocumentLanguage("de");
+
             Date pDate = sdf.parse(sDatum);
 
             DocumentMetaData dmd = DocumentMetaData.create(cas);
@@ -161,16 +166,22 @@ public class BundestagToCas {
             JCasUtil.select(cas, Speech.class).forEach(speech -> {
                 JCasUtil.selectCovered(SpeechSection.class, speech).stream().forEach(speechSection -> {
 
-                    System.out.println(((speechSection instanceof Comment) ? "C" : "T:") +speechSection.getCoveredText());
+                    System.out.println(((speechSection instanceof Comment) ? "C: " : "T: ") +speechSection.getCoveredText());
 
                 });
+            });
+
+            JCasUtil.select(cas.getView("vtt"), AudioToken.class).forEach(at -> {
+
+                System.out.println(at.getTimeStart() + " - " + at.getTimeEnd() + ": " + at.getCoveredText());
+
             });
 
             CasIOUtils.save(cas.getCas(), new FileOutputStream(new File(dmd.getDocumentUri()+".xmi")), SerialFormat.XMI_1_1);
 
             System.out.println("ok");
 
-            JCasUtil.select(cas, Video.class).forEach(v -> {
+            /*JCasUtil.select(cas, Video.class).forEach(v -> {
 
                 System.out.println(v.getUrl() + ": ");
                 JCasUtil.selectCovered(SpeechText.class, v).forEach(s -> {
@@ -179,14 +190,14 @@ public class BundestagToCas {
                     System.out.println("    - (" + name + ")" + s.getCoveredText());
                 });
 
-            });
+            });*/
 
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    public void processAgenda(StringBuilder protocolString, int index, Node agendaNode, Protocol tProtocol, JCas cas, ProtocolElement pe){
+    public void processAgenda(StringBuilder protocolString, StringBuilder vttString, int index, Node agendaNode, Protocol tProtocol, JCas cas, ProtocolElement pe) throws MalformedURLException, CASException {
 
         Agenda tAgenda = new Agenda(cas);
 
@@ -205,7 +216,8 @@ public class BundestagToCas {
         int speechNo = 0;
         int begin = protocolString.length();
         Video video = new Video(cas);
-
+        Speaker speaker = new Speaker(cas);
+        boolean filledSpeakerData = false;
         for(Pair<Integer, String> section : textSections){
 
             if(section.getValue0() == 0){
@@ -213,8 +225,8 @@ public class BundestagToCas {
                 TOPSpeech topSpeech = pe.getCurrentSpeech();
 
                 SpeechText tSpeechText = new SpeechText(cas);
-                if(topSpeech != null){
-                    Speaker speaker = new Speaker(cas);
+                if(topSpeech != null && !filledSpeakerData){
+
                     String[] speechNameSplit = topSpeech.getName().split(",");
                     speaker.setLastName(speechNameSplit[0].trim());
 
@@ -222,10 +234,10 @@ public class BundestagToCas {
                         speaker.setFirstName(speechNameSplit[1].trim());
                     }
 
-                    tSpeechText.setSpeaker(speaker);
+                    filledSpeakerData = true;
                     speaker.addToIndexes();
                 }
-
+                tSpeechText.setSpeaker(speaker);
                 tSpeechText.setBegin(protocolString.length());
                 protocolString.append(cleanText(section.getValue1()));
                 tSpeechText.setEnd(protocolString.length() - 1);
@@ -252,12 +264,14 @@ public class BundestagToCas {
             video.addToIndexes();
             pe.currentSpeechPlus();
 
+            vttParser(BundestagDownloader.websiteUrlToVttUrl(Integer.toString(topSpeech.getVideoId())), vttString, cas.getView("vtt"));
+
         }
 
         // Get speeches inside agenda
         List<Node> speechNodes = XMLParserHelper.getAllSubNodesByName(agendaNode, "rede");
         for(Node speechNode : speechNodes){
-            processSpeech(protocolString, index, speechNo, speechNode, cas, pe);
+            processSpeech(protocolString, vttString, index, speechNo, speechNode, cas, pe);
             speechNo++;
         }
 
@@ -265,7 +279,7 @@ public class BundestagToCas {
 
     }
 
-    public void processSpeech(StringBuilder protocolString, int agendaNo, int speechNo, Node speechNode, JCas cas, ProtocolElement pe){
+    public void processSpeech(StringBuilder protocolString, StringBuilder vttString, int agendaNo, int speechNo, Node speechNode, JCas cas, ProtocolElement pe) throws MalformedURLException, CASException {
 
         Speaker tSpeaker = new Speaker(cas);
 
@@ -341,6 +355,8 @@ public class BundestagToCas {
             video.setEnd(tSpeech.getEnd());
             video.addToIndexes();
             pe.currentSpeechPlus();
+
+            vttParser(BundestagDownloader.websiteUrlToVttUrl(Integer.toString(speech.getVideoId())), vttString, cas.getView("vtt"));
         }
     }
 
@@ -359,5 +375,109 @@ public class BundestagToCas {
         sText = sText.replaceAll("&#38;", "&");
         sText =  sText.replaceAll("I n h a l t :", "Inhalt:");
         return sText;
+    }
+
+    public static void vttParser(String vtturl, StringBuilder vttText, JCas cas) throws MalformedURLException {
+        URL url = new URL(vtturl);
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(url.openStream()))) {
+
+            String line;
+            String start = null;
+            String end = null;
+            StringBuilder currentText = new StringBuilder();
+            AudioToken currentToken;
+            int begin = vttText.length();
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+
+                // Skip WEBVTT header and NOTE lines
+                if (line.startsWith("WEBVTT") || line.startsWith("NOTE") || line.isEmpty()) {
+                    // If we have text, save the cue
+                    if (start != null && !currentText.isEmpty()) {
+                        currentToken = new AudioToken(cas);
+                        currentToken.setBegin(begin);
+                        currentToken.setEnd(vttText.length() - 1);
+                        currentToken.setTimeStart(timeToSeconds(start));
+                        currentToken.setTimeEnd(timeToSeconds(end));
+                        currentToken.addToIndexes();
+                        begin = vttText.length();
+                        start = null;
+                        end = null;
+                        currentText = new StringBuilder();
+                    }
+                    continue;
+                }
+
+                if (line.contains("-->")) {
+                    // Save previous cue if exists
+                    if (start != null && !currentText.isEmpty()) {
+                        currentToken = new AudioToken(cas);
+                        currentToken.setBegin(begin);
+                        currentToken.setEnd(vttText.length() - 1);
+                        currentToken.setTimeStart(timeToSeconds(start));
+                        currentToken.setTimeEnd(timeToSeconds(end));
+                        currentToken.addToIndexes();
+                        begin = vttText.length();
+                        currentText = new StringBuilder();
+                    }
+
+                    // Parse timestamps
+                    String[] parts = line.split("-->");
+                    start = parts[0].trim();
+                    end = parts[1].trim().split(" ")[0]; // Remove any style info
+                }
+                else if (start != null) {
+                    if (!currentText.isEmpty()) {
+                        currentText.append(" ");
+                        vttText.append(" ");
+                    }
+                    currentText.append(line);
+                    vttText.append(line);
+                }
+            }
+
+            // Add last cue
+            if (start != null && !currentText.isEmpty()) {
+                currentToken = new AudioToken(cas);
+                currentToken.setBegin(begin);
+                currentToken.setEnd(vttText.length() - 1);
+                currentToken.setTimeStart(timeToSeconds(start));
+                currentToken.setTimeEnd(timeToSeconds(end));
+                currentToken.addToIndexes();
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static float timeToSeconds(String timestamp) {
+        // Remove any extra whitespace
+        timestamp = timestamp.trim();
+
+        // Split by colon to get hours, minutes, seconds
+        String[] parts = timestamp.split(":");
+
+        float seconds = 0;
+
+        if (parts.length == 3) {
+            // HH:MM:SS.mmm format
+            int hours = Integer.parseInt(parts[0]);
+            int minutes = Integer.parseInt(parts[1]);
+            float secs = Float.parseFloat(parts[2]);
+
+            seconds = hours * 3600 + minutes * 60 + secs;
+        } else if (parts.length == 2) {
+            int minutes = Integer.parseInt(parts[0]);
+            float secs = Float.parseFloat(parts[1]);
+
+            seconds = minutes * 60 + secs;
+        } else if (parts.length == 1) {
+            seconds = Float.parseFloat(parts[0]);
+        }
+
+        return seconds;
     }
 }

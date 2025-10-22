@@ -1,5 +1,6 @@
 package org.texttechnologylab.parliament.duui;
 
+import org.dkpro.core.io.xmi.XmiWriter;
 import org.junit.jupiter.api.Test;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.DUUIComposer;
 import org.texttechnologylab.DockerUnifiedUIMAInterface.driver.DUUIRemoteDriver;
@@ -39,40 +40,40 @@ public class DUUIPipeline {
 
         composer.addDriver(uimaDriver, remoteDriver);
 
-        /*composer.add(new DUUIRemoteDriver.Component("http://localhost:9714/")  // WhisperX
+        composer.add(new DUUIRemoteDriver.Component("http://localhost:9714")  // WhisperX
                 .withScale(iWorkers)
                 .withTargetView("transcription_view")
                 .withParameter("language", "de")
-                .build().withTimeout(60));*/
+                .build().withTimeout(18000));
 
-        /*composer.add(new DUUIRemoteDriver.Component("http://localhost:9713/")  // SpaCy
+        composer.add(new DUUIRemoteDriver.Component("http://localhost:9713")  // SpaCy
                 .withScale(iWorkers)
                 .withView("transcription_view")
-                .build().withTimeout(60));*/
+                .build());
 
-        /*composer.add(new DUUIRemoteDriver.Component("http://localhost:9715/")  // Jina
+        composer.add(new DUUIRemoteDriver.Component("http://localhost:9715")  // Jina
                 .withScale(iWorkers)
                 .withView("transcription_view")
                 .withParameter("type", "de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence")
-                .build().withTimeout(60));*/
+                .build().withTimeout(1800));
 
-//        composer.add(new DUUIRemoteDriver.Component("http://localhost:9713/")  // SpaCy
-//                .withScale(iWorkers)
-//                .build());
-//
+        composer.add(new DUUIRemoteDriver.Component("http://localhost:9713")  // SpaCy
+                .withScale(iWorkers)
+                .build());
 
-//        composer.add(new DUUIRemoteDriver.Component("http://localhost:9715/")  // Jina
-//                .withScale(iWorkers)
-//                .withParameter("type", "org.texttechnologylab.annotation.parliamentary.SpeechText")
-//                .build());
 
-        /*composer.add(new DUUIUIMADriver.Component(createEngineDescription(XmiWriter.class,
+        composer.add(new DUUIRemoteDriver.Component("http://localhost:9715")  // Jina
+               .withScale(iWorkers)
+                .withParameter("type", "org.texttechnologylab.annotation.parliamentary.SpeechText")
+                .build().withTimeout(1800));
+
+        composer.add(new DUUIUIMADriver.Component(createEngineDescription(XmiWriter.class,
                 XmiWriter.PARAM_TARGET_LOCATION, "C:/test/temp",
                 XmiWriter.PARAM_PRETTY_PRINT, true,
                 XmiWriter.PARAM_OVERWRITE, true,
                 XmiWriter.PARAM_VERSION, "1.1",
                 XmiWriter.PARAM_COMPRESSION, "GZIP"))
-                .build().withTimeout(60));*/
+                .build());
 
         composer.run(processor, "test");
     }
