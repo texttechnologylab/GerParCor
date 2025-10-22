@@ -112,8 +112,6 @@ public class ProtocolElement {
             }
         }
 
-        System.out.println("No speech found for " + currentSpeech);
-
         return null;
     }
 
@@ -129,18 +127,11 @@ public class ProtocolElement {
         int startedAt = currentSpeech;
         currentSpeechPlus();
 
-        System.out.println("===== SEARCH STARTED =====");
-
         while(true){
-
-            System.out.println("   == Iter STARTED ==   ");
-
-            System.out.println(currentSpeech + " | " + startedAt);
 
             TOPSpeech speaker = getCurrentSpeech();
 
             if(speaker == null){
-                System.out.println("Speaker null");
                 if(currentSpeech == 0) {
                     System.out.println("Protocol does not have any video speeches.");
                     return null;  // No videos exist
@@ -150,21 +141,13 @@ public class ProtocolElement {
                 continue;
             }
 
-            System.out.println(currentSpeech + " | " + startedAt);
-
             if(xmlNameMatchesVideoName(firstName, title, lastName, speaker.getName())){
-                System.out.println("Matched.");
                 return speaker;
-            }else{
-                System.out.println("Not Matched.");
             }
 
             if(startedAt == currentSpeech) {
-                System.out.println("Nothing found.");
                 return null;  // No video found
             }
-
-            System.out.println(currentSpeech + " | " + startedAt);
 
             currentSpeechPlus();
         }
@@ -176,8 +159,6 @@ public class ProtocolElement {
         String[] videoNameSplit = videoName.split(",");
 
         videoName = videoNameSplit[0] + (videoNameSplit.length > 1 ?  "," + videoNameSplit[1] : "");
-
-        System.out.println("Wanted: " + xmlName + ", Comparing to: " + videoName);
 
         return xmlName.equals(videoName);
     }
